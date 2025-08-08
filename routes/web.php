@@ -13,16 +13,20 @@ Route::middleware(['auth'])->group(function () {
     })->name('dashboard');
 
     Route::get('pacientes', function () {
-        return Inertia::render('pacientes');
+        return Inertia::render('patients/index');
     })->name('pacientes');
 
     Route::get('historial', function () {
-        return Inertia::render('historial');
+        return Inertia::render('history/historial');
     })->name('historial');
 
     Route::get('evaluacion', function () {
-        return Inertia::render('evaluacion');
+        return Inertia::render('evaluation/evaluacion');
     })->name('evaluacion');
+
+    Route::get('evaluacion/{id}', function ($id) {
+        return Inertia::render('evaluation/detalle', ['evaluacionId' => $id]);
+    })->name('evaluacion.detalle');
 });
 
 require __DIR__.'/settings.php';
