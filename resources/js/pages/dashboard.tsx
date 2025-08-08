@@ -46,7 +46,7 @@ export default function Dashboard() {
                     <div className='flex flex-row items-center justify-between mt-6'>
                         <h2 className="text-lg font-semibold">Evaluaciones recientes</h2>
                         <Button asChild variant="ghost">
-                            <Link href="/evaluaciones">Ver todas</Link>
+                            <Link href="/historial">Ver todas</Link>
                         </Button>
                     </div>
                     
@@ -58,6 +58,7 @@ export default function Dashboard() {
                         severidad="Moderado"
                         imagen='https://dermacareclinica.com/wp-content/uploads/2021/10/Cicatrices-de-acne%CC%81-la-huella-de-la-adolsecencia-1-960x720.jpg'
                         descripcion="Inflamación severa"
+                        showPdfButton={false}
                     />
                 </div>
             </div>
