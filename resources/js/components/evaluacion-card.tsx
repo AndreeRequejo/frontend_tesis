@@ -1,4 +1,6 @@
+import { Button } from '@/components/ui/button';
 import { Link } from '@inertiajs/react';
+import { FileText } from 'lucide-react';
 
 interface EvaluacionCardProps {
     id: number;
@@ -8,6 +10,8 @@ interface EvaluacionCardProps {
     severidad: 'Leve' | 'Moderado' | 'Severo';
     descripcion: string;
     imagen?: string;
+    showPdfButton?: boolean;
+    onGeneratePdf?: () => void;
 }
 
 const getSeveridadColor = (severidad: string) => {
@@ -36,42 +40,80 @@ const formatImageSrc = (imagen: string) => {
     return `data:image/jpeg;base64,${imagen}`;
 };
 
-export function EvaluacionCard({ 
-    id, 
-    pacienteNombre, 
-    fecha, 
-    hora, 
-    severidad, 
-    descripcion, 
-    imagen 
+export function EvaluacionCard({
+    id,
+    pacienteNombre,
+    fecha,
+    hora,
+    severidad,
+    descripcion,
+    imagen,
+    showPdfButton = false,
+    onGeneratePdf,
 }: EvaluacionCardProps) {
-    return (
-        <Link 
-            href={`/evaluacion/${id}`} 
-            className='block rounded-lg border p-4 shadow hover:shadow-md cursor-pointer transition-shadow bg-white'
-        >
-            <div className='flex items-start justify-between mb-2'>
-                <div className='flex-1'>
-                    <h3 className='text-lg font-semibold text-gray-900'>{pacienteNombre}</h3>
-                    <p className='text-sm text-gray-500'>{fecha} {hora}</p>
+    if (showPdfButton) {
+        return (
+            <Link href={`/evaluacion/${id}`} className="rounded-lg border bg-white p-4 shadow transition-shadow hover:shadow-md">
+                <div className="mb-2 flex items-start justify-between">
+                    <div className="flex-1">
+                        <h3 className="text-lg font-semibold text-gray-900">{pacienteNombre}</h3>
+                        <p className="text-sm text-gray-500">
+                            {fecha} {hora}
+                        </p>
+                    </div>
+                    <div className="ml-4 flex flex-col gap-2">
+                        <span className={`rounded-full px-2 py-1 text-xs font-medium ${getSeveridadColor(severidad)}`}>{severidad}</span>
+                    </div>
                 </div>
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getSeveridadColor(severidad)}`}>
-                    {severidad}
-                </span>
+
+                <div className='flex flex-row justify-between items-center'>
+                    <div className="flex items-center gap-3">
+                        {imagen && (
+                            <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-gray-100">
+                                <img src={formatImageSrc(imagen)} alt={`Evaluación de ${pacienteNombre}`} className="h-full w-full object-cover" />
+                            </div>
+                        )}
+                        <div className="flex-1">
+                            <p className="line-clamp-2 text-sm text-gray-600">{descripcion}</p>
+                        </div>
+                    </div>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            onGeneratePdf?.();
+                        }}
+                        className="flex items-center gap-1 text-primary hover:text-blue-600"
+                    >
+                        <FileText className="h-4 w-4" />
+                        PDF
+                    </Button>
+                </div>
+            </Link>
+        );
+    }
+
+    return (
+        <Link href={`/evaluacion/${id}`} className="block cursor-pointer rounded-lg border bg-white p-4 shadow transition-shadow hover:shadow-md">
+            <div className="mb-2 flex items-start justify-between">
+                <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-gray-900">{pacienteNombre}</h3>
+                    <p className="text-sm text-gray-500">
+                        {fecha} {hora}
+                    </p>
+                </div>
+                <span className={`rounded-full px-2 py-1 text-xs font-medium ${getSeveridadColor(severidad)}`}>{severidad}</span>
             </div>
-            
-            <div className='flex gap-3 items-center'>
+
+            <div className="flex items-center gap-3">
                 {imagen && (
-                    <div className='w-16 h-16 rounded-lg bg-gray-100 flex-shrink-0 overflow-hidden'>
-                        <img 
-                            src={formatImageSrc(imagen)} 
-                            alt={`Evaluación de ${pacienteNombre}`}
-                            className='w-full h-full object-cover'
-                        />
+                    <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-gray-100">
+                        <img src={formatImageSrc(imagen)} alt={`Evaluación de ${pacienteNombre}`} className="h-full w-full object-cover" />
                     </div>
                 )}
-                <div className='flex-1'>
-                    <p className='text-sm text-gray-600 line-clamp-2'>{descripcion}</p>
+                <div className="flex-1">
+                    <p className="line-clamp-2 text-sm text-gray-600">{descripcion}</p>
                 </div>
             </div>
         </Link>
