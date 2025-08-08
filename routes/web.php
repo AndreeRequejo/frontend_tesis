@@ -16,6 +16,10 @@ Route::middleware(['auth'])->group(function () {
         return Inertia::render('patients/index');
     })->name('pacientes');
 
+    Route::get('pacientes/{id}', function ($id) {
+        return Inertia::render('patients/detalle', ['pacienteId' => $id]);
+    })->name('pacientes.detalle');
+
     Route::get('historial', function () {
         return Inertia::render('history/index');
     })->name('historial');
