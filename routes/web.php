@@ -17,15 +17,15 @@ Route::middleware(['auth'])->group(function () {
     })->name('pacientes');
 
     Route::get('historial', function () {
-        return Inertia::render('history/historial');
+        return Inertia::render('history/index');
     })->name('historial');
 
     Route::get('evaluacion', function () {
-        return Inertia::render('evaluation/evaluacion');
+        return Inertia::render('evaluation/index');
     })->name('evaluacion');
 
     Route::get('evaluacion/{id}', function ($id) {
-        return Inertia::render('evaluation/detalle', ['evaluacionId' => $id]);
+        return Inertia::render('history/detalle', ['evaluacionId' => $id]);
     })->name('evaluacion.detalle');
 });
 
