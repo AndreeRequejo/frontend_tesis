@@ -22,20 +22,24 @@ interface EditPatientModalProps {
 
 export function EditPatientModal({ isOpen, onClose, onSubmit, patient }: EditPatientModalProps) {
     const [formData, setFormData] = useState({
-        nombre: '',
+        dni: '',
+        nombres: '',
+        apellidos: '',
         edad: '',
-        genero: '',
-        ultimaEvaluacion: ''
+        genero: '' as 'Masculino' | 'Femenino' | '',
+        telefono: ''
     });
 
     // Cargar datos del paciente cuando se abre el modal
     useEffect(() => {
         if (patient) {
             setFormData({
-                nombre: patient.nombre,
+                dni: patient.dni,
+                nombres: patient.nombres,
+                apellidos: patient.apellidos,
                 edad: patient.edad.toString(),
                 genero: patient.genero,
-                ultimaEvaluacion: patient.ultimaEvaluacion
+                telefono: patient.telefono || ''
             });
         }
     }, [patient]);
@@ -43,22 +47,38 @@ export function EditPatientModal({ isOpen, onClose, onSubmit, patient }: EditPat
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         onSubmit({
-            nombre: formData.nombre,
+            dni: formData.dni,
+            nombres: formData.nombres,
+            apellidos: formData.apellidos,
             edad: parseInt(formData.edad),
-            genero: formData.genero,
-            ultimaEvaluacion: formData.ultimaEvaluacion
+            genero: formData.genero as 'Masculino' | 'Femenino',
+            telefono: formData.telefono || undefined
         });
-        setFormData({ nombre: '', edad: '', genero: '', ultimaEvaluacion: '' });
+        setFormData({ 
+            dni: '', 
+            nombres: '', 
+            apellidos: '', 
+            edad: '', 
+            genero: '', 
+            telefono: '' 
+        });
     };
 
     const handleClose = () => {
-        setFormData({ nombre: '', edad: '', genero: '', ultimaEvaluacion: '' });
+        setFormData({ 
+            dni: '', 
+            nombres: '', 
+            apellidos: '', 
+            edad: '', 
+            genero: '', 
+            telefono: '' 
+        });
         onClose();
     };
 
     return (
         <Dialog open={isOpen} onOpenChange={handleClose}>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-[600px]">
                 <DialogHeader>
                     <DialogTitle>Editar Paciente</DialogTitle>
                     <DialogDescription>
@@ -67,59 +87,84 @@ export function EditPatientModal({ isOpen, onClose, onSubmit, patient }: EditPat
                 </DialogHeader>
                 <form onSubmit={handleSubmit}>
                     <div className="grid gap-4 py-4">
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="edit-nombre" className="text-right">
-                                Nombre
-                            </Label>
+                        {/* Primera fila - DNI y Nombres */}
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="edit-dni">DNI</Label>
+                                <Input
+                                    id="edit-dni"
+                                    value={formData.dni}
+                                    onChange={(e) => setFormData({...formData, dni: e.target.value})}
+                                    placeholder="12345678"
+                                    maxLength={8}
+                                    required
+                                />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="edit-nombres">Nombres</Label>
+                                <Input
+                                    id="edit-nombres"
+                                    value={formData.nombres}
+                                    onChange={(e) => setFormData({...formData, nombres: e.target.value})}
+                                    placeholder="Juan Carlos"
+                                    required
+                                />
+                            </div>
+                        </div>
+
+                        {/* Segunda fila - Apellidos */}
+                        <div className="grid gap-2">
+                            <Label htmlFor="edit-apellidos">Apellidos</Label>
                             <Input
-                                id="edit-nombre"
-                                value={formData.nombre}
-                                onChange={(e) => setFormData({...formData, nombre: e.target.value})}
-                                className="col-span-3"
+                                id="edit-apellidos"
+                                value={formData.apellidos}
+                                onChange={(e) => setFormData({...formData, apellidos: e.target.value})}
+                                placeholder="Pérez García"
                                 required
                             />
                         </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="edit-edad" className="text-right">
-                                Edad
-                            </Label>
-                            <Input
-                                id="edit-edad"
-                                type="number"
-                                value={formData.edad}
-                                onChange={(e) => setFormData({...formData, edad: e.target.value})}
-                                className="col-span-3"
-                                required
-                            />
+
+                        {/* Tercera fila - Edad y Género */}
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="edit-edad">Edad</Label>
+                                <Input
+                                    id="edit-edad"
+                                    type="number"
+                                    value={formData.edad}
+                                    onChange={(e) => setFormData({...formData, edad: e.target.value})}
+                                    placeholder="25"
+                                    min="0"
+                                    max="150"
+                                    required
+                                />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="edit-genero">Género</Label>
+                                <Select 
+                                    value={formData.genero} 
+                                    onValueChange={(value: 'Masculino' | 'Femenino') => setFormData({...formData, genero: value})}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Selecciona el género" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="Masculino">Masculino</SelectItem>
+                                        <SelectItem value="Femenino">Femenino</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="edit-genero" className="text-right">
-                                Género
-                            </Label>
-                            <Select 
-                                value={formData.genero} 
-                                onValueChange={(value) => setFormData({...formData, genero: value})}
-                            >
-                                <SelectTrigger className="col-span-3">
-                                    <SelectValue placeholder="Selecciona el género" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="Masculino">Masculino</SelectItem>
-                                    <SelectItem value="Femenino">Femenino</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="edit-ultimaEvaluacion" className="text-right">
-                                Última Evaluación
-                            </Label>
+
+                        {/* Cuarta fila - Teléfono */}
+                        <div className="grid gap-2">
+                            <Label htmlFor="edit-telefono">Teléfono (Opcional)</Label>
                             <Input
-                                id="edit-ultimaEvaluacion"
-                                type="date"
-                                value={formData.ultimaEvaluacion}
-                                onChange={(e) => setFormData({...formData, ultimaEvaluacion: e.target.value})}
-                                className="col-span-3"
-                                required
+                                id="edit-telefono"
+                                value={formData.telefono}
+                                onChange={(e) => setFormData({...formData, telefono: e.target.value})}
+                                placeholder="987654321"
+                                maxLength={15}
                             />
                         </div>
                     </div>
