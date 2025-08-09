@@ -30,7 +30,7 @@ export function PatientCard({
     if (showActions) {
         return (
             <div className='rounded-lg border p-4 shadow hover:shadow-md transition-shadow bg-white'>
-                <div className='flex justify-between items-start'>
+                <div className='flex justify-between items-center'>
                     <Link 
                         href={`/pacientes/${id}`} 
                         className='flex-1 cursor-pointer'
@@ -63,7 +63,7 @@ export function PatientCard({
                                 e.preventDefault();
                                 onEdit?.();
                             }}
-                            className="h-8 w-8 hover:bg-blue-50 hover:border-blue-200"
+                            className="h-8 w-8 hover:text-blue-500 hover:bg-blue-50 hover:border-blue-200"
                             title="Editar paciente"
                         >
                             <Edit className="h-4 w-4" />
