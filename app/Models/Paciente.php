@@ -17,8 +17,20 @@ class Paciente extends Model
         'telefono',
     ];
 
+    protected $casts = [
+        'edad' => 'integer',
+    ];
+
     public function evaluaciones()
     {
         return $this->hasMany(Evaluacion::class);
+    }
+
+    /**
+     * Obtener el nombre completo del paciente
+     */
+    public function getNombreCompletoAttribute()
+    {
+        return "{$this->nombres} {$this->apellidos}";
     }
 }
