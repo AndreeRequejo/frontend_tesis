@@ -2,19 +2,21 @@
 
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Http\Controllers\PacienteController;
 
 Route::middleware(['auth'])->group(function () {
     Route::get('dashboard', function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
 
-    Route::get('pacientes', function () {
-        return Inertia::render('patients/index');
-    })->name('pacientes');
-
-    Route::get('pacientes/{id}', function ($id) {
-        return Inertia::render('patients/detalle', ['pacienteId' => $id]);
-    })->name('pacientes.detalle');
+    // Rutas de pacientes
+    Route::resource('pacientes', PacienteController::class)->names([
+        'index' => 'pacientes.index',
+        'store' => 'pacientes.store',
+        'show' => 'pacientes.show',
+        'update' => 'pacientes.update',
+        'destroy' => 'pacientes.destroy',
+    ])->except(['create', 'edit']);
 
     Route::get('historial', function () {
         return Inertia::render('history/index');
