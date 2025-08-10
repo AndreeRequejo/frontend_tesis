@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EvaluacionCard } from '@/components/evaluacion-card';
 import { EditPatientModal } from './edit-patient-modal';
-import { ArrowLeft, Plus, Edit3, FileText } from 'lucide-react';
+import { ArrowLeft, Plus, Edit3, FileText, Download } from 'lucide-react';
 import { Paciente, PacienteFormData } from './types';
 import { useState } from 'react';
 
@@ -18,7 +18,7 @@ interface Evaluacion {
     hora: string;
     imagen_principal?: {
         id: number;
-        imagen_base64: string;
+        contenido_base64: string;
     };
 }
 
@@ -68,6 +68,11 @@ export default function DetallePaciente({ paciente }: DetalleProps) {
     const handleGeneratePdf = (evaluacionId: number) => {
         console.log('Generar PDF para evaluación:', evaluacionId);
         // Aquí implementarías la lógica para generar el PDF
+    };
+
+    const handleGenerateReport = () => {
+        console.log('Generar reporte completo para paciente:', paciente.id);
+        // Aquí implementarías la lógica para generar el reporte completo del paciente
     };
 
     const formatDate = (dateString: string) => {
@@ -156,13 +161,23 @@ export default function DetallePaciente({ paciente }: DetalleProps) {
                                     Historial de evaluaciones realizadas
                                 </p>
                             </div>
-                            <Button 
-                                onClick={handleNewEvaluation}
-                                className="flex items-center gap-2"
-                            >
-                                <Plus className="h-4 w-4" />
-                                Nueva
-                            </Button>
+                            <div className="flex items-center gap-2">
+                                <Button 
+                                    variant="outline"
+                                    onClick={handleGenerateReport}
+                                    className="flex items-center gap-2"
+                                >
+                                    <Download className="h-4 w-4" />
+                                    Reporte
+                                </Button>
+                                <Button 
+                                    onClick={handleNewEvaluation}
+                                    className="flex items-center gap-2"
+                                >
+                                    <Plus className="h-4 w-4" />
+                                    Nueva
+                                </Button>
+                            </div>
                         </CardHeader>
                         <CardContent>
                             {paciente.evaluaciones && paciente.evaluaciones.length > 0 ? (
@@ -176,7 +191,7 @@ export default function DetallePaciente({ paciente }: DetalleProps) {
                                             hora={evaluacion.hora}
                                             severidad={evaluacion.clasificacion}
                                             descripcion={evaluacion.comentario || 'Sin comentarios'}
-                                            imagen={evaluacion.imagen_principal?.imagen_base64}
+                                            imagen={evaluacion.imagen_principal?.contenido_base64}
                                             showPdfButton={true}
                                             onGeneratePdf={() => handleGeneratePdf(evaluacion.id)}
                                         />
@@ -193,13 +208,6 @@ export default function DetallePaciente({ paciente }: DetalleProps) {
                                     <p className="text-gray-500 mb-6 max-w-sm mx-auto">
                                         Este paciente aún no tiene evaluaciones. Crea la primera evaluación para comenzar el seguimiento.
                                     </p>
-                                    <Button 
-                                        onClick={handleNewEvaluation}
-                                        className="flex items-center gap-2"
-                                    >
-                                        <Plus className="h-4 w-4" />
-                                        Crear primera evaluación
-                                    </Button>
                                 </div>
                             )}
                         </CardContent>

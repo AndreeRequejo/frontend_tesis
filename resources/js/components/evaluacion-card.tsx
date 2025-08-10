@@ -30,6 +30,11 @@ const getSeveridadColor = (severidad: string) => {
 };
 
 const formatImageSrc = (imagen: string) => {
+    // Si la imagen está vacía o es null/undefined, retornar null
+    if (!imagen || imagen.trim() === '') {
+        return null;
+    }
+    
     // Si ya tiene el prefijo data:, lo devuelve tal como está
     if (imagen.startsWith('data:')) {
         return imagen;
@@ -55,13 +60,15 @@ export function EvaluacionCard({
 }: EvaluacionCardProps) {
     if (showPdfButton) {
         return (
-            <Link href={`/evaluacion/${id}`} className="rounded-lg border bg-white p-4 shadow transition-shadow hover:shadow-md">
+            <div className="rounded-lg border bg-white p-4 shadow transition-shadow hover:shadow-md">
                 <div className="mb-2 flex items-start justify-between">
                     <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-gray-900">{pacienteNombre}</h3>
-                        <p className="text-sm text-gray-500">
-                            {fecha} {hora}
-                        </p>
+                        <Link href={`/evaluacion/${id}`} className="cursor-pointer">
+                            <h3 className="text-lg font-semibold text-gray-900 hover:text-blue-600 transition-colors">{pacienteNombre}</h3>
+                            <p className="text-sm text-gray-500">
+                                {fecha} {hora}
+                            </p>
+                        </Link>
                     </div>
                     <div className="ml-4 flex flex-col gap-2">
                         <span className={`rounded-full px-2 py-1 text-xs font-medium ${getSeveridadColor(severidad)}`}>{severidad}</span>
@@ -69,30 +76,35 @@ export function EvaluacionCard({
                 </div>
 
                 <div className='flex flex-row justify-between items-center'>
-                    <div className="flex items-center gap-3">
-                        {imagen && (
+                    <Link href={`/evaluacion/${id}`} className="flex items-center gap-3 flex-1 cursor-pointer">
+                        {imagen ? (
                             <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-gray-100">
-                                <img src={formatImageSrc(imagen)} alt={`Evaluación de ${pacienteNombre}`} className="h-full w-full object-cover" />
+                                <img src={formatImageSrc(imagen)!} alt={`Evaluación de ${pacienteNombre}`} className="h-full w-full object-cover" />
+                            </div>
+                        ) : (
+                            <div className="h-16 w-16 flex-shrink-0 rounded-lg bg-gray-100 flex items-center justify-center">
+                                <FileText className="h-6 w-6 text-gray-400" />
                             </div>
                         )}
                         <div className="flex-1">
                             <p className="line-clamp-2 text-sm text-gray-600">{descripcion}</p>
                         </div>
-                    </div>
+                    </Link>
                     <Button
                         variant="outline"
                         size="sm"
                         onClick={(e) => {
                             e.preventDefault();
+                            e.stopPropagation();
                             onGeneratePdf?.();
                         }}
-                        className="flex items-center gap-1 text-primary hover:text-blue-600"
+                        className="flex items-center gap-1 text-primary hover:text-blue-600 ml-2"
                     >
                         <FileText className="h-4 w-4" />
                         PDF
                     </Button>
                 </div>
-            </Link>
+            </div>
         );
     }
 
@@ -109,9 +121,13 @@ export function EvaluacionCard({
             </div>
 
             <div className="flex items-center gap-3">
-                {imagen && (
+                {imagen ? (
                     <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-gray-100">
-                        <img src={formatImageSrc(imagen)} alt={`Evaluación de ${pacienteNombre}`} className="h-full w-full object-cover" />
+                        <img src={formatImageSrc(imagen)!} alt={`Evaluación de ${pacienteNombre}`} className="h-full w-full object-cover" />
+                    </div>
+                ) : (
+                    <div className="h-16 w-16 flex-shrink-0 rounded-lg bg-gray-100 flex items-center justify-center">
+                        <FileText className="h-6 w-6 text-gray-400" />
                     </div>
                 )}
                 <div className="flex-1">
