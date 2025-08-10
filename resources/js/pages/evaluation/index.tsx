@@ -133,7 +133,7 @@ export default function Evaluacion() {
                     <>
                         {/* Información del paciente seleccionado */}
                         <Card>
-                            <CardContent className="pt-6">
+                            <CardContent>
                                 <div className="flex justify-between items-center">
                                     <div>
                                         <h3 className="text-lg font-semibold">{getPatientFullName(selectedPatient)}</h3>

@@ -16,9 +16,11 @@ class EvaluacionController extends Controller
      */
     public function index(Request $request)
     {
-        // Obtener todos los pacientes para la selección
-        $pacientes = Paciente::orderBy('nombres')->get();
-        
+        // Obtener solo los 5 últimos pacientes registrados
+        $pacientes = Paciente::orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+
         // Si se pasa un paciente_id, buscarlo para preseleccionarlo
         $pacienteSeleccionado = null;
         if ($request->has('paciente_id')) {
@@ -60,7 +62,7 @@ class EvaluacionController extends Controller
             foreach ($request->imagenes as $imagenBase64) {
                 // Remover el prefijo data:image si existe
                 $imagenBase64 = preg_replace('/^data:image\/[^;]+;base64,/', '', $imagenBase64);
-                
+
                 Imagen::create([
                     'evaluacion_id' => $evaluacion->id,
                     'contenido_base64' => $imagenBase64
@@ -73,10 +75,9 @@ class EvaluacionController extends Controller
                 'message' => 'Evaluación creada exitosamente',
                 'evaluacion' => $evaluacion->load(['paciente', 'imagenes'])
             ], 201);
-
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             return response()->json([
                 'message' => 'Error al crear la evaluación',
                 'error' => $e->getMessage()
@@ -143,7 +144,7 @@ class EvaluacionController extends Controller
     public function destroy($id)
     {
         $evaluacion = Evaluacion::findOrFail($id);
-        
+
         // Las imágenes se eliminarán automáticamente por la cascade
         $evaluacion->delete();
 
@@ -156,7 +157,7 @@ class EvaluacionController extends Controller
     public function estadisticas()
     {
         $totalEvaluaciones = Evaluacion::count();
-        
+
         $estadisticasPorSeveridad = Evaluacion::select('clasificacion', DB::raw('count(*) as total'))
             ->groupBy('clasificacion')
             ->get()
