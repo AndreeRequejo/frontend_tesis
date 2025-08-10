@@ -18,7 +18,7 @@ export const mainNavItems: NavItem[] = [
     icon: UsersRound,
   },
   {
-    title: 'Historial clínico',
+    title: 'Historial',
     href: '/historial',
     icon: FileUser,
   },

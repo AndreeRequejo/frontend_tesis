@@ -24,7 +24,7 @@ const mainNavItems: NavItem[] = [
         icon: UsersRound,
     },
     {
-        title: 'Historial clínico',
+        title: 'Historial evaluaciones',
         href: '/historial',
         icon: FileUser,
     },
