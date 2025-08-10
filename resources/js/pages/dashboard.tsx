@@ -14,7 +14,30 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Dashboard() {
+interface PacienteReciente {
+    id: number;
+    nombre: string;
+    edad: number;
+    ultimaEvaluacion: string | null;
+}
+
+interface EvaluacionReciente {
+    id: number;
+    pacienteNombre: string;
+    fecha: string;
+    hora: string;
+    severidad: 'Ausente' | 'Leve' | 'Moderado' | 'Severo';
+    imagen: string | null;
+    descripcion: string;
+}
+
+interface DashboardProps {
+    pacientesRecientes: PacienteReciente[];
+    evaluacionesRecientes: EvaluacionReciente[];
+    limit: number;
+}
+
+export default function Dashboard({ pacientesRecientes, evaluacionesRecientes }: DashboardProps) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
@@ -36,15 +59,30 @@ export default function Dashboard() {
                             <Link href="/pacientes">Ver todos</Link>
                         </Button>
                     </div>
-                    { /* Contenido de pacientes recientes */ }
-                    <PatientCard 
-                        id={1}
-                        nombre="Juan Perez"
-                        edad={25}
-                        ultimaEvaluacion="2023-10-01"
-                    />
+                    
+                    {/* Contenido de pacientes recientes */}
+                    {pacientesRecientes.length > 0 ? (
+                        <div className="grid gap-4">
+                            {pacientesRecientes.map((paciente) => (
+                                <PatientCard 
+                                    key={paciente.id}
+                                    id={paciente.id}
+                                    nombre={paciente.nombre}
+                                    edad={paciente.edad}
+                                    ultimaEvaluacion={paciente.ultimaEvaluacion || undefined}
+                                />
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center py-8 text-gray-500">
+                            <p>No hay pacientes registrados aún.</p>
+                            <Button asChild variant="outline" className="mt-2">
+                                <Link href="/pacientes">Registrar primer paciente</Link>
+                            </Button>
+                        </div>
+                    )}
 
-                    { /* Contenido de evaluaciones recientes */ }
+                    {/* Contenido de evaluaciones recientes */}
                     <div className='flex flex-row items-center justify-between mt-6'>
                         <h2 className="text-lg font-semibold">Evaluaciones recientes</h2>
                         <Button asChild variant="ghost">
@@ -52,16 +90,30 @@ export default function Dashboard() {
                         </Button>
                     </div>
                     
-                    <EvaluacionCard 
-                        id={1}
-                        pacienteNombre="Juan Pérez"
-                        fecha="08/08/2025"
-                        hora="15:33"
-                        severidad="Moderado"
-                        imagen='https://dermacareclinica.com/wp-content/uploads/2021/10/Cicatrices-de-acne%CC%81-la-huella-de-la-adolsecencia-1-960x720.jpg'
-                        descripcion="Inflamación severa"
-                        showPdfButton={false}
-                    />
+                    {evaluacionesRecientes.length > 0 ? (
+                        <div className="grid gap-4">
+                            {evaluacionesRecientes.map((evaluacion) => (
+                                <EvaluacionCard 
+                                    key={evaluacion.id}
+                                    id={evaluacion.id}
+                                    pacienteNombre={evaluacion.pacienteNombre}
+                                    fecha={evaluacion.fecha}
+                                    hora={evaluacion.hora}
+                                    severidad={evaluacion.severidad}
+                                    imagen={evaluacion.imagen || undefined}
+                                    descripcion={evaluacion.descripcion}
+                                    showPdfButton={false}
+                                />
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center py-8 text-gray-500">
+                            <p>No hay evaluaciones registradas aún.</p>
+                            <Button asChild variant="outline" className="mt-2">
+                                <Link href="/evaluacion">Realizar primera evaluación</Link>
+                            </Button>
+                        </div>
+                    )}
                 </div>
             </div>
         </AppLayout>

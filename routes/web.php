@@ -2,14 +2,13 @@
 
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PacienteController;
 use App\Http\Controllers\HistorialController;
 use App\Http\Controllers\EvaluacionController;
 
 Route::middleware(['auth'])->group(function () {
-    Route::get('dashboard', function () {
-        return Inertia::render('dashboard');
-    })->name('dashboard');
+    Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Rutas de pacientes
     Route::resource('pacientes', PacienteController::class)->names([
