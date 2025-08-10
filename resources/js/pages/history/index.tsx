@@ -1,87 +1,94 @@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import { EvaluacionCard } from '@/components/evaluacion-card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Filter } from 'lucide-react';
+import { Search, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Historial clínico',
+        title: 'Historial de evaluaciones',
         href: '/historial',
     },
 ];
 
-// Datos de ejemplo - estos vendrían de tu backend
-const evaluacionesData = [
-    {
-        id: 1,
-        pacienteNombre: "Juan Pérez",
-        fecha: "08/08/2025",
-        hora: "15:33",
-        severidad: "Moderado" as const,
-        descripcion: "Inflamación visible en la zona T",
-        imagen: 'https://dermacareclinica.com/wp-content/uploads/2021/10/Cicatrices-de-acne%CC%81-la-huella-de-la-adolsecencia-1-960x720.jpg'
-    },
-    {
-        id: 2,
-        pacienteNombre: "Juan Pérez",
-        fecha: "01/08/2025",
-        hora: "15:33",
-        severidad: "Severo" as const,
-        descripcion: "Acné quístico en la zona del mentón",
-        imagen: 'https://dermacareclinica.com/wp-content/uploads/2021/10/Cicatrices-de-acne%CC%81-la-huella-de-la-adolsecencia-1-960x720.jpg'
-    },
-    {
-        id: 3,
-        pacienteNombre: "María González",
-        fecha: "28/07/2025",
-        hora: "14:20",
-        severidad: "Leve" as const,
-        descripcion: "Comedones abiertos en zona frontal",
-        imagen: 'https://dermacareclinica.com/wp-content/uploads/2021/10/Cicatrices-de-acne%CC%81-la-huella-de-la-adolsecencia-1-960x720.jpg'
-    },
-    {
-        id: 4,
-        pacienteNombre: "Carlos Rodríguez",
-        fecha: "25/07/2025",
-        hora: "10:15",
-        severidad: "Moderado" as const,
-        descripcion: "Pápulas inflamatorias en mejillas",
-        imagen: 'https://dermacareclinica.com/wp-content/uploads/2021/10/Cicatrices-de-acne%CC%81-la-huella-de-la-adolsecencia-1-960x720.jpg'
-    },
-    {
-        id: 5,
-        pacienteNombre: "Ana Torres",
-        fecha: "22/07/2025",
-        hora: "16:45",
-        severidad: "Leve" as const,
-        descripcion: "Comedones cerrados dispersos",
-        imagen: 'https://dermacareclinica.com/wp-content/uploads/2021/10/Cicatrices-de-acne%CC%81-la-huella-de-la-adolsecencia-1-960x720.jpg'
-    }
-];
+interface Evaluacion {
+    id: number;
+    pacienteNombre: string;
+    fecha: string;
+    hora: string;
+    severidad: 'Ausente' | 'Leve' | 'Moderado' | 'Severo';
+    descripcion: string;
+    imagen: string;
+}
 
-export default function Historial() {
+interface PaginatedData {
+    data: Evaluacion[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    from: number;
+    to: number;
+    prev_page_url: string | null;
+    next_page_url: string | null;
+    links: Array<{
+        url: string | null;
+        label: string;
+        active: boolean;
+    }>;
+}
+
+interface Props {
+    evaluaciones: PaginatedData;
+    filters: {
+        search?: string;
+        severidad?: string;
+    };
+}
+
+export default function Historial({ evaluaciones, filters }: Props) {
+    const [searchTerm, setSearchTerm] = useState(filters.search || '');
+    const [selectedSeveridad, setSelectedSeveridad] = useState(filters.severidad || 'all');
+
     const handleGeneratePdf = (evaluacionId: number) => {
-        console.log('Generar PDF para evaluación:', evaluacionId);
-        // Aquí implementarías la lógica para generar el PDF
+        router.post(`/historial/${evaluacionId}/pdf`);
     };
 
-    const handleSearch = (searchTerm: string) => {
-        console.log('Buscar:', searchTerm);
-        // Aquí implementarías la lógica de búsqueda
+    const handleSearch = (value: string) => {
+        setSearchTerm(value);
+        router.get('/historial', { 
+            search: value,
+            severidad: selectedSeveridad === 'all' ? undefined : selectedSeveridad 
+        }, { 
+            preserveState: true,
+            preserveScroll: true 
+        });
     };
 
-    const handleFilterBySeverity = (severidad: string) => {
-        console.log('Filtrar por severidad:', severidad);
-        // Aquí implementarías la lógica de filtrado
+    const handleFilterBySeverity = (value: string) => {
+        setSelectedSeveridad(value);
+        router.get('/historial', { 
+            search: searchTerm,
+            severidad: value === 'all' ? undefined : value 
+        }, { 
+            preserveState: true,
+            preserveScroll: true 
+        });
+    };
+
+    const handlePageChange = (url: string) => {
+        if (url) {
+            router.get(url, {}, { preserveState: true });
+        }
     };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Historial clínico" />
+            <Head title="Historial" />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -96,6 +103,7 @@ export default function Historial() {
                         <Input
                             placeholder="Buscar por paciente..."
                             className="pl-10"
+                            value={searchTerm}
                             onChange={(e) => handleSearch(e.target.value)}
                         />
                     </div>
@@ -103,12 +111,13 @@ export default function Historial() {
                     {/* Filtro por severidad */}
                     <div className="flex items-center gap-2">
                         <Filter className="h-4 w-4 text-gray-500" />
-                        <Select onValueChange={handleFilterBySeverity}>
+                        <Select value={selectedSeveridad} onValueChange={handleFilterBySeverity}>
                             <SelectTrigger className="w-48">
                                 <SelectValue placeholder="Filtrar por severidad" />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="all">Todas las severidades</SelectItem>
+                                <SelectItem value="Ausente">Ausente</SelectItem>
                                 <SelectItem value="Leve">Leve</SelectItem>
                                 <SelectItem value="Moderado">Moderado</SelectItem>
                                 <SelectItem value="Severo">Severo</SelectItem>
@@ -119,7 +128,7 @@ export default function Historial() {
 
                 {/* Lista de evaluaciones */}
                 <div className="grid gap-4">
-                    {evaluacionesData.map((evaluacion) => (
+                    {evaluaciones.data.map((evaluacion) => (
                         <EvaluacionCard
                             key={evaluacion.id}
                             id={evaluacion.id}
@@ -135,26 +144,56 @@ export default function Historial() {
                     ))}
                 </div>
 
-                {/* Paginación */}
-                <div className="flex justify-center mt-6">
-                    <div className="flex gap-2">
-                        <Button variant="outline" size="sm" disabled>
-                            Anterior
-                        </Button>
-                        <Button variant="outline" size="sm" className="bg-primary text-primary-foreground">
-                            1
-                        </Button>
-                        <Button variant="outline" size="sm">
-                            2
-                        </Button>
-                        <Button variant="outline" size="sm">
-                            3
-                        </Button>
-                        <Button variant="outline" size="sm">
-                            Siguiente
-                        </Button>
+                {/* Mostrar mensaje si no hay evaluaciones */}
+                {evaluaciones.data.length === 0 && (
+                    <div className="text-center py-8">
+                        <p className="text-gray-500">No se encontraron evaluaciones.</p>
                     </div>
-                </div>
+                )}
+
+                {/* Paginación */}
+                {evaluaciones.last_page > 1 && (
+                    <div className="flex items-center justify-between mt-6">
+                        <div className="text-sm text-gray-600">
+                            Mostrando {evaluaciones.from} a {evaluaciones.to} de {evaluaciones.total} resultados
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => evaluaciones.prev_page_url && handlePageChange(evaluaciones.prev_page_url)}
+                                disabled={!evaluaciones.prev_page_url}
+                            >
+                                <ChevronLeft className="h-4 w-4" />
+                                Anterior
+                            </Button>
+                            
+                            <div className="flex items-center gap-1">
+                                {evaluaciones.links.slice(1, -1).map((link, index) => (
+                                    <Button
+                                        key={index}
+                                        variant={link.active ? "default" : "outline"}
+                                        size="sm"
+                                        onClick={() => link.url && handlePageChange(link.url)}
+                                        disabled={!link.url}
+                                    >
+                                        {link.label}
+                                    </Button>
+                                ))}
+                            </div>
+
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => evaluaciones.next_page_url && handlePageChange(evaluaciones.next_page_url)}
+                                disabled={!evaluaciones.next_page_url}
+                            >
+                                Siguiente
+                                <ChevronRight className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    </div>
+                )}
             </div>
         </AppLayout>
     );

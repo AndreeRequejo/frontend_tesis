@@ -7,7 +7,7 @@ interface EvaluacionCardProps {
     pacienteNombre: string;
     fecha: string;
     hora: string;
-    severidad: 'Leve' | 'Moderado' | 'Severo';
+    severidad: 'Ausente' | 'Leve' | 'Moderado' | 'Severo';
     descripcion: string;
     imagen?: string;
     showPdfButton?: boolean;
@@ -16,6 +16,8 @@ interface EvaluacionCardProps {
 
 const getSeveridadColor = (severidad: string) => {
     switch (severidad) {
+        case 'Ausente':
+            return 'bg-gray-100 text-gray-800';
         case 'Leve':
             return 'bg-green-100 text-green-800';
         case 'Moderado':
