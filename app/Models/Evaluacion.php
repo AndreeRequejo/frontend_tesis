@@ -7,13 +7,19 @@ use Illuminate\Database\Eloquent\Model;
 class Evaluacion extends Model
 {
     protected $table = 'evaluacion';
+    public $timestamps = false;
 
     protected $fillable = [
         'paciente_id',
-        'imagen_id',
-        'resultado',
-        'comentario_medico',
-        'fecha'
+        'clasificacion',
+        'comentario',
+        'fecha',
+        'hora'
+    ];
+
+    protected $casts = [
+        'fecha' => 'date',
+        'hora' => 'datetime:H:i',
     ];
 
     public function paciente()
@@ -21,8 +27,14 @@ class Evaluacion extends Model
         return $this->belongsTo(Paciente::class);
     }
 
-    public function imagen()
+    public function imagenes()
     {
-        return $this->belongsTo(Imagen::class);
+        return $this->hasMany(Imagen::class);
+    }
+
+    // Obtener la primera imagen para mostrar en las cards
+    public function imagenPrincipal()
+    {
+        return $this->hasOne(Imagen::class)->oldest('id');
     }
 }

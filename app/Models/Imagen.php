@@ -7,8 +7,15 @@ use Illuminate\Database\Eloquent\Model;
 class Imagen extends Model
 {
     protected $table = 'imagen';
+    public $timestamps = false;
 
     protected $fillable = [
-        'img_base64',
+        'evaluacion_id',
+        'contenido_base64',
     ];
+
+    public function evaluacion()
+    {
+        return $this->belongsTo(Evaluacion::class);
+    }
 }
