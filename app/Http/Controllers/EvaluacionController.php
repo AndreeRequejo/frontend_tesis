@@ -14,9 +14,21 @@ class EvaluacionController extends Controller
     /**
      * Mostrar la página principal de evaluaciones
      */
-    public function index()
+    public function index(Request $request)
     {
-        return Inertia::render('evaluation/index');
+        // Obtener todos los pacientes para la selección
+        $pacientes = Paciente::orderBy('nombres')->get();
+        
+        // Si se pasa un paciente_id, buscarlo para preseleccionarlo
+        $pacienteSeleccionado = null;
+        if ($request->has('paciente_id')) {
+            $pacienteSeleccionado = Paciente::find($request->paciente_id);
+        }
+
+        return Inertia::render('evaluation/index', [
+            'pacientes' => $pacientes,
+            'pacienteSeleccionado' => $pacienteSeleccionado
+        ]);
     }
 
     /**

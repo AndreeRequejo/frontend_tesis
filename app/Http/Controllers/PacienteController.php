@@ -59,7 +59,7 @@ class PacienteController extends Controller
     public function show(Paciente $paciente)
     {
         return Inertia::render('patients/detalle', [
-            'paciente' => $paciente->load('evaluaciones')
+            'paciente' => $paciente->load(['evaluaciones.imagenPrincipal'])
         ]);
     }
 

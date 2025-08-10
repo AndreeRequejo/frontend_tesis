@@ -1,13 +1,19 @@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Search, Plus, Camera, ImageIcon, ArrowLeft } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { CreatePatientModal } from '@/pages/patients/create-patient-modal';
 import { Paciente, PacienteFormData } from '@/pages/patients/types';
+
+interface EvaluationPageProps {
+    pacientes: Paciente[];
+    pacienteSeleccionado?: Paciente | null;
+    [key: string]: unknown;
+}
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -16,31 +22,26 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-// Datos de ejemplo - estos vendrían de tu backend
-const pacientesData: Paciente[] = [
-    {
-        id: 1,
-        nombre: "Juan Pérez",
-        edad: 25,
-        genero: "Masculino",
-        ultimaEvaluacion: "2023-10-01",
-    },
-    {
-        id: 2,
-        nombre: "María González",
-        edad: 30,
-        genero: "Femenino",
-        ultimaEvaluacion: "2023-09-28",
-    },
-];
-
 export default function Evaluacion() {
-    const [selectedPatient, setSelectedPatient] = useState<Paciente | null>(null);
+    const { pacientes, pacienteSeleccionado } = usePage<EvaluationPageProps>().props;
+    const [selectedPatient, setSelectedPatient] = useState<Paciente | null>(pacienteSeleccionado || null);
     const [searchTerm, setSearchTerm] = useState('');
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-    const filteredPatients = pacientesData.filter(patient =>
-        patient.nombre.toLowerCase().includes(searchTerm.toLowerCase())
+    // Preseleccionar paciente si viene desde el detalle
+    useEffect(() => {
+        if (pacienteSeleccionado) {
+            setSelectedPatient(pacienteSeleccionado);
+        }
+    }, [pacienteSeleccionado]);
+
+    const getPatientFullName = (patient: Paciente) => {
+        return `${patient.nombres} ${patient.apellidos}`;
+    };
+
+    const filteredPatients = pacientes.filter(patient =>
+        getPatientFullName(patient).toLowerCase().includes(searchTerm.toLowerCase()) ||
+        patient.dni.includes(searchTerm)
     );
 
     const handlePatientSelect = (patient: Paciente) => {
@@ -112,14 +113,10 @@ export default function Evaluacion() {
                                             onClick={() => handlePatientSelect(paciente)}
                                             className="cursor-pointer rounded-lg border p-4 shadow hover:shadow-md hover:bg-gray-50 transition-all"
                                         >
-                                            <h3 className="text-lg font-semibold pb-1">{paciente.nombre}</h3>
+                                            <h3 className="text-lg font-semibold pb-1">{getPatientFullName(paciente)}</h3>
                                             <div className="flex flex-col">
                                                 <span className="text-sm text-gray-600">{paciente.edad} años • {paciente.genero}</span>
-                                                {paciente.ultimaEvaluacion && (
-                                                    <span className="text-sm text-gray-600">
-                                                        Última evaluación: {paciente.ultimaEvaluacion}
-                                                    </span>
-                                                )}
+                                                <span className="text-sm text-gray-600">DNI: {paciente.dni}</span>
                                             </div>
                                         </div>
                                     ))
@@ -139,13 +136,13 @@ export default function Evaluacion() {
                             <CardContent className="pt-6">
                                 <div className="flex justify-between items-center">
                                     <div>
-                                        <h3 className="text-lg font-semibold">{selectedPatient.nombre}</h3>
+                                        <h3 className="text-lg font-semibold">{getPatientFullName(selectedPatient)}</h3>
                                         <p className="text-sm text-gray-600">
                                             {selectedPatient.edad} años • {selectedPatient.genero}
                                         </p>
                                     </div>
                                     <div className="text-sm text-gray-500">
-                                        Última evaluación: {selectedPatient.ultimaEvaluacion}
+                                        DNI: {selectedPatient.dni}
                                     </div>
                                 </div>
                             </CardContent>

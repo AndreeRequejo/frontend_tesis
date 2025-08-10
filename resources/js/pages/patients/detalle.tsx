@@ -4,10 +4,28 @@ import { Head, router } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EvaluacionCard } from '@/components/evaluacion-card';
-import { ArrowLeft, Plus, Edit3 } from 'lucide-react';
+import { EditPatientModal } from './edit-patient-modal';
+import { ArrowLeft, Plus, Edit3, FileText } from 'lucide-react';
+import { Paciente, PacienteFormData } from './types';
+import { useState } from 'react';
+
+interface Evaluacion {
+    id: number;
+    paciente_id: number;
+    clasificacion: 'Ausente' | 'Leve' | 'Moderado' | 'Severo';
+    comentario: string | null;
+    fecha: string;
+    hora: string;
+    imagen_principal?: {
+        id: number;
+        imagen_base64: string;
+    };
+}
 
 interface DetalleProps {
-    pacienteId: string;
+    paciente: Paciente & {
+        evaluaciones: Evaluacion[];
+    };
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -21,65 +39,49 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-// Datos de ejemplo - estos vendrían de tu backend
-const pacienteData = {
-    id: 1,
-    nombre: "Juan Pérez",
-    edad: 25,
-    genero: "Masculino",
-    fechaRegistro: "08/08/2025",
-    telefono: "+51 987 654 321",
-    email: "juan.perez@email.com",
-    direccion: "Av. Los Pinos 123, Lima",
-    evaluaciones: [
-        {
-            id: 1,
-            pacienteNombre: "Juan Pérez",
-            fecha: "08/08/2025",
-            hora: "15:33",
-            severidad: "Moderado" as const,
-            descripcion: "Inflamación visible en la zona T",
-            imagen: 'https://dermacareclinica.com/wp-content/uploads/2021/10/Cicatrices-de-acne%CC%81-la-huella-de-la-adolsecencia-1-960x720.jpg'
-        },
-        {
-            id: 2,
-            pacienteNombre: "Juan Pérez",
-            fecha: "01/08/2025",
-            hora: "15:33",
-            severidad: "Severo" as const,
-            descripcion: "Acné quístico en la zona del mentón",
-            imagen: 'https://dermacareclinica.com/wp-content/uploads/2021/10/Cicatrices-de-acne%CC%81-la-huella-de-la-adolsecencia-1-960x720.jpg'
-        },
-        {
-            id: 3,
-            pacienteNombre: "Juan Pérez",
-            fecha: "25/07/2025",
-            hora: "10:15",
-            severidad: "Leve" as const,
-            descripcion: "Mejora notable en la zona frontal",
-            imagen: 'https://dermacareclinica.com/wp-content/uploads/2021/10/Cicatrices-de-acne%CC%81-la-huella-de-la-adolsecencia-1-960x720.jpg'
-        }
-    ]
-};
+export default function DetallePaciente({ paciente }: DetalleProps) {
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-export default function DetallePaciente({ pacienteId }: DetalleProps) {
     const handleGoBack = () => {
         router.visit('/pacientes');
     };
 
     const handleEdit = () => {
-        console.log('Editar paciente:', pacienteId);
-        // Aquí implementarías la lógica para editar el paciente
+        setIsEditModalOpen(true);
+    };
+
+    const handleEditSubmit = (formData: PacienteFormData) => {
+        router.put(`/pacientes/${paciente.id}`, formData, {
+            onSuccess: () => {
+                setIsEditModalOpen(false);
+            }
+        });
     };
 
     const handleNewEvaluation = () => {
-        console.log('Nueva evaluación para paciente:', pacienteId);
-        // Aquí implementarías la lógica para crear una nueva evaluación
+        // Redirigir a evaluación con el paciente preseleccionado
+        router.visit('/evaluacion', {
+            data: { paciente_id: paciente.id }
+        });
     };
 
     const handleGeneratePdf = (evaluacionId: number) => {
         console.log('Generar PDF para evaluación:', evaluacionId);
         // Aquí implementarías la lógica para generar el PDF
+    };
+
+    const formatDate = (dateString: string) => {
+        if (!dateString) return 'No registrada';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('es-PE', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+    };
+
+    const getPatientFullName = () => {
+        return `${paciente.nombres} ${paciente.apellidos}`;
     };
 
     return (
@@ -118,32 +120,27 @@ export default function DetallePaciente({ pacienteId }: DetalleProps) {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-3">
                                     <div>
-                                        <h3 className="text-lg font-semibold">{pacienteData.nombre}</h3>
+                                        <h3 className="text-lg font-semibold">{getPatientFullName()}</h3>
                                         <p className="text-sm text-gray-600">
-                                            {pacienteData.edad} años • {pacienteData.genero}
+                                            {paciente.edad} años • {paciente.genero}
                                         </p>
                                     </div>
                                     
                                     <div>
+                                        <p className="text-sm font-medium text-gray-500">DNI</p>
+                                        <p className="text-sm">{paciente.dni}</p>
+                                    </div>
+
+                                    <div>
                                         <p className="text-sm font-medium text-gray-500">Fecha de registro</p>
-                                        <p className="text-sm">{pacienteData.fechaRegistro}</p>
+                                        <p className="text-sm">{formatDate(paciente.created_at || '')}</p>
                                     </div>
                                 </div>
                                 
                                 <div className="space-y-3">
                                     <div>
                                         <p className="text-sm font-medium text-gray-500">Teléfono</p>
-                                        <p className="text-sm">{pacienteData.telefono}</p>
-                                    </div>
-                                    
-                                    <div>
-                                        <p className="text-sm font-medium text-gray-500">Email</p>
-                                        <p className="text-sm">{pacienteData.email}</p>
-                                    </div>
-                                    
-                                    <div>
-                                        <p className="text-sm font-medium text-gray-500">Dirección</p>
-                                        <p className="text-sm">{pacienteData.direccion}</p>
+                                        <p className="text-sm">{paciente.telefono || 'No registrado'}</p>
                                     </div>
                                 </div>
                             </div>
@@ -168,26 +165,34 @@ export default function DetallePaciente({ pacienteId }: DetalleProps) {
                             </Button>
                         </CardHeader>
                         <CardContent>
-                            {pacienteData.evaluaciones.length > 0 ? (
+                            {paciente.evaluaciones && paciente.evaluaciones.length > 0 ? (
                                 <div className="space-y-4">
-                                    {pacienteData.evaluaciones.map((evaluacion) => (
+                                    {paciente.evaluaciones.map((evaluacion) => (
                                         <EvaluacionCard
                                             key={evaluacion.id}
                                             id={evaluacion.id}
-                                            pacienteNombre={evaluacion.pacienteNombre}
+                                            pacienteNombre={getPatientFullName()}
                                             fecha={evaluacion.fecha}
                                             hora={evaluacion.hora}
-                                            severidad={evaluacion.severidad}
-                                            descripcion={evaluacion.descripcion}
-                                            imagen={evaluacion.imagen}
+                                            severidad={evaluacion.clasificacion}
+                                            descripcion={evaluacion.comentario || 'Sin comentarios'}
+                                            imagen={evaluacion.imagen_principal?.imagen_base64}
                                             showPdfButton={true}
                                             onGeneratePdf={() => handleGeneratePdf(evaluacion.id)}
                                         />
                                     ))}
                                 </div>
                             ) : (
-                                <div className="text-center py-8">
-                                    <p className="text-gray-500 mb-4">No hay evaluaciones registradas</p>
+                                <div className="text-center py-12">
+                                    <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 mb-4">
+                                        <FileText className="h-8 w-8 text-gray-400" />
+                                    </div>
+                                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                                        No hay evaluaciones registradas
+                                    </h3>
+                                    <p className="text-gray-500 mb-6 max-w-sm mx-auto">
+                                        Este paciente aún no tiene evaluaciones. Crea la primera evaluación para comenzar el seguimiento.
+                                    </p>
                                     <Button 
                                         onClick={handleNewEvaluation}
                                         className="flex items-center gap-2"
@@ -200,6 +205,14 @@ export default function DetallePaciente({ pacienteId }: DetalleProps) {
                         </CardContent>
                     </Card>
                 </div>
+
+                {/* Modal de edición */}
+                <EditPatientModal
+                    isOpen={isEditModalOpen}
+                    onClose={() => setIsEditModalOpen(false)}
+                    onSubmit={handleEditSubmit}
+                    patient={paciente}
+                />
             </div>
         </AppLayout>
     );
