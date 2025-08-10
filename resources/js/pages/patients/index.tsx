@@ -33,13 +33,21 @@ export default function Pacientes() {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedPatient, setSelectedPatient] = useState<Paciente | null>(null);
     const [searchTerm, setSearchTerm] = useState(filters?.search || '');
+    const [isInitialLoad, setIsInitialLoad] = useState(true);
 
     // Debounce para la búsqueda
     useEffect(() => {
+        // Evitar la búsqueda en la carga inicial
+        if (isInitialLoad) {
+            setIsInitialLoad(false);
+            return;
+        }
+
         const timeoutId = setTimeout(() => {
-            if (searchTerm !== filters?.search) {
+            const currentSearch = filters?.search || '';
+            if (searchTerm !== currentSearch) {
                 router.get('/pacientes', 
-                    { search: searchTerm }, 
+                    { search: searchTerm || undefined }, 
                     { 
                         preserveState: true,
                         replace: true 
@@ -49,7 +57,7 @@ export default function Pacientes() {
         }, 300);
 
         return () => clearTimeout(timeoutId);
-    }, [searchTerm, filters?.search]);
+    }, [searchTerm, filters?.search, isInitialLoad]);
 
     const handleEdit = (id: number) => {
         const patient = pacientes.data.find(p => p.id === id);
