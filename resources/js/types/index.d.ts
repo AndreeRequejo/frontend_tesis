@@ -41,3 +41,21 @@ export interface User {
     updated_at: string;
     [key: string]: unknown; // This allows for additional properties...
 }
+
+export interface Paciente {
+    nombre: string;
+    dni: string;
+    edad: number;
+    genero: string;
+    telefono: string;
+}
+
+export interface Evaluacion {
+    id: number;
+    paciente: Paciente;
+    fecha: string;
+    hora: string;
+    clasificacion: 'Ausente' | 'Leve' | 'Moderado' | 'Severo';
+    comentario: string;
+    imagenes: string[];
+}

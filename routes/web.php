@@ -33,9 +33,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('evaluaciones/estadisticas/general', [EvaluacionController::class, 'estadisticas'])->name('evaluaciones.estadisticas');
     Route::get('evaluaciones/buscar/avanzada', [EvaluacionController::class, 'buscar'])->name('evaluaciones.buscar');
 
-    Route::get('evaluacion/{id}', function ($id) {
-        return Inertia::render('history/detalle', ['evaluacionId' => $id]);
-    })->name('evaluacion.detalle');
+    Route::get('evaluacion/{id}', [HistorialController::class, 'show'])->name('evaluacion.detalle');
 });
 
 require __DIR__.'/settings.php';

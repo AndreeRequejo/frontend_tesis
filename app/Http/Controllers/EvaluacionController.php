@@ -134,10 +134,7 @@ class EvaluacionController extends Controller
             'comentario' => $request->comentario,
         ]);
 
-        return response()->json([
-            'message' => 'Evaluación actualizada exitosamente',
-            'evaluacion' => $evaluacion->load(['paciente', 'imagenes'])
-        ]);
+        return redirect()->back()->with('success', 'Evaluación actualizada exitosamente');
     }
 
     /**
@@ -150,9 +147,7 @@ class EvaluacionController extends Controller
         // Las imágenes se eliminarán automáticamente por la cascade
         $evaluacion->delete();
 
-        return response()->json([
-            'message' => 'Evaluación eliminada exitosamente'
-        ]);
+        return redirect()->route('historial')->with('success', 'Evaluación eliminada exitosamente');
     }
 
     /**

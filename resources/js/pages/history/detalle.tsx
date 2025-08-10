@@ -1,12 +1,24 @@
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
-import { Head, router } from '@inertiajs/react';
+import { type BreadcrumbItem, type Evaluacion } from '@/types';
+import { Head, router, usePage } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, FileText, Trash2, Edit3 } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { ArrowLeft, FileText, Trash2, Edit3, Save, X } from 'lucide-react';
+import { useState, type ChangeEvent, useEffect } from 'react';
+import { toast } from 'sonner';
 
 interface DetalleProps {
-    evaluacionId: string;
+    evaluacion: Evaluacion;
+}
+
+interface PageProps extends Record<string, unknown> {
+    evaluacion: Evaluacion;
+    flash?: {
+        success?: string;
+        error?: string;
+    };
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -19,25 +31,6 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '#',
     },
 ];
-
-// Datos de ejemplo - estos vendrían de tu backend
-const evaluacionData = {
-    id: 1,
-    paciente: {
-        nombre: "Juan Pérez",
-        edad: 25,
-        genero: "Masculino"
-    },
-    fecha: "08/08/2025",
-    hora: "15:33",
-    severidad: "Moderado",
-    comentarios: "Inflamación visible en la zona T",
-    imagenes: [
-        'https://dermacareclinica.com/wp-content/uploads/2021/10/Cicatrices-de-acne%CC%81-la-huella-de-la-adolsecencia-1-960x720.jpg',
-        'https://static.wixstatic.com/media/3b9b14_8f3c4e5c6d7a4b5f8c9d0e1f2a3b4c5d~mv2.jpg',
-        'https://example.com/imagen3.jpg'
-    ]
-};
 
 const getSeveridadColor = (severidad: string) => {
     switch (severidad) {
@@ -65,24 +58,69 @@ const formatImageSrc = (imagen: string) => {
     return `data:image/jpeg;base64,${imagen}`;
 };
 
-export default function DetalleEvaluacion({ evaluacionId }: DetalleProps) {
+export default function DetalleEvaluacion({ evaluacion }: DetalleProps) {
+    const { flash } = usePage<PageProps>().props;
+    const [isEditingComment, setIsEditingComment] = useState(false);
+    const [comentarioEditado, setComentarioEditado] = useState(evaluacion.comentario || '');
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Manejar mensajes flash del backend
+    useEffect(() => {
+        if (flash?.success) {
+            toast.success(flash.success);
+        }
+        if (flash?.error) {
+            toast.error(flash.error);
+        }
+    }, [flash]);
+
     const handleGoBack = () => {
         router.visit('/historial');
     };
 
     const handleGeneratePdf = () => {
-        console.log('Generar PDF para evaluación:', evaluacionId);
-        // Aquí implementarías la lógica para generar el PDF
+        router.post(`/historial/${evaluacion.id}/pdf`);
     };
 
-    const handleEdit = () => {
-        console.log('Editar evaluación:', evaluacionId);
-        // Aquí implementarías la lógica para editar
+    const handleSaveComment = () => {
+        setIsSubmitting(true);
+        router.put(`/evaluaciones/${evaluacion.id}`, {
+            clasificacion: evaluacion.clasificacion,
+            comentario: comentarioEditado,
+        }, {
+            onSuccess: () => {
+                setIsEditingComment(false);
+            },
+            onFinish: () => {
+                setIsSubmitting(false);
+            }
+        });
+    };
+
+    const handleCancelEdit = () => {
+        setComentarioEditado(evaluacion.comentario || '');
+        setIsEditingComment(false);
     };
 
     const handleDelete = () => {
-        console.log('Eliminar evaluación:', evaluacionId);
-        // Aquí implementarías la lógica para eliminar
+        setIsSubmitting(true);
+        router.delete(`/evaluaciones/${evaluacion.id}`, {
+            onError: () => {
+                setIsSubmitting(false);
+            }
+        });
+    };
+
+    // Determinar el grid de imágenes según la cantidad
+    const getImageGridClass = (imageCount: number) => {
+        if (imageCount === 1) {
+            return 'grid-cols-1 max-w-md';
+        } else if (imageCount === 2) {
+            return 'grid-cols-1 md:grid-cols-2';
+        } else {
+            return 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3';
+        }
     };
 
     return (
@@ -110,9 +148,9 @@ export default function DetalleEvaluacion({ evaluacionId }: DetalleProps) {
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-2">
-                                <p className="text-lg font-semibold">{evaluacionData.paciente.nombre}</p>
+                                <p className="text-lg font-semibold">{evaluacion.paciente.nombre}</p>
                                 <p className="text-sm text-gray-600">
-                                    {evaluacionData.paciente.edad} años • {evaluacionData.paciente.genero}
+                                    {evaluacion.paciente.edad} años • {evaluacion.paciente.genero}
                                 </p>
                             </div>
                         </CardContent>
@@ -124,20 +162,20 @@ export default function DetalleEvaluacion({ evaluacionId }: DetalleProps) {
                             <div>
                                 <CardTitle>Resultado</CardTitle>
                                 <p className="text-sm text-gray-500 mt-1">
-                                    {evaluacionData.fecha} {evaluacionData.hora}
+                                    {evaluacion.fecha} {evaluacion.hora}
                                 </p>
                             </div>
-                            <span className={`px-3 py-1 rounded-full text-sm font-medium border ${getSeveridadColor(evaluacionData.severidad)}`}>
-                                {evaluacionData.severidad}
+                            <span className={`px-3 py-1 rounded-full text-sm font-medium border ${getSeveridadColor(evaluacion.clasificacion)}`}>
+                                {evaluacion.clasificacion}
                             </span>
                         </CardHeader>
                         <CardContent className="space-y-6">
                             {/* Imágenes de la evaluación */}
-                            {evaluacionData.imagenes.length > 0 && (
+                            {evaluacion.imagenes.length > 0 && (
                                 <div>
                                     <h4 className="font-medium mb-3">Imágenes de la evaluación</h4>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        {evaluacionData.imagenes.map((imagen, index) => (
+                                    <div className={`grid gap-4 ${getImageGridClass(evaluacion.imagenes.length)}`}>
+                                        {evaluacion.imagenes.map((imagen: string, index: number) => (
                                             <div 
                                                 key={index}
                                                 className="aspect-square rounded-lg bg-gray-100 overflow-hidden border"
@@ -159,20 +197,54 @@ export default function DetalleEvaluacion({ evaluacionId }: DetalleProps) {
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between">
                             <CardTitle>Comentarios</CardTitle>
-                            <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={handleEdit}
-                                className="flex items-center gap-2"
-                            >
-                                <Edit3 className="h-4 w-4" />
-                                Editar
-                            </Button>
+                            {!isEditingComment && (
+                                <Button 
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => setIsEditingComment(true)}
+                                    className="flex items-center gap-2"
+                                >
+                                    <Edit3 className="h-4 w-4" />
+                                    Editar
+                                </Button>
+                            )}
                         </CardHeader>
                         <CardContent>
-                            <p className="text-gray-700 leading-relaxed">
-                                {evaluacionData.comentarios}
-                            </p>
+                            {isEditingComment ? (
+                                <div className="space-y-4">
+                                    <Textarea
+                                        value={comentarioEditado}
+                                        onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setComentarioEditado(e.target.value)}
+                                        placeholder="Agregar comentarios sobre la evaluación..."
+                                        className="min-h-[100px]"
+                                    />
+                                    <div className="flex gap-2">
+                                        <Button 
+                                            onClick={handleSaveComment}
+                                            disabled={isSubmitting}
+                                            className="flex items-center gap-2"
+                                            size="sm"
+                                        >
+                                            <Save className="h-4 w-4" />
+                                            {isSubmitting ? 'Guardando...' : 'Guardar'}
+                                        </Button>
+                                        <Button 
+                                            variant="outline"
+                                            onClick={handleCancelEdit}
+                                            disabled={isSubmitting}
+                                            className="flex items-center gap-2"
+                                            size="sm"
+                                        >
+                                            <X className="h-4 w-4" />
+                                            Cancelar
+                                        </Button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <p className="text-gray-700 leading-relaxed">
+                                    {evaluacion.comentario || 'Sin comentarios'}
+                                </p>
+                            )}
                         </CardContent>
                     </Card>
 
@@ -186,14 +258,42 @@ export default function DetalleEvaluacion({ evaluacionId }: DetalleProps) {
                             Generar PDF
                         </Button>
                         
-                        <Button 
-                            variant="destructive"
-                            onClick={handleDelete}
-                            className="flex items-center gap-2"
-                        >
-                            <Trash2 className="h-4 w-4" />
-                            Eliminar
-                        </Button>
+                        <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+                            <DialogTrigger asChild>
+                                <Button 
+                                    variant="destructive"
+                                    className="flex items-center gap-2"
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                    Eliminar
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                                <DialogHeader>
+                                    <DialogTitle>¿Está seguro?</DialogTitle>
+                                    <DialogDescription>
+                                        Esta acción no se puede deshacer. Esto eliminará permanentemente 
+                                        la evaluación y todos sus datos asociados.
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <DialogFooter>
+                                    <Button 
+                                        variant="outline" 
+                                        onClick={() => setShowDeleteDialog(false)}
+                                        disabled={isSubmitting}
+                                    >
+                                        Cancelar
+                                    </Button>
+                                    <Button 
+                                        variant="destructive"
+                                        onClick={handleDelete}
+                                        disabled={isSubmitting}
+                                    >
+                                        {isSubmitting ? 'Eliminando...' : 'Eliminar'}
+                                    </Button>
+                                </DialogFooter>
+                            </DialogContent>
+                        </Dialog>
                     </div>
                 </div>
             </div>
