@@ -52,6 +52,8 @@ export default function DetallePaciente({ paciente }: DetalleProps) {
 
     const handleEditSubmit = (formData: PacienteFormData) => {
         router.put(`/pacientes/${paciente.id}`, formData, {
+            preserveState: true,
+            preserveScroll: true,
             onSuccess: () => {
                 setIsEditModalOpen(false);
             }
@@ -187,7 +189,7 @@ export default function DetallePaciente({ paciente }: DetalleProps) {
                                             key={evaluacion.id}
                                             id={evaluacion.id}
                                             pacienteNombre={getPatientFullName()}
-                                            fecha={evaluacion.fecha}
+                                            fecha={formatDate(evaluacion.fecha)}
                                             hora={evaluacion.hora}
                                             severidad={evaluacion.clasificacion}
                                             descripcion={evaluacion.comentario || 'Sin comentarios'}

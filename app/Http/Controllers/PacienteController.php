@@ -79,6 +79,11 @@ class PacienteController extends Controller
 
         $paciente->update($validated);
 
+        // Si la petición viene desde la página de detalle, devolver los datos actualizados
+        if ($request->header('X-Inertia')) {
+            return back()->with('success', 'Paciente actualizado exitosamente.');
+        }
+
         return redirect()->route('pacientes.index')->with('success', 'Paciente actualizado exitosamente.');
     }
 
