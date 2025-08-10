@@ -122,9 +122,12 @@ export default function Evaluacion() {
     // Función para seleccionar imagen del dispositivo
     const handleSelectFromDevice = () => {
         if (capturedImages.length >= MAX_IMAGES) {
-            alert(`Solo puedes agregar hasta ${MAX_IMAGES} imágenes.`);
+            alert(`Ya has alcanzado el máximo de ${MAX_IMAGES} imágenes.`);
             return;
         }
+        
+        const remainingSlots = MAX_IMAGES - capturedImages.length;
+        console.log(`Puedes seleccionar hasta ${remainingSlots} imagen(es) más.`);
         
         if (fileInputRef.current) {
             fileInputRef.current.click();
@@ -133,14 +136,32 @@ export default function Evaluacion() {
 
     // Función para manejar la selección de archivo
     const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (file && file.type.startsWith('image/') && capturedImages.length < MAX_IMAGES) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                setCapturedImages(prev => [...prev, e.target?.result as string]);
-            };
-            reader.readAsDataURL(file);
+        const files = event.target.files;
+        if (!files) return;
+
+        const remainingSlots = MAX_IMAGES - capturedImages.length;
+        const filesToProcess = Array.from(files).slice(0, remainingSlots);
+
+        if (files.length > remainingSlots) {
+            alert(`Solo puedes agregar ${remainingSlots} imagen(es) más. Se seleccionarán las primeras ${remainingSlots}.`);
         }
+
+        // Procesar cada archivo seleccionado
+        filesToProcess.forEach((file) => {
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    setCapturedImages(prev => {
+                        if (prev.length < MAX_IMAGES) {
+                            return [...prev, e.target?.result as string];
+                        }
+                        return prev;
+                    });
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
         // Limpiar el input para permitir seleccionar el mismo archivo de nuevo
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
@@ -277,6 +298,7 @@ export default function Evaluacion() {
                                     ref={fileInputRef}
                                     type="file"
                                     accept="image/*"
+                                    multiple
                                     onChange={handleFileSelect}
                                     style={{ display: 'none' }}
                                 />
@@ -379,7 +401,7 @@ export default function Evaluacion() {
                                                 <span>Cámara</span>
                                             </Button>
 
-                                            {/* Botón Galería */}
+                                            {/* Botón Dispositivo */}
                                             <Button
                                                 variant="outline"
                                                 className="h-24 flex flex-col gap-2"
