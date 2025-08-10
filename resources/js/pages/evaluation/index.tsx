@@ -4,8 +4,8 @@ import { Head, usePage } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Search, Plus, Camera, ImageIcon, ArrowLeft } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { Search, Plus, Camera, ImageIcon, ArrowLeft, X } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
 import { CreatePatientModal } from '@/pages/patients/create-patient-modal';
 import { Paciente, PacienteFormData } from '@/pages/patients/types';
 
@@ -27,6 +27,15 @@ export default function Evaluacion() {
     const [selectedPatient, setSelectedPatient] = useState<Paciente | null>(pacienteSeleccionado || null);
     const [searchTerm, setSearchTerm] = useState('');
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [capturedImages, setCapturedImages] = useState<string[]>([]);
+    const [stream, setStream] = useState<MediaStream | null>(null);
+    const [isUsingCamera, setIsUsingCamera] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+    
+    // Configuración para número máximo de imágenes
+    const MAX_IMAGES = 3;
 
     // Preseleccionar paciente si viene desde el detalle
     useEffect(() => {
@@ -35,8 +44,117 @@ export default function Evaluacion() {
         }
     }, [pacienteSeleccionado]);
 
+    // Limpiar stream de cámara al desmontar el componente
+    useEffect(() => {
+        return () => {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+        };
+    }, [stream]);
+
     const getPatientFullName = (patient: Paciente) => {
         return `${patient.nombres} ${patient.apellidos}`;
+    };
+
+    // Función para abrir la cámara
+    const handleOpenCamera = async () => {
+        if (capturedImages.length >= MAX_IMAGES) {
+            alert(`Solo puedes agregar hasta ${MAX_IMAGES} imágenes.`);
+            return;
+        }
+        
+        try {
+            setIsUsingCamera(true);
+            const mediaStream = await navigator.mediaDevices.getUserMedia({ 
+                video: { 
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 },
+                    facingMode: 'user' 
+                } 
+            });
+            setStream(mediaStream);
+            
+            if (videoRef.current) {
+                videoRef.current.srcObject = mediaStream;
+            }
+        } catch (error) {
+            console.error('Error accessing camera:', error);
+            alert('No se pudo acceder a la cámara. Por favor, verifica los permisos.');
+            setIsUsingCamera(false);
+        }
+    };
+
+    // Función para capturar la imagen
+    const handleCaptureImage = () => {
+        if (videoRef.current && canvasRef.current && capturedImages.length < MAX_IMAGES) {
+            const canvas = canvasRef.current;
+            const video = videoRef.current;
+            
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+                ctx.drawImage(video, 0, 0);
+                const imageDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                setCapturedImages(prev => [...prev, imageDataUrl]);
+                
+                // Detener la cámara
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                    setStream(null);
+                }
+                setIsUsingCamera(false);
+            }
+        }
+    };
+
+    // Función para cerrar la cámara sin capturar
+    const handleCloseCamera = () => {
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+            setStream(null);
+        }
+        setIsUsingCamera(false);
+    };
+
+    // Función para seleccionar imagen del dispositivo
+    const handleSelectFromDevice = () => {
+        if (capturedImages.length >= MAX_IMAGES) {
+            alert(`Solo puedes agregar hasta ${MAX_IMAGES} imágenes.`);
+            return;
+        }
+        
+        if (fileInputRef.current) {
+            fileInputRef.current.click();
+        }
+    };
+
+    // Función para manejar la selección de archivo
+    const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file && file.type.startsWith('image/') && capturedImages.length < MAX_IMAGES) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                setCapturedImages(prev => [...prev, e.target?.result as string]);
+            };
+            reader.readAsDataURL(file);
+        }
+        // Limpiar el input para permitir seleccionar el mismo archivo de nuevo
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+    };
+
+    // Función para remover una imagen específica
+    const handleRemoveImage = (index: number) => {
+        setCapturedImages(prev => prev.filter((_, i) => i !== index));
+    };
+
+    // Función para remover todas las imágenes
+    const handleRemoveAllImages = () => {
+        setCapturedImages([]);
     };
 
     const filteredPatients = pacientes.filter(patient =>
@@ -154,39 +272,132 @@ export default function Evaluacion() {
                                 <CardTitle>Imagen</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {/* Botón Cámara */}
-                                    <Button
-                                        variant="outline"
-                                        className="h-24 flex flex-col gap-2"
-                                        onClick={() => {
-                                            // Aquí implementarías la lógica para abrir la cámara
-                                            console.log('Abrir cámara');
-                                        }}
-                                    >
-                                        <Camera className="h-8 w-8" />
-                                        <span>Cámara</span>
-                                    </Button>
+                                {/* Input oculto para seleccionar archivos */}
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleFileSelect}
+                                    style={{ display: 'none' }}
+                                />
 
-                                    {/* Botón Galería */}
-                                    <Button
-                                        variant="outline"
-                                        className="h-24 flex flex-col gap-2"
-                                        onClick={() => {
-                                            // Aquí implementarías la lógica para abrir la galería
-                                            console.log('Abrir galería');
-                                        }}
-                                    >
-                                        <ImageIcon className="h-8 w-8" />
-                                        <span>Galería</span>
-                                    </Button>
-                                </div>
+                                {/* Canvas oculto para capturar imagen */}
+                                <canvas ref={canvasRef} style={{ display: 'none' }} />
+
+                                {isUsingCamera ? (
+                                    /* Vista de cámara */
+                                    <div className="space-y-4">
+                                        <video
+                                            ref={videoRef}
+                                            autoPlay
+                                            playsInline
+                                            className="w-full max-w-md mx-auto rounded-lg"
+                                        />
+                                        <div className="flex gap-2 justify-center">
+                                            <Button onClick={handleCaptureImage}>
+                                                Capturar
+                                            </Button>
+                                            <Button 
+                                                variant="outline" 
+                                                onClick={handleCloseCamera}
+                                            >
+                                                Cancelar
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ) : capturedImages.length > 0 ? (
+                                    /* Vista de imágenes capturadas */
+                                    <div className="space-y-4">
+                                        {/* Contador de imágenes */}
+                                        <div className="text-center text-sm text-gray-600">
+                                            {capturedImages.length} de {MAX_IMAGES} imágenes
+                                        </div>
+                                        
+                                        {/* Grid de imágenes */}
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            {capturedImages.map((image, index) => (
+                                                <div key={index} className="relative">
+                                                    <img
+                                                        src={image}
+                                                        alt={`Imagen ${index + 1}`}
+                                                        className="w-full h-48 object-cover rounded-lg shadow-md"
+                                                    />
+                                                    <Button
+                                                        size="sm"
+                                                        variant="destructive"
+                                                        className="absolute top-2 right-2 h-8 w-8 p-0"
+                                                        onClick={() => handleRemoveImage(index)}
+                                                    >
+                                                        <X className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                        
+                                        {/* Botones de acción */}
+                                        <div className="flex gap-2 justify-center flex-wrap">
+                                            <Button 
+                                                variant="outline" 
+                                                onClick={handleRemoveAllImages}
+                                            >
+                                                Remover todas
+                                            </Button>
+                                            {capturedImages.length < MAX_IMAGES && (
+                                                <>
+                                                    <Button onClick={handleOpenCamera}>
+                                                        <Camera className="h-4 w-4 mr-2" />
+                                                        Agregar foto
+                                                    </Button>
+                                                    <Button 
+                                                        variant="outline" 
+                                                        onClick={handleSelectFromDevice}
+                                                    >
+                                                        <ImageIcon className="h-4 w-4 mr-2" />
+                                                        Seleccionar archivo
+                                                    </Button>
+                                                </>
+                                            )}
+                                        </div>
+                                    </div>
+                                ) : (
+                                    /* Vista inicial - botones para elegir fuente */
+                                    <div className="space-y-4">
+                                        {/* Indicador de límite de imágenes */}
+                                        <div className="text-center text-sm text-gray-600">
+                                            Puedes agregar hasta {MAX_IMAGES} imágenes
+                                        </div>
+                                        
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            {/* Botón Cámara */}
+                                            <Button
+                                                variant="outline"
+                                                className="h-24 flex flex-col gap-2"
+                                                onClick={handleOpenCamera}
+                                                disabled={capturedImages.length >= MAX_IMAGES}
+                                            >
+                                                <Camera className="h-8 w-8" />
+                                                <span>Cámara</span>
+                                            </Button>
+
+                                            {/* Botón Galería */}
+                                            <Button
+                                                variant="outline"
+                                                className="h-24 flex flex-col gap-2"
+                                                onClick={handleSelectFromDevice}
+                                                disabled={capturedImages.length >= MAX_IMAGES}
+                                            >
+                                                <ImageIcon className="h-8 w-8" />
+                                                <span>Dispositivo</span>
+                                            </Button>
+                                        </div>
+                                    </div>
+                                )}
                             </CardContent>
                         </Card>
 
-                        {/* Botón Guardar Evaluación */}
+                        {/* Botón Evaluación */}
                         <Button className="w-full" size="lg">
-                            Guardar Evaluación
+                            Evaluar paciente
                         </Button>
                     </>
                 )}
