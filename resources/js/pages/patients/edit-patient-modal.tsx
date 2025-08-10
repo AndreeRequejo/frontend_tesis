@@ -32,7 +32,7 @@ export function EditPatientModal({ isOpen, onClose, onSubmit, patient }: EditPat
 
     // Cargar datos del paciente cuando se abre el modal
     useEffect(() => {
-        if (patient) {
+        if (patient && isOpen) {
             setFormData({
                 dni: patient.dni,
                 nombres: patient.nombres,
@@ -41,8 +41,18 @@ export function EditPatientModal({ isOpen, onClose, onSubmit, patient }: EditPat
                 genero: patient.genero,
                 telefono: patient.telefono || ''
             });
+        } else if (!isOpen) {
+            // Limpiar formulario cuando se cierra el modal
+            setFormData({
+                dni: '',
+                nombres: '',
+                apellidos: '',
+                edad: '',
+                genero: '' as 'Masculino' | 'Femenino' | '',
+                telefono: ''
+            });
         }
-    }, [patient]);
+    }, [patient, isOpen]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -54,25 +64,9 @@ export function EditPatientModal({ isOpen, onClose, onSubmit, patient }: EditPat
             genero: formData.genero as 'Masculino' | 'Femenino',
             telefono: formData.telefono || undefined
         });
-        setFormData({ 
-            dni: '', 
-            nombres: '', 
-            apellidos: '', 
-            edad: '', 
-            genero: '', 
-            telefono: '' 
-        });
     };
 
     const handleClose = () => {
-        setFormData({ 
-            dni: '', 
-            nombres: '', 
-            apellidos: '', 
-            edad: '', 
-            genero: '', 
-            telefono: '' 
-        });
         onClose();
     };
 

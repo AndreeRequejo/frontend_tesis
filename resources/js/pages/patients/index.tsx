@@ -62,8 +62,12 @@ export default function Pacientes() {
     const handleEdit = (id: number) => {
         const patient = pacientes.data.find(p => p.id === id);
         if (patient) {
-            setSelectedPatient(patient);
-            setIsEditModalOpen(true);
+            // Asegurar que se limpie el estado anterior y se establezca el nuevo
+            setSelectedPatient(null);
+            setTimeout(() => {
+                setSelectedPatient(patient);
+                setIsEditModalOpen(true);
+            }, 0);
         }
     };
 
@@ -86,9 +90,13 @@ export default function Pacientes() {
     const handleEditSubmit = (formData: PacienteFormData) => {
         if (selectedPatient) {
             router.put(`/pacientes/${selectedPatient.id}`, formData, {
+                preserveState: true,
                 onSuccess: () => {
                     setIsEditModalOpen(false);
                     setSelectedPatient(null);
+                },
+                onError: () => {
+                    // Mantener el modal abierto en caso de error
                 }
             });
         }
@@ -226,7 +234,10 @@ export default function Pacientes() {
 
                 <EditPatientModal
                     isOpen={isEditModalOpen}
-                    onClose={() => setIsEditModalOpen(false)}
+                    onClose={() => {
+                        setIsEditModalOpen(false);
+                        setSelectedPatient(null);
+                    }}
                     onSubmit={handleEditSubmit}
                     patient={selectedPatient}
                 />
