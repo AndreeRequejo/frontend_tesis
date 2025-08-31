@@ -1,4 +1,5 @@
 import AppLayout from '@/layouts/app-layout';
+import toast, { Toaster } from 'react-hot-toast';
 import { type BreadcrumbItem, type Evaluacion } from '@/types';
 import { Head, router, usePage } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
@@ -90,6 +91,10 @@ export default function DetalleEvaluacion({ evaluacion }: DetalleProps) {
         }, {
             onSuccess: () => {
                 setIsEditingComment(false);
+                toast.success('Comentario editado correctamente');
+            },
+            onError: () => {
+                toast.error('Error al editar el comentario');
             },
             onFinish: () => {
                 setIsSubmitting(false);
@@ -296,6 +301,7 @@ export default function DetalleEvaluacion({ evaluacion }: DetalleProps) {
                     </div>
                 </div>
             </div>
+            <Toaster position="top-right" />
         </AppLayout>
     );
 }

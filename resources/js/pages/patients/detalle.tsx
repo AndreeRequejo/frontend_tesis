@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EvaluacionCard } from '@/components/evaluacion-card';
 import { EditPatientModal } from './edit-patient-modal';
+import toast, { Toaster } from 'react-hot-toast';
 import { ArrowLeft, Plus, Edit3, FileText, Download } from 'lucide-react';
 import { Paciente, PacienteFormData } from './types';
 import { useState } from 'react';
@@ -56,6 +57,10 @@ export default function DetallePaciente({ paciente }: DetalleProps) {
             preserveScroll: true,
             onSuccess: () => {
                 setIsEditModalOpen(false);
+                toast.success('Paciente editado correctamente');
+            },
+            onError: () => {
+                toast.error('Error al editar el paciente');
             }
         });
     };
@@ -224,6 +229,7 @@ export default function DetallePaciente({ paciente }: DetalleProps) {
                     patient={paciente}
                 />
             </div>
+            <Toaster position="top-right" />
         </AppLayout>
     );
 }

@@ -10,7 +10,7 @@ import { CreatePatientModal } from './create-patient-modal';
 import { EditPatientModal } from './edit-patient-modal';
 import { DeletePatientModal } from './delete-patient-modal';
 import { Paciente, PacienteFormData, PaginatedResponse } from './types';
-import { Toaster } from 'react-hot-toast';
+import { Toaster, toast } from 'react-hot-toast';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -84,6 +84,10 @@ export default function Pacientes() {
         router.post('/pacientes', formData, {
             onSuccess: () => {
                 setIsCreateModalOpen(false);
+                toast.success('Paciente guardado correctamente');
+            },
+            onError: () => {
+                toast.error('Error al guardar el paciente');
             }
         });
     };
@@ -95,9 +99,10 @@ export default function Pacientes() {
                 onSuccess: () => {
                     setIsEditModalOpen(false);
                     setSelectedPatient(null);
+                    toast.success('Paciente editado correctamente');
                 },
                 onError: () => {
-                    // Mantener el modal abierto en caso de error
+                    toast.error('Error al editar el paciente');
                 }
             });
         }
@@ -109,6 +114,10 @@ export default function Pacientes() {
                 onSuccess: () => {
                     setIsDeleteModalOpen(false);
                     setSelectedPatient(null);
+                    toast.success('Paciente eliminado correctamente');
+                },
+                onError: () => {
+                    toast.error('Error al eliminar el paciente');
                 }
             });
         }
