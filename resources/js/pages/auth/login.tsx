@@ -1,6 +1,7 @@
 import { Head, useForm } from '@inertiajs/react';
 import { LoaderCircle } from 'lucide-react';
-import { FormEventHandler } from 'react';
+import { FormEventHandler, useState } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
 
 import InputError from '@/components/input-error';
 import TextLink from '@/components/text-link';
@@ -27,6 +28,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
         password: '',
         remember: false,
     });
+        const [showPassword, setShowPassword] = useState(false);
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -42,7 +44,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
             <form className="flex flex-col gap-6" onSubmit={submit}>
                 <div className="grid gap-6">
                     <div className="grid gap-2">
-                        <Label htmlFor="email">Usuario o Correo</Label>
+                        <Label htmlFor="email">Correo:</Label>
                         <Input
                             id="email"
                             type="email"
@@ -59,23 +61,39 @@ export default function Login({ status, canResetPassword }: LoginProps) {
 
                     <div className="grid gap-2">
                         <div className="flex items-center">
-                            <Label htmlFor="password">Contraseña</Label>
+                            <Label htmlFor="password">Contraseña:</Label>
                             {canResetPassword && (
-                                <TextLink href={route('password.request')} className="ml-auto text-sm" tabIndex={5}>
+                                <TextLink href={route('password.request')} className="ml-auto text-sm hidden" tabIndex={5}>
                                     Olvidaste tu contraseña?
                                 </TextLink>
                             )}
                         </div>
-                        <Input
-                            id="password"
-                            type="password"
-                            required
-                            tabIndex={2}
-                            autoComplete="current-password"
-                            value={data.password}
-                            onChange={(e) => setData('password', e.target.value)}
-                            placeholder="••••••••"
-                        />
+                        <div style={{ position: 'relative' }}>
+                            <Input
+                                id="password"
+                                type={showPassword ? "text" : "password"}
+                                required
+                                tabIndex={2}
+                                autoComplete="current-password"
+                                value={data.password}
+                                onChange={(e) => setData('password', e.target.value)}
+                                placeholder="••••••••"
+                                style={{ paddingRight: '2.5rem' }}
+                            />
+                            <span
+                                onClick={() => setShowPassword((prev: boolean) => !prev)}
+                                style={{
+                                    position: "absolute",
+                                    right: "0.75rem",
+                                    top: "50%",
+                                    transform: "translateY(-50%)",
+                                    cursor: "pointer",
+                                    color: '#888'
+                                }}
+                            >
+                                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                            </span>
+                        </div>
                         <InputError message={errors.password} />
                     </div>
 
@@ -97,7 +115,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                 </div>
 
                 {/* Formulario de Registro */}
-                <div className="text-center text-sm text-muted-foreground">
+                <div className="text-center text-sm text-muted-foreground hidden">
                     No tienes una cuenta?{' '}
                     <TextLink href={route('register')} tabIndex={5}>
                         Regístrate
