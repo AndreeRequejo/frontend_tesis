@@ -7,7 +7,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ArrowLeft, FileText, Trash2, Edit3, Save, X } from 'lucide-react';
 import { useState, type ChangeEvent, useEffect } from 'react';
-import { toast } from 'sonner';
 
 interface DetalleProps {
     evaluacion: Evaluacion;
@@ -68,10 +67,10 @@ export default function DetalleEvaluacion({ evaluacion }: DetalleProps) {
     // Manejar mensajes flash del backend
     useEffect(() => {
         if (flash?.success) {
-            toast.success(flash.success);
+            console.log('Éxito:', flash.success);
         }
         if (flash?.error) {
-            toast.error(flash.error);
+            console.error('Error:', flash.error);
         }
     }, [flash]);
 

@@ -10,6 +10,7 @@ import { CreatePatientModal } from './create-patient-modal';
 import { EditPatientModal } from './edit-patient-modal';
 import { DeletePatientModal } from './delete-patient-modal';
 import { Paciente, PacienteFormData, PaginatedResponse } from './types';
+import { Toaster } from 'react-hot-toast';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -249,6 +250,7 @@ export default function Pacientes() {
                     patientName={selectedPatient ? getPatientFullName(selectedPatient) : undefined}
                 />
             </div>
+            <Toaster position="top-right" />
         </AppLayout>
     );
 }

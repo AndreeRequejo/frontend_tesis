@@ -8,6 +8,7 @@ import { Search, Plus, Camera, ImageIcon, ArrowLeft, X } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { CreatePatientModal } from '@/pages/patients/create-patient-modal';
 import { Paciente, PacienteFormData } from '@/pages/patients/types';
+import { Toaster } from 'react-hot-toast';
 
 interface EvaluationPageProps {
     pacientes: Paciente[];
@@ -431,6 +432,7 @@ export default function Evaluacion() {
                     onSubmit={handleCreateSubmit}
                 />
             </div>
+            <Toaster position="top-right" />
         </AppLayout>
     );
 }

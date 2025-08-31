@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
+import { Toaster } from 'react-hot-toast';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -195,6 +196,7 @@ export default function Historial({ evaluaciones, filters }: Props) {
                     </div>
                 )}
             </div>
+            <Toaster position="top-right" />
         </AppLayout>
     );
 }
