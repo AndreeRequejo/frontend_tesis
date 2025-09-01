@@ -10,7 +10,7 @@ export function BottomBar({ items }: BottomBarProps) {
     const { url } = usePage();
 
     return (
-        <div className="fixed right-0 bottom-0 left-0 z-50 flex justify-around overflow-hidden rounded-t-xl border-t bg-white shadow-md md:hidden">
+        <div className="fixed right-0 bottom-0 left-0 z-50 flex h-14 justify-around overflow-hidden rounded-t-xl border-t bg-white shadow-md md:hidden">
             {items.map((item) => {
                 const isActive = url.startsWith(item.href); // O usa === si quieres exacto
 
