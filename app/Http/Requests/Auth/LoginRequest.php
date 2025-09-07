@@ -20,7 +20,15 @@ class LoginRequest extends FormRequest
     }
 
     /**
-     * Get the validation rules that apply to the request.
+     * Reglas de validación que se aplican a la petición.
+     *
+     * Este método define las reglas de validación para la solicitud de inicio de sesión:
+     * - El campo "email" es obligatorio, debe ser una cadena de texto y tener formato de correo electrónico válido.
+     * - El campo "password" es obligatorio y debe ser una cadena de texto.
+     *
+     * Estas reglas se ejecutan automáticamente antes del proceso de autenticación.
+     * Si los datos no cumplen con estas condiciones, la validación fallará
+     * y no se intentará autenticar al usuario.
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
@@ -33,9 +41,23 @@ class LoginRequest extends FormRequest
     }
 
     /**
-     * Attempt to authenticate the request's credentials.
+     * Autenticar las credenciales de la petición.
      *
-     * @throws \Illuminate\Validation\ValidationException
+     * Este método maneja el proceso principal del inicio de sesión:
+     * 1. Primero, verifica que el usuario no haya superado el número máximo
+     *    de intentos permitidos de inicio de sesión (esto previene ataques de fuerza bruta).
+     *    Si se excedió el límite, se lanza una excepción de bloqueo.
+     * 
+     * 2. Luego intenta autenticar al usuario usando los datos "email" y "password"
+     *    a través de Auth::attempt().
+     *    - Si es exitoso: el usuario queda autenticado en la sesión y se limpia el contador
+     *      de intentos fallidos.
+     *    - Si falla: se incrementa el contador de intentos fallidos en el RateLimiter
+     *      y se lanza una excepción de validación con un mensaje de error.
+     * 
+     * De esta forma, se garantiza que solo los usuarios con credenciales correctas
+     * puedan acceder al sistema.
+     *
      */
     public function authenticate(): void
     {
@@ -53,9 +75,20 @@ class LoginRequest extends FormRequest
     }
 
     /**
-     * Ensure the login request is not rate limited.
+     * Verificar que la solicitud de inicio de sesión no esté limitada por intentos.
      *
-     * @throws \Illuminate\Validation\ValidationException
+     * Este método protege contra ataques de fuerza bruta:
+     * - Comprueba si se superó el número máximo de intentos permitidos (en este caso 5).
+     * - Si no se superó el límite, la función simplemente termina y permite continuar.
+     * - Si se superó el límite:
+     *   - Dispara el evento Lockout, que puede usarse para registrar logs o disparar alertas.
+     *   - Obtiene el tiempo restante (en segundos) que el usuario debe esperar antes
+     *     de volver a intentar iniciar sesión.
+     *   - Lanza una excepción de validación con un mensaje de error indicando
+     *     cuánto tiempo debe esperar.
+     *
+     * Con esto, Laravel bloquea temporalmente el login cuando hay demasiados intentos fallidos.
+     *
      */
     public function ensureIsNotRateLimited(): void
     {
@@ -80,6 +113,6 @@ class LoginRequest extends FormRequest
      */
     public function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->string('email')).'|'.$this->ip());
+        return Str::transliterate(Str::lower($this->string('email')) . '|' . $this->ip());
     }
 }
