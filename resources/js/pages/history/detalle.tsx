@@ -254,13 +254,6 @@ export default function DetalleEvaluacion({ evaluacion }: DetalleProps) {
 
                     {/* Acciones */}
                     <div className="flex flex-col sm:flex-row gap-3 justify-between">
-                        <Button 
-                            onClick={handleGeneratePdf}
-                            className="flex items-center gap-2"
-                        >
-                            <FileText className="h-4 w-4" />
-                            Generar PDF
-                        </Button>
                         
                         <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
                             <DialogTrigger asChild>
