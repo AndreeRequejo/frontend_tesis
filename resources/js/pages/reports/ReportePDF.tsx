@@ -103,7 +103,33 @@ const styles = StyleSheet.create({
     color: '#888',
     fontSize: 10,
   },
+  badge: {
+    paddingVertical: 2,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+    fontSize: 11,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginLeft: 'auto',
+    alignSelf: 'center',
+  },
+  badgeLeve: {
+    backgroundColor: '#4caf50',
+  },
+  badgeModerada: {
+    backgroundColor: '#ff9800',
+  },
+  badgeSevera: {
+    backgroundColor: '#d32f2f',
+  },
 });
+
+const getBadgeStyle = (resultado: string) => {
+  if (resultado.toLowerCase().includes('leve')) return [styles.badge, styles.badgeLeve];
+  if (resultado.toLowerCase().includes('moderado')) return [styles.badge, styles.badgeModerada];
+  if (resultado.toLowerCase().includes('severo')) return [styles.badge, styles.badgeSevera];
+  return styles.badge;
+};
 
 export const ReportePDF: React.FC<ReportePDFProps> = ({ paciente, evaluaciones }) => (
   <Document>
@@ -116,37 +142,39 @@ export const ReportePDF: React.FC<ReportePDFProps> = ({ paciente, evaluaciones }
           <Text style={styles.label}>Género: <Text style={styles.info}>{paciente.genero}</Text></Text>
         </View>
         <Text style={styles.subtitle}>Evaluaciones</Text>
-        <View style={styles.table}>
-          <View style={styles.tableHeader}>
-            <Text style={styles.tableCell}>Fecha</Text>
-            <Text style={styles.tableCell}>Resultado</Text>
-            <Text style={styles.tableCellLast}>Imágenes</Text>
+        {evaluaciones.length === 0 && (
+          <View style={styles.card}>
+            <Text style={styles.info}>Sin evaluaciones</Text>
           </View>
-          {evaluaciones.length === 0 && (
-            <View style={styles.tableRow}>
-              <Text style={styles.tableCell}>-</Text>
-              <Text style={styles.tableCell}>-</Text>
-              <Text style={styles.tableCellLast}>Sin evaluaciones</Text>
+        )}
+        {evaluaciones.map((ev) => (
+          <View style={styles.card} key={ev.id}>
+            {/* Primera fila: fecha y severidad tipo badge */}
+            <View style={{ flexDirection: 'row', marginBottom: 6, alignItems: 'center' }}>
+              <Text style={styles.label}>Fecha: <Text style={styles.info}>{ev.fecha}</Text></Text>
+              <View style={{ flex: 1 }} />
+              <Text style={getBadgeStyle(ev.resultado)}>
+                {ev.resultado}
+              </Text>
             </View>
-          )}
-          {evaluaciones.map((ev, idx) => (
-            <View style={idx % 2 === 0 ? styles.tableRow : styles.tableRowAlt} key={ev.id}>
-              <Text style={styles.tableCell}>{ev.fecha}</Text>
-              <Text style={styles.tableCell}>{ev.resultado}</Text>
-              <View style={styles.tableCellLast}>
-                {ev.imagenes && ev.imagenes.length > 0 ? (
-                  <>
-                    {ev.imagenes.map((img, i) => (
-                      <Image key={i} src={img} style={styles.image} />
-                    ))}
-                  </>
-                ) : (
-                  <Text style={styles.noImage}>Sin imágenes</Text>
-                )}
+            {/* Segunda fila: comentario si existe */}
+            {ev.comentario && (
+              <View style={{ marginBottom: 6 }}>
+                <Text style={styles.label}>Comentario: <Text style={styles.info}>{ev.comentario}</Text></Text>
               </View>
+            )}
+            {/* Fila de imágenes */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+              {ev.imagenes && ev.imagenes.length > 0 ? (
+                ev.imagenes.map((img, i) => (
+                  <Image key={i} src={img} style={styles.image} />
+                ))
+              ) : (
+                <Text style={styles.noImage}>Sin imágenes</Text>
+              )}
             </View>
-          ))}
-        </View>
+          </View>
+        ))}
       </View>
     </Page>
   </Document>
