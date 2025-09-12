@@ -96,4 +96,58 @@ class PacienteController extends Controller
 
         return redirect()->route('pacientes.index')->with('success', 'Paciente eliminado exitosamente.');
     }
+
+    /**
+     * Mostrar el reporte del paciente con sus evaluaciones
+     */
+    public function reporte($id)
+    {
+        $paciente = Paciente::with(['evaluaciones' => function($q) {
+            $q->orderBy('fecha', 'desc');
+        }])->findOrFail($id);
+
+        // Si no tiene evaluaciones, mostrar solo el modal y no abrir el reporte
+        if ($paciente->evaluaciones->isEmpty()) {
+            return Inertia::render('reports/ReportePaciente', [
+                'paciente' => [
+                    'id' => $paciente->id,
+                    'nombre' => $paciente->nombres,
+                    'apellido' => $paciente->apellidos,
+                    'edad' => $paciente->edad,
+                    'genero' => $paciente->genero,
+                    'telefono' => $paciente->telefono,
+                    'dni' => $paciente->dni,
+                ],
+                'evaluaciones' => [],
+                'showModalNoEvaluaciones' => true,
+            ]);
+        }
+
+        // Formatear datos para el frontend
+        $evaluaciones = $paciente->evaluaciones->map(function($ev) {
+            return [
+                'id' => $ev->id,
+                'fecha' => $ev->fecha ? $ev->fecha->format('d/m/Y') : '',
+                'resultado' => $ev->clasificacion,
+                'comentario' => $ev->comentario,
+                'imagenes' => $ev->imagenes->map(function($img) {
+                    return 'data:image/jpeg;base64,' . $img->contenido_base64;
+                })->toArray(),
+            ];
+        });
+
+        return Inertia::render('reports/ReportePaciente', [
+            'paciente' => [
+                'id' => $paciente->id,
+                'nombre' => $paciente->nombres,
+                'apellido' => $paciente->apellidos,
+                'edad' => $paciente->edad,
+                'genero' => $paciente->genero,
+                'telefono' => $paciente->telefono,
+                'dni' => $paciente->dni,
+            ],
+            'evaluaciones' => $evaluaciones,
+            'showModalNoEvaluaciones' => false,
+        ]);
+    }
 }

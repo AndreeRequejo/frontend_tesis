@@ -10,6 +10,7 @@ use App\Http\Controllers\EvaluacionController;
 Route::middleware(['auth'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
+
     // Rutas de pacientes
     Route::resource('pacientes', PacienteController::class)->names([
         'index' => 'pacientes.index',
@@ -18,6 +19,9 @@ Route::middleware(['auth'])->group(function () {
         'update' => 'pacientes.update',
         'destroy' => 'pacientes.destroy',
     ])->except(['create', 'edit']);
+
+    // Ruta para reporte de paciente
+    Route::get('reporte-paciente/{id}', [PacienteController::class, 'reporte'])->name('paciente.reporte');
 
     // Rutas del historial
     Route::get('historial', [HistorialController::class, 'index'])->name('historial');
