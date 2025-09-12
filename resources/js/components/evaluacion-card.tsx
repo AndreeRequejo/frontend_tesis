@@ -10,8 +10,6 @@ interface EvaluacionCardProps {
     severidad: 'Ausente' | 'Leve' | 'Moderado' | 'Severo';
     descripcion: string;
     imagen?: string;
-    showPdfButton?: boolean;
-    onGeneratePdf?: () => void;
 }
 
 const getSeveridadColor = (severidad: string) => {
@@ -55,58 +53,7 @@ export function EvaluacionCard({
     severidad,
     descripcion,
     imagen,
-    showPdfButton = false,
-    onGeneratePdf,
 }: EvaluacionCardProps) {
-    if (showPdfButton) {
-        return (
-            <div className="rounded-lg border bg-white p-4 shadow transition-shadow hover:shadow-md">
-                <div className="mb-2 flex items-start justify-between">
-                    <div className="flex-1">
-                        <Link href={`/evaluacion/${id}`} className="cursor-pointer">
-                            <h3 className="text-lg font-semibold text-gray-900 hover:text-blue-600 transition-colors">{pacienteNombre}</h3>
-                            <p className="text-sm text-gray-500">
-                                {fecha} {hora}
-                            </p>
-                        </Link>
-                    </div>
-                    <div className="ml-4 flex flex-col gap-2">
-                        <span className={`rounded-full px-2 py-1 text-xs font-medium ${getSeveridadColor(severidad)}`}>{severidad}</span>
-                    </div>
-                </div>
-
-                <div className='flex flex-row justify-between items-center'>
-                    <Link href={`/evaluacion/${id}`} className="flex items-center gap-3 flex-1 cursor-pointer">
-                        {imagen ? (
-                            <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-gray-100">
-                                <img src={formatImageSrc(imagen)!} alt={`Evaluación de ${pacienteNombre}`} className="h-full w-full object-cover" />
-                            </div>
-                        ) : (
-                            <div className="h-16 w-16 flex-shrink-0 rounded-lg bg-gray-100 flex items-center justify-center">
-                                <FileText className="h-6 w-6 text-gray-400" />
-                            </div>
-                        )}
-                        <div className="flex-1">
-                            <p className="line-clamp-2 text-sm text-gray-600">{descripcion}</p>
-                        </div>
-                    </Link>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            onGeneratePdf?.();
-                        }}
-                        className="flex items-center gap-1 text-primary hover:text-blue-600 ml-2"
-                    >
-                        <FileText className="h-4 w-4" />
-                        PDF
-                    </Button>
-                </div>
-            </div>
-        );
-    }
 
     return (
         <Link href={`/evaluacion/${id}`} className="block cursor-pointer rounded-lg border bg-white p-4 shadow transition-shadow hover:shadow-md">
