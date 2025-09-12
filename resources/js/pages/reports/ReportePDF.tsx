@@ -23,46 +23,125 @@ interface ReportePDFProps {
 }
 
 const styles = StyleSheet.create({
-  page: { padding: 24, fontSize: 12 },
-  section: { marginBottom: 16 },
-  title: { fontSize: 18, marginBottom: 8, fontWeight: 'bold' },
-  subtitle: { fontSize: 14, marginBottom: 6, fontWeight: 'bold' },
-  table: { width: 'auto', marginBottom: 12 },
-  tableRow: { flexDirection: 'row' },
-  tableCell: { flex: 1, borderBottom: '1px solid #ccc', padding: 4 },
-  image: { width: 60, height: 60, marginRight: 4, borderRadius: 6, border: '1px solid #ccc' },
+  page: {
+    padding: 24,
+    fontSize: 12,
+    backgroundColor: '#f6f8fa',
+  },
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    border: '1pt solid #e5e7eb',
+    boxShadow: '0 2px 8px #0001',
+    padding: 18,
+    marginBottom: 18,
+  },
+  title: {
+    fontSize: 18,
+    marginBottom: 8,
+    fontWeight: 'bold',
+    color: '#1976d2',
+  },
+  subtitle: {
+    fontSize: 14,
+    marginBottom: 6,
+    fontWeight: 'bold',
+    color: '#1976d2',
+  },
+  label: {
+    fontWeight: 'bold',
+    color: '#374151',
+    marginRight: 4,
+  },
+  info: {
+    color: '#374151',
+    marginBottom: 2,
+    fontWeight: 'medium',
+  },
+  table: {
+    width: '100%',
+    borderRadius: 8,
+    border: '1pt solid #e5e7eb',
+    overflow: 'hidden',
+    marginBottom: 12,
+  },
+  tableHeader: {
+    flexDirection: 'row',
+    backgroundColor: '#f3f4f6',
+  },
+  tableRow: {
+    flexDirection: 'row',
+    backgroundColor: '#fff',
+  },
+  tableRowAlt: {
+    flexDirection: 'row',
+    backgroundColor: '#f9fafb',
+  },
+  tableCell: {
+    flex: 1,
+    borderRight: '1pt solid #e5e7eb',
+    borderBottom: '1pt solid #e5e7eb',
+    padding: 6,
+    fontSize: 11,
+    color: '#374151',
+  },
+  tableCellLast: {
+    flex: 1,
+    borderBottom: '1pt solid #e5e7eb',
+    padding: 6,
+    fontSize: 11,
+    color: '#374151',
+  },
+  image: {
+    width: 50,
+    height: 50,
+    marginRight: 4,
+    borderRadius: 6,
+    border: '1pt solid #e5e7eb',
+  },
+  noImage: {
+    color: '#888',
+    fontSize: 10,
+  },
 });
 
 export const ReportePDF: React.FC<ReportePDFProps> = ({ paciente, evaluaciones }) => (
   <Document>
     <Page style={styles.page}>
-      <View style={styles.section}>
+      <View style={styles.card}>
         <Text style={styles.title}>Reporte del Paciente</Text>
-        <Text><Text style={styles.subtitle}>Nombre:</Text> {paciente.nombre} {paciente.apellido}</Text>
-        <Text><Text style={styles.subtitle}>Edad:</Text> {paciente.edad}</Text>
-        <Text><Text style={styles.subtitle}>Género:</Text> {paciente.genero}</Text>
-      </View>
-      <View style={styles.section}>
+        <View style={{ marginBottom: 10 }}>
+          <Text style={styles.label}>Nombre: <Text style={styles.info}>{paciente.nombre} {paciente.apellido}</Text></Text>
+          <Text style={styles.label}>Edad: <Text style={styles.info}>{paciente.edad} años</Text></Text>
+          <Text style={styles.label}>Género: <Text style={styles.info}>{paciente.genero}</Text></Text>
+        </View>
         <Text style={styles.subtitle}>Evaluaciones</Text>
         <View style={styles.table}>
-          <View style={styles.tableRow}>
+          <View style={styles.tableHeader}>
             <Text style={styles.tableCell}>Fecha</Text>
             <Text style={styles.tableCell}>Resultado</Text>
-            <Text style={styles.tableCell}>Imágenes</Text>
+            <Text style={styles.tableCellLast}>Imágenes</Text>
           </View>
-          {evaluaciones.map(ev => (
-            <View style={styles.tableRow} key={ev.id}>
+          {evaluaciones.length === 0 && (
+            <View style={styles.tableRow}>
+              <Text style={styles.tableCell}>-</Text>
+              <Text style={styles.tableCell}>-</Text>
+              <Text style={styles.tableCellLast}>Sin evaluaciones</Text>
+            </View>
+          )}
+          {evaluaciones.map((ev, idx) => (
+            <View style={idx % 2 === 0 ? styles.tableRow : styles.tableRowAlt} key={ev.id}>
               <Text style={styles.tableCell}>{ev.fecha}</Text>
               <Text style={styles.tableCell}>{ev.resultado}</Text>
-              <View style={styles.tableCell}>
+              <View style={styles.tableCellLast}>
                 {ev.imagenes && ev.imagenes.length > 0 ? (
                   <>
-                    {ev.imagenes.map((img, idx) => (
-                      <Image key={idx} src={img} style={styles.image} />
+                    {ev.imagenes.map((img, i) => (
+                      <Image key={i} src={img} style={styles.image} />
                     ))}
                   </>
                 ) : (
-                  <Text style={{ color: '#888' }}>Sin imágenes</Text>
+                  <Text style={styles.noImage}>Sin imágenes</Text>
                 )}
               </View>
             </View>
