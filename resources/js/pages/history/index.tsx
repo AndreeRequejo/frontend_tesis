@@ -55,9 +55,7 @@ export default function Historial({ evaluaciones, filters }: Props) {
     const [searchTerm, setSearchTerm] = useState(filters.search || '');
     const [selectedSeveridad, setSelectedSeveridad] = useState(filters.severidad || 'all');
 
-    const handleGeneratePdf = (evaluacionId: number) => {
-        router.post(`/historial/${evaluacionId}/pdf`);
-    };
+    // ...función PDF eliminada...
 
     const handleSearch = (value: string) => {
         setSearchTerm(value);
@@ -139,8 +137,8 @@ export default function Historial({ evaluaciones, filters }: Props) {
                             severidad={evaluacion.severidad}
                             descripcion={evaluacion.descripcion}
                             imagen={evaluacion.imagen}
-                            showPdfButton={true}
-                            onGeneratePdf={() => handleGeneratePdf(evaluacion.id)}
+                            // ...sin PDF...
+                            // ...sin PDF...
                         />
                     ))}
                 </div>

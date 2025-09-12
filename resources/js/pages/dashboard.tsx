@@ -102,7 +102,7 @@ export default function Dashboard({ pacientesRecientes, evaluacionesRecientes }:
                                     severidad={evaluacion.severidad}
                                     imagen={evaluacion.imagen || undefined}
                                     descripcion={evaluacion.descripcion}
-                                    showPdfButton={false}
+                                    // ...sin PDF...
                                 />
                             ))}
                         </div>

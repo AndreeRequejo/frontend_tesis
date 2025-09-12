@@ -5,8 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EvaluacionCard } from '@/components/evaluacion-card';
 import { EditPatientModal } from './edit-patient-modal';
-import toast, { Toaster } from 'react-hot-toast';
+import { Toaster } from 'react-hot-toast';
 import { ArrowLeft, Plus, Edit3, FileText, Download } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { Paciente, PacienteFormData } from './types';
 import { useState } from 'react';
 
@@ -72,14 +73,23 @@ export default function DetallePaciente({ paciente }: DetalleProps) {
         });
     };
 
-    const handleGeneratePdf = (evaluacionId: number) => {
-        console.log('Generar PDF para evaluación:', evaluacionId);
-        // Aquí implementarías la lógica para generar el PDF
-    };
 
     const handleGenerateReport = () => {
-        console.log('Generar reporte completo para paciente:', paciente.id);
-        // Aquí implementarías la lógica para generar el reporte completo del paciente
+        if (!paciente.evaluaciones || paciente.evaluaciones.length === 0) {
+            toast.error('Este paciente no tiene evaluaciones registradas.', {
+                duration: 500,
+                position: 'top-center',
+                icon: '⚠️',
+                style: {
+                    background: '#fff',
+                    color: '#333',
+                    borderRadius: '8px',
+                    fontWeight: 'bold',
+                },
+            });
+            return;
+        }
+        router.visit(`/reporte-paciente/${paciente.id}`);
     };
 
     const formatDate = (dateString: string) => {
@@ -199,8 +209,7 @@ export default function DetallePaciente({ paciente }: DetalleProps) {
                                             severidad={evaluacion.clasificacion}
                                             descripcion={evaluacion.comentario || 'Sin comentarios'}
                                             imagen={evaluacion.imagen_principal?.contenido_base64}
-                                            showPdfButton={true}
-                                            onGeneratePdf={() => handleGeneratePdf(evaluacion.id)}
+                                            // ...sin PDF...
                                         />
                                     ))}
                                 </div>
