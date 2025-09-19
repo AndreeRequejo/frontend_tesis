@@ -45,10 +45,14 @@ class PacienteController extends Controller
             'apellidos' => 'required|string|max:255',
             'edad' => 'required|integer|min:0|max:150',
             'genero' => 'required|in:Masculino,Femenino',
-            'telefono' => 'nullable|string|max:15',
+            'telefono' => 'nullable|string|max:9|unique:paciente,telefono',
+        ], [
+            'dni.unique' => 'El DNI ingresado ya se encuentra registrado.',
+            'telefono.unique' => 'El teléfono ingresado ya se encuentra registrado.',
+            'genero.required' => 'Seleccione el género del paciente.'
         ]);
 
-        $paciente = Paciente::create($validated);
+        Paciente::create($validated);
 
         return redirect()->route('pacientes.index')->with('success', 'Paciente creado exitosamente.');
     }
@@ -74,7 +78,11 @@ class PacienteController extends Controller
             'apellidos' => 'required|string|max:255',
             'edad' => 'required|integer|min:0|max:150',
             'genero' => 'required|in:Masculino,Femenino',
-            'telefono' => 'nullable|string|max:15',
+            'telefono' => 'nullable|string|max:9|unique:paciente,telefono,' . $paciente->id,
+        ], [
+            'dni.unique' => 'El DNI ingresado ya se encuentra registrado.',
+            'telefono.unique' => 'El teléfono ingresado ya se encuentra registrado.',
+            'genero.required' => 'Seleccione el género del paciente.'
         ]);
 
         $paciente->update($validated);
