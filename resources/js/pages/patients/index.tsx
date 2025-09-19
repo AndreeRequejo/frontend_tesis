@@ -1,16 +1,16 @@
+import { PatientCard } from '@/components/paciente-card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, usePage } from '@inertiajs/react';
-import { PatientCard } from '@/components/paciente-card';
-import { Button } from '@/components/ui/button';
-import { Plus, Search, ChevronLeft, ChevronRight } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { useState, useEffect } from 'react';
-import { CreatePatientModal } from './create-patient-modal';
-import { EditPatientModal } from './edit-patient-modal';
-import { DeletePatientModal } from './delete-patient-modal';
-import { Paciente, PacienteFormData, PaginatedResponse } from './types';
+import { ChevronLeft, ChevronRight, Plus, Search } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { Toaster, toast } from 'react-hot-toast';
+import { CreatePatientModal } from './create-patient-modal';
+import { DeletePatientModal } from './delete-patient-modal';
+import { EditPatientModal } from './edit-patient-modal';
+import { Paciente, PacienteFormData, PaginatedResponse } from './types';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -47,12 +47,13 @@ export default function Pacientes() {
         const timeoutId = setTimeout(() => {
             const currentSearch = filters?.search || '';
             if (searchTerm !== currentSearch) {
-                router.get('/pacientes', 
-                    { search: searchTerm || undefined }, 
-                    { 
+                router.get(
+                    '/pacientes',
+                    { search: searchTerm || undefined },
+                    {
                         preserveState: true,
-                        replace: true 
-                    }
+                        replace: true,
+                    },
                 );
             }
         }, 300);
@@ -61,7 +62,7 @@ export default function Pacientes() {
     }, [searchTerm, filters?.search, isInitialLoad]);
 
     const handleEdit = (id: number) => {
-        const patient = pacientes.data.find(p => p.id === id);
+        const patient = pacientes.data.find((p) => p.id === id);
         if (patient) {
             // Asegurar que se limpie el estado anterior y se establezca el nuevo
             setSelectedPatient(null);
@@ -73,7 +74,7 @@ export default function Pacientes() {
     };
 
     const handleDelete = (id: number) => {
-        const patient = pacientes.data.find(p => p.id === id);
+        const patient = pacientes.data.find((p) => p.id === id);
         if (patient) {
             setSelectedPatient(patient);
             setIsDeleteModalOpen(true);
@@ -86,9 +87,11 @@ export default function Pacientes() {
                 setIsCreateModalOpen(false);
                 toast.success('Paciente guardado correctamente');
             },
-            onError: () => {
-                toast.error('Error al guardar el paciente');
-            }
+            onError: (errors) => {
+                Object.values(errors).forEach((errorMessage) => {
+                    toast.error(errorMessage as string);
+                });
+            },
         });
     };
 
@@ -101,9 +104,11 @@ export default function Pacientes() {
                     setSelectedPatient(null);
                     toast.success('Paciente editado correctamente');
                 },
-                onError: () => {
-                    toast.error('Error al editar el paciente');
-                }
+                onError: (errors) => {
+                    Object.values(errors).forEach((errorMessage) => {
+                        toast.error(errorMessage as string);
+                    });
+                },
             });
         }
     };
@@ -118,16 +123,20 @@ export default function Pacientes() {
                 },
                 onError: () => {
                     toast.error('Error al eliminar el paciente');
-                }
+                },
             });
         }
     };
 
     const handlePageChange = (url: string) => {
-        router.get(url, { search: searchTerm }, { 
-            preserveState: true,
-            replace: true 
-        });
+        router.get(
+            url,
+            { search: searchTerm },
+            {
+                preserveState: true,
+                replace: true,
+            },
+        );
     };
 
     const getPatientFullName = (patient: Paciente) => {
@@ -137,19 +146,14 @@ export default function Pacientes() {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Pacientes" />
-            <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
+            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 {/* Header con título y botón nuevo */}
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
                     <div>
                         <h1 className="text-2xl font-bold">Pacientes</h1>
-                        <p className="text-sm text-gray-600">
-                            Total: {pacientes.total} pacientes
-                        </p>
+                        <p className="text-sm text-gray-600">Total: {pacientes.total} pacientes</p>
                     </div>
-                    <Button 
-                        className="flex items-center gap-2"
-                        onClick={() => setIsCreateModalOpen(true)}
-                    >
+                    <Button className="flex items-center gap-2" onClick={() => setIsCreateModalOpen(true)}>
                         <Plus className="h-4 w-4" />
                         Nuevo
                     </Button>
@@ -157,7 +161,7 @@ export default function Pacientes() {
 
                 {/* Barra de búsqueda */}
                 <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                    <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
                     <Input
                         placeholder="Buscar por nombres, apellidos o DNI..."
                         className="pl-10"
@@ -185,7 +189,7 @@ export default function Pacientes() {
                             />
                         ))
                     ) : (
-                        <div className="text-center py-8 text-gray-500">
+                        <div className="py-8 text-center text-gray-500">
                             {searchTerm ? 'No se encontraron pacientes que coincidan con la búsqueda.' : 'No hay pacientes registrados.'}
                         </div>
                     )}
@@ -193,7 +197,7 @@ export default function Pacientes() {
 
                 {/* Paginación */}
                 {pacientes.last_page > 1 && (
-                    <div className="flex items-center justify-between mt-6">
+                    <div className="mt-6 flex items-center justify-between">
                         <div className="text-sm text-gray-600">
                             Mostrando {pacientes.from} a {pacientes.to} de {pacientes.total} resultados
                         </div>
@@ -207,12 +211,12 @@ export default function Pacientes() {
                                 <ChevronLeft className="h-4 w-4" />
                                 Anterior
                             </Button>
-                            
+
                             <div className="flex items-center gap-1">
                                 {pacientes.links.slice(1, -1).map((link, index) => (
                                     <Button
                                         key={index}
-                                        variant={link.active ? "default" : "outline"}
+                                        variant={link.active ? 'default' : 'outline'}
                                         size="sm"
                                         onClick={() => link.url && handlePageChange(link.url)}
                                         disabled={!link.url}
@@ -236,11 +240,7 @@ export default function Pacientes() {
                 )}
 
                 {/* Modales */}
-                <CreatePatientModal
-                    isOpen={isCreateModalOpen}
-                    onClose={() => setIsCreateModalOpen(false)}
-                    onSubmit={handleCreateSubmit}
-                />
+                <CreatePatientModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} onSubmit={handleCreateSubmit} />
 
                 <EditPatientModal
                     isOpen={isEditModalOpen}
