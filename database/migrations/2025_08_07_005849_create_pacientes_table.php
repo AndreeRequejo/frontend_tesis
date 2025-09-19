@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('apellidos');
             $table->unsignedTinyInteger('edad');
             $table->enum('genero', ['Masculino', 'Femenino']);
-            $table->string('telefono', 15)->nullable();
+            $table->string('telefono', 15)->nullable()->unique();
             $table->timestamps();
         });
     }
