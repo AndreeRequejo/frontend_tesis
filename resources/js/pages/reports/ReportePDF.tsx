@@ -122,12 +122,16 @@ const styles = StyleSheet.create({
   badgeSevera: {
     backgroundColor: '#d32f2f',
   },
+  badgeAusente: {
+    backgroundColor: '#1f2937',
+  }
 });
 
 const getBadgeStyle = (resultado: string) => {
   if (resultado.toLowerCase().includes('leve')) return [styles.badge, styles.badgeLeve];
   if (resultado.toLowerCase().includes('moderado')) return [styles.badge, styles.badgeModerada];
   if (resultado.toLowerCase().includes('severo')) return [styles.badge, styles.badgeSevera];
+  if (resultado.toLowerCase().includes('ausente')) return [styles.badge, styles.badgeAusente];
   return styles.badge;
 };
 

@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import { usePage } from '@inertiajs/react';
 import { ReportePDF } from './ReportePDF';
@@ -26,7 +26,6 @@ interface Evaluacion {
 
 const ReportePaciente: React.FC = () => {
   const { paciente, evaluaciones, showModalNoEvaluaciones } = usePage().props as unknown as { paciente: Paciente; evaluaciones: Evaluacion[]; showModalNoEvaluaciones?: boolean };
-  const reporteRef = useRef<HTMLDivElement>(null);
 
   return (
     <div className="max-w-3xl mx-auto py-8 px-4">
