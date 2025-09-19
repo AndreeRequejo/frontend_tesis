@@ -155,10 +155,11 @@ export function EditPatientModal({ isOpen, onClose, onSubmit, patient }: EditPat
                             <Label htmlFor="edit-telefono">Teléfono (Opcional)</Label>
                             <Input
                                 id="edit-telefono"
+                                type='number'
                                 value={formData.telefono}
                                 onChange={(e) => setFormData({...formData, telefono: e.target.value})}
                                 placeholder="987654321"
-                                maxLength={15}
+                                maxLength={9}
                             />
                         </div>
                     </div>
