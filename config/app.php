@@ -123,4 +123,15 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Backend API URL
+    |--------------------------------------------------------------------------
+    |
+    | URL del backend de IA para las predicciones de acné
+    |
+    */
+
+    'backend_url' => env('BACKEND_URL', 'http://localhost:8080'),
+
 ];
