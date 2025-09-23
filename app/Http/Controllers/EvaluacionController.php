@@ -47,7 +47,6 @@ class EvaluacionController extends Controller
             'imagenes' => 'required|array|min:1|max:3',
             'imagenes.*' => 'required|string', // Base64 strings
             // Campos opcionales para predicción automática
-            'es_prediccion_automatica' => 'nullable|boolean',
             'confianza' => 'nullable|numeric|between:0,1',
             'tiempo_procesamiento' => 'nullable|numeric',
             'probabilidades' => 'nullable|array'
@@ -63,7 +62,6 @@ class EvaluacionController extends Controller
                 'comentario' => $request->comentario,
                 'fecha' => now()->toDateString(),
                 'hora' => now()->toTimeString(),
-                'es_prediccion_automatica' => $request->boolean('es_prediccion_automatica', false),
                 'confianza' => $request->confianza,
                 'tiempo_procesamiento' => $request->tiempo_procesamiento,
                 'probabilidades' => $request->probabilidades
