@@ -14,12 +14,18 @@ class Evaluacion extends Model
         'clasificacion',
         'comentario',
         'fecha',
-        'hora'
+        'hora',
+        'confianza',
+        'tiempo_procesamiento',
+        'probabilidades'
     ];
 
     protected $casts = [
         'fecha' => 'date',
         'hora' => 'datetime:H:i',
+        'confianza' => 'decimal:4',
+        'tiempo_procesamiento' => 'decimal:2',
+        'probabilidades' => 'array'
     ];
 
     public function paciente()
