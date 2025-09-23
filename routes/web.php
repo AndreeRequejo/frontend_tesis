@@ -37,6 +37,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('evaluaciones/estadisticas/general', [EvaluacionController::class, 'estadisticas'])->name('evaluaciones.estadisticas');
     Route::get('evaluaciones/buscar/avanzada', [EvaluacionController::class, 'buscar'])->name('evaluaciones.buscar');
 
+    // Rutas de predicción
+    Route::post('evaluacion/predecir', [EvaluacionController::class, 'predecir'])->name('evaluacion.predecir');
+
     Route::get('evaluacion/{id}', [HistorialController::class, 'show'])->name('evaluacion.detalle');
 });
 
