@@ -18,6 +18,11 @@ return new class extends Migration
             $table->text('comentario')->nullable();
             $table->date('fecha');
             $table->time('hora');
+            // Campos para predicción automática
+            $table->boolean('es_prediccion_automatica')->default(false);
+            $table->decimal('confianza', 5, 4)->nullable(); // 0.0000 - 1.0000
+            $table->decimal('tiempo_procesamiento', 8, 2)->nullable(); // en milisegundos
+            $table->json('probabilidades')->nullable(); // almacenar todas las probabilidades
         });
     }
 
