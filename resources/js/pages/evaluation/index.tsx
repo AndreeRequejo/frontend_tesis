@@ -6,6 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Search, Plus, Camera, ImageIcon, ArrowLeft, X } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
+    // Detectar si es móvil
+    const isMobile = typeof window !== 'undefined' && /Mobi|Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
 import { CreatePatientModal } from '@/pages/patients/create-patient-modal';
 import { Paciente, PacienteFormData } from '@/pages/patients/types';
 import { Toaster, toast } from 'react-hot-toast';
@@ -335,6 +337,7 @@ export default function Evaluacion() {
                                     multiple
                                     onChange={handleFileSelect}
                                     style={{ display: 'none' }}
+                                    {...(isMobile ? { capture: 'environment' } : {})}
                                 />
 
                                 {/* Canvas oculto para capturar imagen */}
@@ -424,18 +427,19 @@ export default function Evaluacion() {
                                         </div>
                                         
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            {/* Botón Cámara */}
-                                            <Button
-                                                variant="outline"
-                                                className="h-24 flex flex-col gap-2"
-                                                onClick={handleOpenCamera}
-                                                disabled={capturedImages.length >= MAX_IMAGES}
-                                            >
-                                                <Camera className="h-8 w-8" />
-                                                <span>Cámara</span>
-                                            </Button>
-
-                                            {/* Botón Dispositivo */}
+                                            {/* Solo mostrar botón de cámara si NO es móvil */}
+                                            {!isMobile && (
+                                                <Button
+                                                    variant="outline"
+                                                    className="h-24 flex flex-col gap-2"
+                                                    onClick={handleOpenCamera}
+                                                    disabled={capturedImages.length >= MAX_IMAGES}
+                                                >
+                                                    <Camera className="h-8 w-8" />
+                                                    <span>Cámara</span>
+                                                </Button>
+                                            )}
+                                            {/* Botón Dispositivo siempre visible */}
                                             <Button
                                                 variant="outline"
                                                 className="h-24 flex flex-col gap-2"
