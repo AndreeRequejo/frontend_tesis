@@ -1,6 +1,6 @@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, usePage } from '@inertiajs/react';
+import { Head, usePage, router } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,7 +8,7 @@ import { Search, Plus, Camera, ImageIcon, ArrowLeft, X } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { CreatePatientModal } from '@/pages/patients/create-patient-modal';
 import { Paciente, PacienteFormData } from '@/pages/patients/types';
-import { Toaster } from 'react-hot-toast';
+import { Toaster, toast } from 'react-hot-toast';
 
 interface EvaluationPageProps {
     pacientes: Paciente[];
@@ -31,6 +31,7 @@ export default function Evaluacion() {
     const [capturedImages, setCapturedImages] = useState<string[]>([]);
     const [stream, setStream] = useState<MediaStream | null>(null);
     const [isUsingCamera, setIsUsingCamera] = useState(false);
+    const [isEvaluating, setIsEvaluating] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -61,7 +62,7 @@ export default function Evaluacion() {
     // Función para abrir la cámara
     const handleOpenCamera = async () => {
         if (capturedImages.length >= MAX_IMAGES) {
-            alert(`Solo puedes agregar hasta ${MAX_IMAGES} imágenes.`);
+            alert(`Solo puedes agregar hasta ${MAX_IMAGES} imagen(es).`);
             return;
         }
         
@@ -196,6 +197,38 @@ export default function Evaluacion() {
 
     const handleBackToSelection = () => {
         setSelectedPatient(null);
+    };
+
+    const handleEvaluatePatient = async () => {
+        if (!selectedPatient || capturedImages.length === 0) {
+            toast.error('Debe seleccionar un paciente y agregar al menos una imagen');
+            return;
+        }
+
+        setIsEvaluating(true);
+        
+        try {
+            // Usar router.post de Inertia para manejar la redirección correctamente
+            router.post('/evaluacion/predecir', {
+                paciente_id: selectedPatient.id,
+                imagenes: capturedImages
+            }, {
+                onSuccess: () => {
+                    // La redirección se maneja automáticamente por Inertia
+                },
+                onError: (errors) => {
+                    console.error('Error:', errors);
+                    toast.error('Error al procesar la evaluación');
+                },
+                onFinish: () => {
+                    setIsEvaluating(false);
+                }
+            });
+        } catch (error) {
+            console.error('Error:', error);
+            toast.error('Error de conexión al procesar la evaluación');
+            setIsEvaluating(false);
+        }
     };
 
     return (
@@ -419,8 +452,13 @@ export default function Evaluacion() {
                         </Card>
 
                         {/* Botón Evaluación */}
-                        <Button className="w-full" size="lg">
-                            Evaluar paciente
+                        <Button 
+                            className="w-full" 
+                            size="lg"
+                            onClick={handleEvaluatePatient}
+                            disabled={capturedImages.length === 0 || isEvaluating}
+                        >
+                            {isEvaluating ? 'Evaluando...' : 'Evaluar paciente'}
                         </Button>
                     </>
                 )}
