@@ -39,7 +39,7 @@ export default function Evaluacion() {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     
     // Configuración para número máximo de imágenes
-    const MAX_IMAGES = 3;
+    const MAX_IMAGES = 1;
 
     // Preseleccionar paciente si viene desde el detalle
     useEffect(() => {
