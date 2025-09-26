@@ -191,9 +191,17 @@ export default function Evaluacion() {
     };
 
     const handleCreateSubmit = (formData: PacienteFormData) => {
-        console.log('Crear paciente:', formData);
-        // Aquí implementarías la lógica para crear el paciente
-        setIsCreateModalOpen(false);
+        router.post('/pacientes', formData, {
+            onSuccess: () => {
+                setIsCreateModalOpen(false);
+                toast.success('Paciente guardado correctamente');
+            },
+            onError: (errors) => {
+                Object.values(errors).forEach((errorMessage) => {
+                    toast.error(errorMessage as string);
+                });
+            },
+        });
     };
 
     const handleBackToSelection = () => {
