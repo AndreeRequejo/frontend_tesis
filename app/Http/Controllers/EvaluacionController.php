@@ -261,10 +261,24 @@ class EvaluacionController extends Controller
             }
 
             if (!$resultado['success']) {
-                return response()->json([
-                    'success' => false,
-                    'message' => $resultado['message']
-                ], 400);
+                // Extraer el mensaje de detail del JSON de error si existe
+                $errorMessage = $resultado['message'];
+                try {
+                    // Si el mensaje contiene JSON, intentar extraer el detail
+                    if (strpos($errorMessage, 'Error en la API de predicción:') === 0) {
+                        $jsonPart = str_replace('Error en la API de predicción: ', '', $errorMessage);
+                        $errorData = json_decode($jsonPart, true);
+                        if (isset($errorData['detail'])) {
+                            $errorMessage = $errorData['detail'];
+                        }
+                    }
+                } catch (\Exception $e) {
+                    // Si no se puede parsear, usar el mensaje original
+                }
+
+                return redirect()->back()->withErrors([
+                    'prediccion' => $errorMessage
+                ]);
             }
 
             // Preparar datos para la vista de resultados
@@ -286,10 +300,9 @@ class EvaluacionController extends Controller
 
         } catch (\Exception $e) {
             Log::error('Error en predicción: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Error interno del servidor: ' . $e->getMessage()
-            ], 500);
+            return redirect()->back()->withErrors([
+                'prediccion' => 'Error interno del servidor: ' . $e->getMessage()
+            ]);
         }
     }
 
