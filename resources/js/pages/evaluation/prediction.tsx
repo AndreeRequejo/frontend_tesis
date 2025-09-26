@@ -250,7 +250,7 @@ export default function Prediction() {
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <ImageIcon className="h-5 w-5" />
-                            Imágenes Evaluadas ({imagenes.length})
+                            {imagenes.length === 1 ? `Imagen evaluada (1)` : `Imágenes evaluadas (${imagenes.length})`}
                         </CardTitle>
                     </CardHeader>
                     <CardContent>

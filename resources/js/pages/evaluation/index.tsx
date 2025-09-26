@@ -374,7 +374,7 @@ export default function Evaluacion() {
                                     <div className="space-y-4">
                                         {/* Contador de imágenes */}
                                         <div className="text-center text-sm text-gray-600">
-                                            {capturedImages.length} de {MAX_IMAGES} imágenes
+                                            {capturedImages.length} de {MAX_IMAGES} imagen(es)
                                         </div>
 
                                         {/* Grid de imágenes */}
@@ -424,7 +424,7 @@ export default function Evaluacion() {
                                     /* Vista inicial - botones para elegir fuente */
                                     <div className="space-y-4">
                                         {/* Indicador de límite de imágenes */}
-                                        <div className="text-center text-sm text-gray-600">Puedes agregar hasta {MAX_IMAGES} imágenes</div>
+                                        <div className="text-center text-sm text-gray-600">Puedes agregar hasta {MAX_IMAGES} imagen(es)</div>
 
                                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                             {/* Solo mostrar botón de cámara si NO es móvil */}
