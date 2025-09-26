@@ -380,20 +380,23 @@ export default function Evaluacion() {
                                         {/* Grid de imágenes */}
                                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                                             {capturedImages.map((image, index) => (
-                                                <div key={index} className="relative">
-                                                    <img
-                                                        src={image}
-                                                        alt={`Imagen ${index + 1}`}
-                                                        className="h-48 w-full rounded-lg object-cover shadow-md"
-                                                    />
-                                                    <Button
-                                                        size="sm"
-                                                        variant="destructive"
-                                                        className="absolute top-2 right-2 h-8 w-8 p-0"
-                                                        onClick={() => handleRemoveImage(index)}
-                                                    >
-                                                        <X className="h-4 w-4" />
-                                                    </Button>
+                                                <div key={index} className="flex justify-center">
+                                                    <div className="relative inline-block">
+                                                        <img
+                                                            src={image}
+                                                            alt={`Imagen ${index + 1}`}
+                                                            className="h-auto w-full max-w-[260px] rounded-lg object-contain shadow-md"
+                                                        />
+                                                        <Button
+                                                            size="sm"
+                                                            variant="destructive"
+                                                            className="absolute top-1 right-1 h-7 w-7 rounded-full p-0 shadow"
+                                                            onClick={() => handleRemoveImage(index)}
+                                                            style={{ zIndex: 10 }}
+                                                        >
+                                                            <X className="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
                                                 </div>
                                             ))}
                                         </div>
