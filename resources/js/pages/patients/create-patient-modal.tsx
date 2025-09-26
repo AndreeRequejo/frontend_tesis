@@ -75,13 +75,14 @@ export function CreatePatientModal({ isOpen, onClose, onSubmit }: CreatePatientM
                         {/* Primera fila - DNI y Nombres */}
                         <div className="grid grid-cols-2 gap-4">
                             <div className="grid gap-2">
-                                <Label htmlFor="dni">DNI</Label>
+                                <Label htmlFor="dni">Doc. Ident.</Label>
                                 <Input
                                     id="dni"
+                                    type='tel'
                                     value={formData.dni}
                                     onChange={(e) => setFormData({...formData, dni: e.target.value})}
                                     placeholder="12345678"
-                                    maxLength={8}
+                                    maxLength={9}
                                     required
                                 />
                             </div>
@@ -119,8 +120,8 @@ export function CreatePatientModal({ isOpen, onClose, onSubmit }: CreatePatientM
                                     value={formData.edad}
                                     onChange={(e) => setFormData({...formData, edad: e.target.value})}
                                     placeholder="25"
-                                    min="0"
-                                    max="150"
+                                    min="11"
+                                    max="40"
                                     required
                                 />
                             </div>
@@ -146,7 +147,7 @@ export function CreatePatientModal({ isOpen, onClose, onSubmit }: CreatePatientM
                             <Label htmlFor="telefono">Teléfono (Opcional)</Label>
                             <Input
                                 id="telefono"
-                                type='number'
+                                type='tel'
                                 value={formData.telefono}
                                 onChange={(e) => setFormData({...formData, telefono: e.target.value})}
                                 placeholder="987654321"
