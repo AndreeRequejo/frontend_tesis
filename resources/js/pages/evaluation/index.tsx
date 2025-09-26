@@ -1,16 +1,16 @@
-import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
-import { Head, usePage, router } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Search, Plus, Camera, ImageIcon, ArrowLeft, X } from 'lucide-react';
-import { useState, useEffect, useRef } from 'react';
-    // Detectar si es móvil
-    const isMobile = typeof window !== 'undefined' && /Mobi|Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
+import { Input } from '@/components/ui/input';
+import AppLayout from '@/layouts/app-layout';
 import { CreatePatientModal } from '@/pages/patients/create-patient-modal';
 import { Paciente, PacienteFormData } from '@/pages/patients/types';
+import { type BreadcrumbItem } from '@/types';
+import { Head, router, usePage } from '@inertiajs/react';
+import { ArrowLeft, Camera, ImageIcon, Plus, Search, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { Toaster, toast } from 'react-hot-toast';
+// Detectar si es móvil
+const isMobile = typeof window !== 'undefined' && /Mobi|Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
 
 interface EvaluationPageProps {
     pacientes: Paciente[];
@@ -37,7 +37,7 @@ export default function Evaluacion() {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    
+
     // Configuración para número máximo de imágenes
     const MAX_IMAGES = 1;
 
@@ -52,7 +52,7 @@ export default function Evaluacion() {
     useEffect(() => {
         return () => {
             if (stream) {
-                stream.getTracks().forEach(track => track.stop());
+                stream.getTracks().forEach((track) => track.stop());
             }
         };
     }, [stream]);
@@ -67,18 +67,18 @@ export default function Evaluacion() {
             alert(`Solo puedes agregar hasta ${MAX_IMAGES} imagen(es).`);
             return;
         }
-        
+
         try {
             setIsUsingCamera(true);
-            const mediaStream = await navigator.mediaDevices.getUserMedia({ 
-                video: { 
+            const mediaStream = await navigator.mediaDevices.getUserMedia({
+                video: {
                     width: { ideal: 1280 },
                     height: { ideal: 720 },
-                    facingMode: 'user' 
-                } 
+                    facingMode: 'user',
+                },
             });
             setStream(mediaStream);
-            
+
             if (videoRef.current) {
                 videoRef.current.srcObject = mediaStream;
             }
@@ -94,19 +94,19 @@ export default function Evaluacion() {
         if (videoRef.current && canvasRef.current && capturedImages.length < MAX_IMAGES) {
             const canvas = canvasRef.current;
             const video = videoRef.current;
-            
+
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
-            
+
             const ctx = canvas.getContext('2d');
             if (ctx) {
                 ctx.drawImage(video, 0, 0);
                 const imageDataUrl = canvas.toDataURL('image/jpeg', 0.8);
-                setCapturedImages(prev => [...prev, imageDataUrl]);
-                
+                setCapturedImages((prev) => [...prev, imageDataUrl]);
+
                 // Detener la cámara
                 if (stream) {
-                    stream.getTracks().forEach(track => track.stop());
+                    stream.getTracks().forEach((track) => track.stop());
                     setStream(null);
                 }
                 setIsUsingCamera(false);
@@ -117,7 +117,7 @@ export default function Evaluacion() {
     // Función para cerrar la cámara sin capturar
     const handleCloseCamera = () => {
         if (stream) {
-            stream.getTracks().forEach(track => track.stop());
+            stream.getTracks().forEach((track) => track.stop());
             setStream(null);
         }
         setIsUsingCamera(false);
@@ -129,10 +129,10 @@ export default function Evaluacion() {
             alert(`Ya has alcanzado el máximo de ${MAX_IMAGES} imágenes.`);
             return;
         }
-        
+
         const remainingSlots = MAX_IMAGES - capturedImages.length;
         console.log(`Puedes seleccionar hasta ${remainingSlots} imagen(es) más.`);
-        
+
         if (fileInputRef.current) {
             fileInputRef.current.click();
         }
@@ -155,7 +155,7 @@ export default function Evaluacion() {
             if (file.type.startsWith('image/')) {
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    setCapturedImages(prev => {
+                    setCapturedImages((prev) => {
                         if (prev.length < MAX_IMAGES) {
                             return [...prev, e.target?.result as string];
                         }
@@ -174,7 +174,7 @@ export default function Evaluacion() {
 
     // Función para remover una imagen específica
     const handleRemoveImage = (index: number) => {
-        setCapturedImages(prev => prev.filter((_, i) => i !== index));
+        setCapturedImages((prev) => prev.filter((_, i) => i !== index));
     };
 
     // Función para remover todas las imágenes
@@ -182,9 +182,8 @@ export default function Evaluacion() {
         setCapturedImages([]);
     };
 
-    const filteredPatients = pacientes.filter(patient =>
-        getPatientFullName(patient).toLowerCase().includes(searchTerm.toLowerCase()) ||
-        patient.dni.includes(searchTerm)
+    const filteredPatients = pacientes.filter(
+        (patient) => getPatientFullName(patient).toLowerCase().includes(searchTerm.toLowerCase()) || patient.dni.includes(searchTerm),
     );
 
     const handlePatientSelect = (patient: Paciente) => {
@@ -208,24 +207,40 @@ export default function Evaluacion() {
         }
 
         setIsEvaluating(true);
-        
+
         try {
             // Usar router.post de Inertia para manejar la redirección correctamente
-            router.post('/evaluacion/predecir', {
-                paciente_id: selectedPatient.id,
-                imagenes: capturedImages
-            }, {
-                onSuccess: () => {
-                    // La redirección se maneja automáticamente por Inertia
+            router.post(
+                '/evaluacion/predecir',
+                {
+                    paciente_id: selectedPatient.id,
+                    imagenes: capturedImages,
                 },
-                onError: (errors) => {
-                    console.error('Error:', errors);
-                    toast.error('Error al procesar la evaluación');
+                {
+                    onSuccess: () => {
+                        // La redirección se maneja automáticamente por Inertia
+                    },
+                    onError: (errors) => {
+                        console.error('Error:', errors);
+
+                        // Extraer el mensaje específico del error
+                        let errorMessage = 'Error al procesar la evaluación';
+
+                        if (errors.prediccion) {
+                            errorMessage = errors.prediccion;
+                        } else if (typeof errors === 'string') {
+                            errorMessage = errors;
+                        } else if (errors.message) {
+                            errorMessage = errors.message;
+                        }
+
+                        toast.error(errorMessage);
+                    },
+                    onFinish: () => {
+                        setIsEvaluating(false);
+                    },
                 },
-                onFinish: () => {
-                    setIsEvaluating(false);
-                }
-            });
+            );
         } catch (error) {
             console.error('Error:', error);
             toast.error('Error de conexión al procesar la evaluación');
@@ -236,15 +251,11 @@ export default function Evaluacion() {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Nueva Evaluación" />
-            <div className="flex h-full flex-1 flex-col gap-6 rounded-xl p-4 overflow-x-auto">
+            <div className="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-4">
                 {/* Header */}
                 <div className="flex items-center gap-4">
                     {selectedPatient && (
-                        <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={handleBackToSelection}
-                        >
+                        <Button variant="outline" size="icon" onClick={handleBackToSelection}>
                             <ArrowLeft className="h-4 w-4" />
                         </Button>
                     )}
@@ -261,7 +272,7 @@ export default function Evaluacion() {
                             {/* Barra de búsqueda con botón de crear */}
                             <div className="flex gap-2">
                                 <div className="relative flex-1">
-                                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                                    <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
                                     <Input
                                         placeholder="Buscar paciente..."
                                         className="pl-10"
@@ -269,11 +280,7 @@ export default function Evaluacion() {
                                         onChange={(e) => setSearchTerm(e.target.value)}
                                     />
                                 </div>
-                                <Button 
-                                    variant="outline"
-                                    onClick={() => setIsCreateModalOpen(true)}
-                                    className="flex items-center gap-2"
-                                >
+                                <Button variant="outline" onClick={() => setIsCreateModalOpen(true)} className="flex items-center gap-2">
                                     <Plus className="h-4 w-4" />
                                     Nuevo Paciente
                                 </Button>
@@ -283,20 +290,22 @@ export default function Evaluacion() {
                             <div className="space-y-2">
                                 {filteredPatients.length > 0 ? (
                                     filteredPatients.map((paciente) => (
-                                        <div 
+                                        <div
                                             key={paciente.id}
                                             onClick={() => handlePatientSelect(paciente)}
-                                            className="cursor-pointer rounded-lg border p-4 shadow hover:shadow-md hover:bg-gray-50 transition-all"
+                                            className="cursor-pointer rounded-lg border p-4 shadow transition-all hover:bg-gray-50 hover:shadow-md"
                                         >
-                                            <h3 className="text-lg font-semibold pb-1">{getPatientFullName(paciente)}</h3>
+                                            <h3 className="pb-1 text-lg font-semibold">{getPatientFullName(paciente)}</h3>
                                             <div className="flex flex-col">
-                                                <span className="text-sm text-gray-600">{paciente.edad} años • {paciente.genero}</span>
+                                                <span className="text-sm text-gray-600">
+                                                    {paciente.edad} años • {paciente.genero}
+                                                </span>
                                                 <span className="text-sm text-gray-600">DNI: {paciente.dni}</span>
                                             </div>
                                         </div>
                                     ))
                                 ) : (
-                                    <div className="text-center py-8 text-gray-500">
+                                    <div className="py-8 text-center text-gray-500">
                                         {searchTerm ? 'No se encontraron pacientes.' : 'No hay pacientes registrados.'}
                                     </div>
                                 )}
@@ -309,16 +318,14 @@ export default function Evaluacion() {
                         {/* Información del paciente seleccionado */}
                         <Card>
                             <CardContent>
-                                <div className="flex justify-between items-center">
+                                <div className="flex items-center justify-between">
                                     <div>
                                         <h3 className="text-lg font-semibold">{getPatientFullName(selectedPatient)}</h3>
                                         <p className="text-sm text-gray-600">
                                             {selectedPatient.edad} años • {selectedPatient.genero}
                                         </p>
                                     </div>
-                                    <div className="text-sm text-gray-500">
-                                        DNI: {selectedPatient.dni}
-                                    </div>
+                                    <div className="text-sm text-gray-500">DNI: {selectedPatient.dni}</div>
                                 </div>
                             </CardContent>
                         </Card>
@@ -346,20 +353,10 @@ export default function Evaluacion() {
                                 {isUsingCamera ? (
                                     /* Vista de cámara */
                                     <div className="space-y-4">
-                                        <video
-                                            ref={videoRef}
-                                            autoPlay
-                                            playsInline
-                                            className="w-full max-w-md mx-auto rounded-lg"
-                                        />
-                                        <div className="flex gap-2 justify-center">
-                                            <Button onClick={handleCaptureImage}>
-                                                Capturar
-                                            </Button>
-                                            <Button 
-                                                variant="outline" 
-                                                onClick={handleCloseCamera}
-                                            >
+                                        <video ref={videoRef} autoPlay playsInline className="mx-auto w-full max-w-md rounded-lg" />
+                                        <div className="flex justify-center gap-2">
+                                            <Button onClick={handleCaptureImage}>Capturar</Button>
+                                            <Button variant="outline" onClick={handleCloseCamera}>
                                                 Cancelar
                                             </Button>
                                         </div>
@@ -371,15 +368,15 @@ export default function Evaluacion() {
                                         <div className="text-center text-sm text-gray-600">
                                             {capturedImages.length} de {MAX_IMAGES} imágenes
                                         </div>
-                                        
+
                                         {/* Grid de imágenes */}
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                                             {capturedImages.map((image, index) => (
                                                 <div key={index} className="relative">
                                                     <img
                                                         src={image}
                                                         alt={`Imagen ${index + 1}`}
-                                                        className="w-full h-48 object-cover rounded-lg shadow-md"
+                                                        className="h-48 w-full rounded-lg object-cover shadow-md"
                                                     />
                                                     <Button
                                                         size="sm"
@@ -392,26 +389,20 @@ export default function Evaluacion() {
                                                 </div>
                                             ))}
                                         </div>
-                                        
+
                                         {/* Botones de acción */}
-                                        <div className="flex gap-2 justify-center flex-wrap">
-                                            <Button 
-                                                variant="outline" 
-                                                onClick={handleRemoveAllImages}
-                                            >
+                                        <div className="flex flex-wrap justify-center gap-2">
+                                            <Button variant="outline" onClick={handleRemoveAllImages}>
                                                 Remover todas
                                             </Button>
                                             {capturedImages.length < MAX_IMAGES && (
                                                 <>
                                                     <Button onClick={handleOpenCamera}>
-                                                        <Camera className="h-4 w-4 mr-2" />
+                                                        <Camera className="mr-2 h-4 w-4" />
                                                         Agregar foto
                                                     </Button>
-                                                    <Button 
-                                                        variant="outline" 
-                                                        onClick={handleSelectFromDevice}
-                                                    >
-                                                        <ImageIcon className="h-4 w-4 mr-2" />
+                                                    <Button variant="outline" onClick={handleSelectFromDevice}>
+                                                        <ImageIcon className="mr-2 h-4 w-4" />
                                                         Seleccionar archivo
                                                     </Button>
                                                 </>
@@ -422,16 +413,14 @@ export default function Evaluacion() {
                                     /* Vista inicial - botones para elegir fuente */
                                     <div className="space-y-4">
                                         {/* Indicador de límite de imágenes */}
-                                        <div className="text-center text-sm text-gray-600">
-                                            Puedes agregar hasta {MAX_IMAGES} imágenes
-                                        </div>
-                                        
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="text-center text-sm text-gray-600">Puedes agregar hasta {MAX_IMAGES} imágenes</div>
+
+                                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                             {/* Solo mostrar botón de cámara si NO es móvil */}
                                             {!isMobile && (
                                                 <Button
                                                     variant="outline"
-                                                    className="h-24 flex flex-col gap-2"
+                                                    className="flex h-24 flex-col gap-2"
                                                     onClick={handleOpenCamera}
                                                     disabled={capturedImages.length >= MAX_IMAGES}
                                                 >
@@ -442,7 +431,7 @@ export default function Evaluacion() {
                                             {/* Botón Dispositivo siempre visible */}
                                             <Button
                                                 variant="outline"
-                                                className="h-24 flex flex-col gap-2"
+                                                className="flex h-24 flex-col gap-2"
                                                 onClick={handleSelectFromDevice}
                                                 disabled={capturedImages.length >= MAX_IMAGES}
                                             >
@@ -456,23 +445,14 @@ export default function Evaluacion() {
                         </Card>
 
                         {/* Botón Evaluación */}
-                        <Button 
-                            className="w-full" 
-                            size="lg"
-                            onClick={handleEvaluatePatient}
-                            disabled={capturedImages.length === 0 || isEvaluating}
-                        >
+                        <Button className="w-full" size="lg" onClick={handleEvaluatePatient} disabled={capturedImages.length === 0 || isEvaluating}>
                             {isEvaluating ? 'Evaluando...' : 'Evaluar paciente'}
                         </Button>
                     </>
                 )}
 
                 {/* Modal para crear paciente */}
-                <CreatePatientModal
-                    isOpen={isCreateModalOpen}
-                    onClose={() => setIsCreateModalOpen(false)}
-                    onSubmit={handleCreateSubmit}
-                />
+                <CreatePatientModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} onSubmit={handleCreateSubmit} />
             </div>
             <Toaster position="top-right" />
         </AppLayout>
