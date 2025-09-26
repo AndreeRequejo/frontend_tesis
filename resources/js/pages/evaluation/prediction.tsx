@@ -1,21 +1,10 @@
-import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
-import { Head, usePage, router } from '@inertiajs/react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { 
-    CheckCircle, 
-    ArrowLeft, 
-    Save, 
-    User, 
-    Calendar, 
-    Clock, 
-    Target,
-    TrendingUp,
-    AlertCircle,
-    Image as ImageIcon
-} from 'lucide-react';
+import AppLayout from '@/layouts/app-layout';
+import { type BreadcrumbItem } from '@/types';
+import { Head, router, usePage } from '@inertiajs/react';
+import { AlertCircle, ArrowLeft, Calendar, CheckCircle, Clock, Image as ImageIcon, Save, Target, TrendingUp, User } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'react-hot-toast';
 
@@ -93,22 +82,17 @@ const getClassificationColor = (label: string) => {
 
 // Componente para mostrar probabilidades
 const ProbabilityBars = ({ probabilidades }: { probabilidades: Record<string, number> }) => {
-    const sortedProbs = Object.entries(probabilidades).sort(([,a], [,b]) => b - a);
-    
+    const sortedProbs = Object.entries(probabilidades).sort(([, a], [, b]) => b - a);
+
     return (
         <div className="space-y-2">
             {sortedProbs.map(([clase, prob]) => (
                 <div key={clase} className="flex items-center gap-3">
-                    <span className="text-sm font-medium w-20 text-right">{clase}:</span>
-                    <div className="flex-1 bg-gray-200 rounded-full h-2">
-                        <div
-                            className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                            style={{ width: `${prob * 100}%` }}
-                        />
+                    <span className="w-20 text-right text-sm font-medium">{clase}:</span>
+                    <div className="h-2 flex-1 rounded-full bg-gray-200">
+                        <div className="h-2 rounded-full bg-blue-600 transition-all duration-300" style={{ width: `${prob * 100}%` }} />
                     </div>
-                    <span className="text-sm text-gray-600 w-12">
-                        {(prob * 100).toFixed(1)}%
-                    </span>
+                    <span className="w-12 text-sm text-gray-600">{(prob * 100).toFixed(1)}%</span>
                 </div>
             ))}
         </div>
@@ -118,7 +102,7 @@ const ProbabilityBars = ({ probabilidades }: { probabilidades: Record<string, nu
 export default function Prediction() {
     const { success, paciente, imagenes, prediccion, fecha_evaluacion } = usePage<PredictionPageProps>().props;
     const [isSaving, setIsSaving] = useState(false);
-    
+
     // Determinar si es predicción simple o batch
     const isSimplePrediction = 'prediccion_class' in prediccion;
     const isBatchPrediction = 'total_images' in prediccion;
@@ -141,10 +125,10 @@ export default function Prediction() {
             } else if (isBatchPrediction) {
                 const pred = prediccion as PrediccionBatch;
                 // Para batch, usar la predicción con mayor confianza
-                const prediccionesExitosas = pred.predicciones.filter(p => p.success);
+                const prediccionesExitosas = pred.predicciones.filter((p) => p.success);
                 if (prediccionesExitosas.length > 0) {
-                    const mejorPrediccion = prediccionesExitosas.reduce((mejor, actual) => 
-                        (actual.confianza || 0) > (mejor.confianza || 0) ? actual : mejor
+                    const mejorPrediccion = prediccionesExitosas.reduce((mejor, actual) =>
+                        (actual.confianza || 0) > (mejor.confianza || 0) ? actual : mejor,
                     );
                     clasificacion = mejorPrediccion.prediccion_label || '';
                     confianza = mejorPrediccion.confianza || 0;
@@ -167,9 +151,7 @@ export default function Prediction() {
                     es_prediccion_automatica: true,
                     confianza,
                     tiempo_procesamiento,
-                    probabilidades: isSimplePrediction ? 
-                        (prediccion as PrediccionSimple).probabilidades : 
-                        null
+                    probabilidades: isSimplePrediction ? (prediccion as PrediccionSimple).probabilidades : null,
                 }),
             });
 
@@ -208,9 +190,9 @@ export default function Prediction() {
                     <Card>
                         <CardContent className="flex items-center justify-center p-8">
                             <div className="text-center">
-                                <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-                                <h3 className="text-lg font-semibold mb-2">Error al procesar las imágenes</h3>
-                                <p className="text-gray-600 mb-4">No se pudo realizar la predicción</p>
+                                <AlertCircle className="mx-auto mb-4 h-12 w-12 text-red-500" />
+                                <h3 className="mb-2 text-lg font-semibold">Error al procesar las imágenes</h3>
+                                <p className="mb-4 text-gray-600">No se pudo realizar la predicción</p>
                                 <Button onClick={handleBack}>Volver a intentar</Button>
                             </div>
                         </CardContent>
@@ -223,7 +205,7 @@ export default function Prediction() {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Resultados de Predicción" />
-            <div className="flex h-full flex-1 flex-col gap-6 rounded-xl p-4 overflow-x-auto">
+            <div className="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-4">
                 {/* Header */}
                 <div className="flex items-center gap-4">
                     <Button variant="outline" size="icon" onClick={handleBack}>
@@ -242,7 +224,7 @@ export default function Prediction() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
                             <div>
                                 <p className="text-sm text-gray-600">Nombre</p>
                                 <p className="font-semibold">{paciente.nombre}</p>
@@ -272,16 +254,18 @@ export default function Prediction() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                             {imagenes.map((imagen, index) => (
-                                <div key={index} className="relative">
-                                    <img
-                                        src={imagen}
-                                        alt={`Imagen ${index + 1}`}
-                                        className="w-full h-48 object-cover rounded-lg shadow-md"
-                                    />
-                                    <div className="absolute bottom-2 left-2 bg-black bg-opacity-75 text-white px-2 py-1 rounded text-sm">
-                                        Imagen {index + 1}
+                                <div key={index} className="flex justify-center">
+                                    <div className="relative inline-block">
+                                        <img
+                                            src={imagen}
+                                            alt={`Imagen ${index + 1}`}
+                                            className="mx-auto h-auto w-full max-w-[250px] rounded-lg object-contain shadow-md"
+                                        />
+                                        <div className="bg-opacity-75 absolute bottom-2 left-2 rounded bg-black px-2 py-1 text-sm text-white">
+                                            Imagen {index + 1}
+                                        </div>
                                     </div>
                                 </div>
                             ))}
@@ -305,19 +289,15 @@ export default function Prediction() {
                                     <>
                                         {/* Clasificación principal */}
                                         <div className="text-center">
-                                            <Badge 
-                                                className={`text-lg px-4 py-2 ${getClassificationColor(pred.prediccion_label)}`}
-                                            >
+                                            <Badge className={`px-4 py-2 text-lg ${getClassificationColor(pred.prediccion_label)}`}>
                                                 {pred.prediccion_label}
                                             </Badge>
-                                            <p className="text-sm text-gray-600 mt-2">
-                                                Confianza: {pred.confianza_porcentaje}
-                                            </p>
+                                            <p className="mt-2 text-sm text-gray-600">Confianza: {pred.confianza_porcentaje}</p>
                                         </div>
 
                                         {/* Probabilidades */}
                                         <div>
-                                            <h4 className="font-semibold mb-3 flex items-center gap-2">
+                                            <h4 className="mb-3 flex items-center gap-2 font-semibold">
                                                 <TrendingUp className="h-4 w-4" />
                                                 Distribución de Probabilidades
                                             </h4>
@@ -375,10 +355,10 @@ export default function Prediction() {
                                         <div className="space-y-4">
                                             <h4 className="font-semibold">Resultados por imagen:</h4>
                                             {pred.predicciones.map((resultado, index) => (
-                                                <div 
-                                                    key={index} 
-                                                    className={`p-4 rounded-lg border ${
-                                                        resultado.success ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
+                                                <div
+                                                    key={index}
+                                                    className={`rounded-lg border p-4 ${
+                                                        resultado.success ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'
                                                     }`}
                                                 >
                                                     <div className="flex items-center justify-between">
@@ -388,20 +368,18 @@ export default function Prediction() {
                                                                 {resultado.prediccion_label} ({resultado.confianza_porcentaje})
                                                             </Badge>
                                                         ) : (
-                                                            <Badge className="bg-red-100 text-red-800 border-red-200">
-                                                                Error
-                                                            </Badge>
+                                                            <Badge className="border-red-200 bg-red-100 text-red-800">Error</Badge>
                                                         )}
                                                     </div>
-                                                    
+
                                                     {resultado.success && resultado.probabilidades && (
                                                         <div className="mt-3">
                                                             <ProbabilityBars probabilidades={resultado.probabilidades} />
                                                         </div>
                                                     )}
-                                                    
+
                                                     {!resultado.success && resultado.error && (
-                                                        <p className="text-sm text-red-600 mt-2">{resultado.error}</p>
+                                                        <p className="mt-2 text-sm text-red-600">{resultado.error}</p>
                                                     )}
                                                 </div>
                                             ))}
@@ -426,12 +404,12 @@ export default function Prediction() {
                 )}
 
                 {/* Botones de acción */}
-                <div className="flex gap-4 justify-end">
+                <div className="flex justify-end gap-4">
                     <Button variant="outline" onClick={handleBack}>
                         Realizar otra evaluación
                     </Button>
                     <Button onClick={handleSave} disabled={isSaving}>
-                        <Save className="h-4 w-4 mr-2" />
+                        <Save className="mr-2 h-4 w-4" />
                         {isSaving ? 'Guardando...' : 'Guardar Evaluación'}
                     </Button>
                 </div>
