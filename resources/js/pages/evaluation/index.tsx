@@ -9,6 +9,7 @@ import { Head, router, usePage } from '@inertiajs/react';
 import { ArrowLeft, Camera, ImageIcon, Plus, Search, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Toaster, toast } from 'react-hot-toast';
+
 // Detectar si es móvil
 const isMobile = typeof window !== 'undefined' && /Mobi|Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
 
@@ -31,12 +32,9 @@ export default function Evaluacion() {
     const [searchTerm, setSearchTerm] = useState('');
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [capturedImages, setCapturedImages] = useState<string[]>([]);
-    const [stream, setStream] = useState<MediaStream | null>(null);
-    const [isUsingCamera, setIsUsingCamera] = useState(false);
     const [isEvaluating, setIsEvaluating] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const videoRef = useRef<HTMLVideoElement>(null);
-    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const cameraInputRef = useRef<HTMLInputElement>(null);
 
     // Configuración para número máximo de imágenes
     const MAX_IMAGES = 1;
@@ -48,93 +46,31 @@ export default function Evaluacion() {
         }
     }, [pacienteSeleccionado]);
 
-    // Limpiar stream de cámara al desmontar el componente
-    useEffect(() => {
-        return () => {
-            if (stream) {
-                stream.getTracks().forEach((track) => track.stop());
-            }
-        };
-    }, [stream]);
-
     const getPatientFullName = (patient: Paciente) => {
         return `${patient.nombres} ${patient.apellidos}`;
     };
 
-    // Función para abrir la cámara
-    const handleOpenCamera = async () => {
-        if (capturedImages.length >= MAX_IMAGES) {
-            alert(`Solo puedes agregar hasta ${MAX_IMAGES} imagen(es).`);
-            return;
-        }
-
-        try {
-            setIsUsingCamera(true);
-            const mediaStream = await navigator.mediaDevices.getUserMedia({
-                video: {
-                    width: { ideal: 1280 },
-                    height: { ideal: 720 },
-                    facingMode: 'user',
-                },
-            });
-            setStream(mediaStream);
-
-            if (videoRef.current) {
-                videoRef.current.srcObject = mediaStream;
-            }
-        } catch (error) {
-            console.error('Error accessing camera:', error);
-            alert('No se pudo acceder a la cámara. Por favor, verifica los permisos.');
-            setIsUsingCamera(false);
-        }
-    };
-
-    // Función para capturar la imagen
-    const handleCaptureImage = () => {
-        if (videoRef.current && canvasRef.current && capturedImages.length < MAX_IMAGES) {
-            const canvas = canvasRef.current;
-            const video = videoRef.current;
-
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-
-            const ctx = canvas.getContext('2d');
-            if (ctx) {
-                ctx.drawImage(video, 0, 0);
-                const imageDataUrl = canvas.toDataURL('image/jpeg', 0.8);
-                setCapturedImages((prev) => [...prev, imageDataUrl]);
-
-                // Detener la cámara
-                if (stream) {
-                    stream.getTracks().forEach((track) => track.stop());
-                    setStream(null);
-                }
-                setIsUsingCamera(false);
-            }
-        }
-    };
-
-    // Función para cerrar la cámara sin capturar
-    const handleCloseCamera = () => {
-        if (stream) {
-            stream.getTracks().forEach((track) => track.stop());
-            setStream(null);
-        }
-        setIsUsingCamera(false);
-    };
-
-    // Función para seleccionar imagen del dispositivo
-    const handleSelectFromDevice = () => {
+    // Función para seleccionar imagen de la galería (móvil) o dispositivo (desktop)
+    const handleSelectFromGallery = () => {
         if (capturedImages.length >= MAX_IMAGES) {
             alert(`Ya has alcanzado el máximo de ${MAX_IMAGES} imágenes.`);
             return;
         }
 
-        const remainingSlots = MAX_IMAGES - capturedImages.length;
-        console.log(`Puedes seleccionar hasta ${remainingSlots} imagen(es) más.`);
-
         if (fileInputRef.current) {
             fileInputRef.current.click();
+        }
+    };
+
+    // Función para abrir cámara directamente (solo móvil)
+    const handleOpenCamera = () => {
+        if (capturedImages.length >= MAX_IMAGES) {
+            alert(`Ya has alcanzado el máximo de ${MAX_IMAGES} imágenes.`);
+            return;
+        }
+
+        if (cameraInputRef.current) {
+            cameraInputRef.current.click();
         }
     };
 
@@ -166,9 +102,12 @@ export default function Evaluacion() {
             }
         });
 
-        // Limpiar el input para permitir seleccionar el mismo archivo de nuevo
+        // Limpiar ambos inputs para permitir seleccionar el mismo archivo de nuevo
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
+        }
+        if (cameraInputRef.current) {
+            cameraInputRef.current.value = '';
         }
     };
 
@@ -344,7 +283,8 @@ export default function Evaluacion() {
                                 <CardTitle>Imagen</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                {/* Input oculto para seleccionar archivos */}
+                                {/* Inputs para seleccionar archivos */}
+                                {/* Input para galería/archivos del dispositivo */}
                                 <input
                                     ref={fileInputRef}
                                     type="file"
@@ -352,24 +292,21 @@ export default function Evaluacion() {
                                     multiple
                                     onChange={handleFileSelect}
                                     style={{ display: 'none' }}
-                                    {...(isMobile ? { capture: 'environment' } : {})}
                                 />
+                                
+                                {/* Input para cámara directa (solo móviles) */}
+                                {isMobile && (
+                                    <input
+                                        ref={cameraInputRef}
+                                        type="file"
+                                        accept="image/*"
+                                        capture="environment"
+                                        onChange={handleFileSelect}
+                                        style={{ display: 'none' }}
+                                    />
+                                )}
 
-                                {/* Canvas oculto para capturar imagen */}
-                                <canvas ref={canvasRef} style={{ display: 'none' }} />
-
-                                {isUsingCamera ? (
-                                    /* Vista de cámara */
-                                    <div className="space-y-4">
-                                        <video ref={videoRef} autoPlay playsInline className="mx-auto w-full max-w-md rounded-lg" />
-                                        <div className="flex justify-center gap-2">
-                                            <Button onClick={handleCaptureImage}>Capturar</Button>
-                                            <Button variant="outline" onClick={handleCloseCamera}>
-                                                Cancelar
-                                            </Button>
-                                        </div>
-                                    </div>
-                                ) : capturedImages.length > 0 ? (
+                                {capturedImages.length > 0 ? (
                                     /* Vista de imágenes capturadas */
                                     <div className="space-y-4">
                                         {/* Contador de imágenes */}
@@ -408,47 +345,72 @@ export default function Evaluacion() {
                                             </Button>
                                             {capturedImages.length < MAX_IMAGES && (
                                                 <>
-                                                    <Button onClick={handleOpenCamera}>
-                                                        <Camera className="mr-2 h-4 w-4" />
-                                                        Agregar foto
-                                                    </Button>
-                                                    <Button variant="outline" onClick={handleSelectFromDevice}>
-                                                        <ImageIcon className="mr-2 h-4 w-4" />
-                                                        Seleccionar archivo
-                                                    </Button>
+                                                    {isMobile ? (
+                                                        /* Dos botones para móvil */
+                                                        <>
+                                                            <Button onClick={handleOpenCamera}>
+                                                                <Camera className="mr-2 h-4 w-4" />
+                                                                Cámara
+                                                            </Button>
+                                                            <Button variant="outline" onClick={handleSelectFromGallery}>
+                                                                <ImageIcon className="mr-2 h-4 w-4" />
+                                                                Galería
+                                                            </Button>
+                                                        </>
+                                                    ) : (
+                                                        /* Un botón para desktop */
+                                                        <Button onClick={handleSelectFromGallery}>
+                                                            <ImageIcon className="mr-2 h-4 w-4" />
+                                                            Seleccionar archivo
+                                                        </Button>
+                                                    )}
                                                 </>
                                             )}
                                         </div>
                                     </div>
                                 ) : (
-                                    /* Vista inicial - botones para elegir fuente */
+                                    /* Vista inicial - botones según dispositivo */
                                     <div className="space-y-4">
                                         {/* Indicador de límite de imágenes */}
-                                        <div className="text-center text-sm text-gray-600">Puedes agregar hasta {MAX_IMAGES} imagen(es)</div>
+                                        <div className="text-center text-sm text-gray-600">
+                                            Puedes agregar hasta {MAX_IMAGES} imagen(es)
+                                        </div>
 
-                                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                            {/* Solo mostrar botón de cámara si NO es móvil */}
-                                            {!isMobile && (
+                                        <div className="flex justify-center">
+                                            {isMobile ? (
+                                                /* Dos botones para móvil - Grid de 2 columnas */
+                                                <div className="grid grid-cols-2 gap-4 w-full max-w-sm">
+                                                    <Button
+                                                        variant="outline"
+                                                        className="flex h-24 flex-col gap-2"
+                                                        onClick={handleOpenCamera}
+                                                        disabled={capturedImages.length >= MAX_IMAGES}
+                                                    >
+                                                        <Camera className="h-8 w-8" />
+                                                        <span>Cámara</span>
+                                                    </Button>
+                                                    <Button
+                                                        variant="outline"
+                                                        className="flex h-24 flex-col gap-2"
+                                                        onClick={handleSelectFromGallery}
+                                                        disabled={capturedImages.length >= MAX_IMAGES}
+                                                    >
+                                                        <ImageIcon className="h-8 w-8" />
+                                                        <span>Galería</span>
+                                                    </Button>
+                                                </div>
+                                            ) : (
+                                                /* Un botón para desktop */
                                                 <Button
                                                     variant="outline"
-                                                    className="flex h-24 flex-col gap-2"
-                                                    onClick={handleOpenCamera}
+                                                    className="flex h-24 w-full max-w-xs flex-col gap-2"
+                                                    onClick={handleSelectFromGallery}
                                                     disabled={capturedImages.length >= MAX_IMAGES}
                                                 >
-                                                    <Camera className="h-8 w-8" />
-                                                    <span>Cámara</span>
+                                                    <ImageIcon className="h-8 w-8" />
+                                                    <span>Seleccionar del dispositivo</span>
                                                 </Button>
                                             )}
-                                            {/* Botón Dispositivo siempre visible */}
-                                            <Button
-                                                variant="outline"
-                                                className="flex h-24 flex-col gap-2"
-                                                onClick={handleSelectFromDevice}
-                                                disabled={capturedImages.length >= MAX_IMAGES}
-                                            >
-                                                <ImageIcon className="h-8 w-8" />
-                                                <span>Dispositivo</span>
-                                            </Button>
                                         </div>
                                     </div>
                                 )}
