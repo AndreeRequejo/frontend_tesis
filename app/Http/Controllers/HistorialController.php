@@ -46,7 +46,7 @@ class HistorialController extends Controller
                 'descripcion' => $evaluacion->comentario ?? 'Sin comentarios',
                 'imagen' => $evaluacion->imagenPrincipal 
                     ? 'data:image/jpeg;base64,' . $evaluacion->imagenPrincipal->contenido_base64
-                    : 'https://dermacareclinica.com/wp-content/uploads/2021/10/Cicatrices-de-acne%CC%81-la-huella-de-la-adolsecencia-1-960x720.jpg'
+                    : null
             ];
         });
 
