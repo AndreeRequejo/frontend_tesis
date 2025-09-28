@@ -107,69 +107,56 @@ export default function Prediction() {
     const isSimplePrediction = 'prediccion_class' in prediccion;
     const isBatchPrediction = 'total_images' in prediccion;
 
-    const handleSave = async () => {
+    const handleSave = () => {
         setIsSaving(true);
 
-        try {
-            let clasificacion = '';
-            let comentario = '';
-            let confianza = 0;
-            let tiempo_procesamiento = 0;
+        let clasificacion = '';
+        let comentario = '';
+        let confianza = 0;
+        let tiempo_procesamiento = 0;
 
-            if (isSimplePrediction) {
-                const pred = prediccion as PrediccionSimple;
-                clasificacion = pred.prediccion_label;
-                confianza = pred.confianza;
+        if (isSimplePrediction) {
+            const pred = prediccion as PrediccionSimple;
+            clasificacion = pred.prediccion_label;
+            confianza = pred.confianza;
+            tiempo_procesamiento = pred.tiempo_procesamiento;
+            comentario = `Evaluación automática con ${pred.confianza_porcentaje} de confianza`;
+        } else if (isBatchPrediction) {
+            const pred = prediccion as PrediccionBatch;
+            // Para batch, usar la predicción con mayor confianza
+            const prediccionesExitosas = pred.predicciones.filter((p) => p.success);
+            if (prediccionesExitosas.length > 0) {
+                const mejorPrediccion = prediccionesExitosas.reduce((mejor, actual) =>
+                    (actual.confianza || 0) > (mejor.confianza || 0) ? actual : mejor,
+                );
+                clasificacion = mejorPrediccion.prediccion_label || '';
                 tiempo_procesamiento = pred.tiempo_procesamiento;
-                comentario = `Evaluación automática con ${pred.confianza_porcentaje} de confianza`;
-            } else if (isBatchPrediction) {
-                const pred = prediccion as PrediccionBatch;
-                // Para batch, usar la predicción con mayor confianza
-                const prediccionesExitosas = pred.predicciones.filter((p) => p.success);
-                if (prediccionesExitosas.length > 0) {
-                    const mejorPrediccion = prediccionesExitosas.reduce((mejor, actual) =>
-                        (actual.confianza || 0) > (mejor.confianza || 0) ? actual : mejor,
-                    );
-                    clasificacion = mejorPrediccion.prediccion_label || '';
-                    confianza = mejorPrediccion.confianza || 0;
-                    tiempo_procesamiento = pred.tiempo_procesamiento;
-                    comentario = `Evaluación automática (${pred.successful}/${pred.total_images} imágenes procesadas)`;
-                }
+                comentario = `Evaluación automática (${pred.successful}/${pred.total_images} imágenes procesadas)`;
             }
-
-            const response = await fetch('/evaluaciones', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                },
-                body: JSON.stringify({
-                    paciente_id: paciente.id,
-                    clasificacion,
-                    comentario,
-                    imagenes,
-                    es_prediccion_automatica: true,
-                    confianza,
-                    tiempo_procesamiento,
-                    probabilidades: isSimplePrediction ? (prediccion as PrediccionSimple).probabilidades : null,
-                }),
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-                toast.success('Evaluación guardada exitosamente');
-                // Redirigir al historial después de guardar
-                router.visit('/historial');
-            } else {
-                toast.error(result.message || 'Error al guardar la evaluación');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            toast.error('Error al guardar la evaluación');
-        } finally {
-            setIsSaving(false);
         }
+
+        router.post('/evaluaciones', {
+            paciente_id: paciente.id,
+            clasificacion,
+            comentario,
+            imagenes,
+            es_prediccion_automatica: true,
+            confianza,
+            tiempo_procesamiento,
+            probabilidades: isSimplePrediction ? (prediccion as PrediccionSimple).probabilidades : null,
+        }, {
+            onSuccess: () => {
+                toast.success('Evaluación guardada exitosamente');
+                router.visit('/historial');
+            },
+            onError: (errors) => {
+                console.error('Errores:', errors);
+                toast.error('Error al guardar la evaluación');
+            },
+            onFinish: () => {
+                setIsSaving(false);
+            }
+        });
     };
 
     const handleBack = () => {
