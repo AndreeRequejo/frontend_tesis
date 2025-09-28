@@ -47,6 +47,7 @@ class EvaluacionController extends Controller
             'imagenes' => 'required|array|min:1|max:3',
             'imagenes.*' => 'required|string', // Base64 strings
             // Campos opcionales para predicción automática
+            'es_prediccion_automatica' => 'nullable|boolean',
             'confianza' => 'nullable|numeric|between:0,1',
             'tiempo_procesamiento' => 'nullable|numeric',
             'probabilidades' => 'nullable|array'
@@ -64,7 +65,7 @@ class EvaluacionController extends Controller
                 'hora' => now()->toTimeString(),
                 'confianza' => $request->confianza,
                 'tiempo_procesamiento' => $request->tiempo_procesamiento,
-                'probabilidades' => $request->probabilidades
+                'probabilidades' => $request->probabilidades ? json_encode($request->probabilidades) : null
             ];
 
             // Crear la evaluación
@@ -83,18 +84,18 @@ class EvaluacionController extends Controller
 
             DB::commit();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Evaluación creada exitosamente',
-                'evaluacion' => $evaluacion->load(['paciente', 'imagenes'])
-            ], 201);
+            // Retornar redirección de Inertia en lugar de JSON
+            return redirect()->route('historial')
+                ->with('success', 'Evaluación guardada exitosamente');
+
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('Error al crear evaluación: ' . $e->getMessage());
 
-            return response()->json([
-                'message' => 'Error al crear la evaluación',
-                'error' => $e->getMessage()
-            ], 500);
+            // Retornar con errores en lugar de JSON
+            return redirect()->back()
+                ->withErrors(['general' => 'Error al guardar la evaluación: ' . $e->getMessage()])
+                ->withInput();
         }
     }
 
@@ -123,7 +124,7 @@ class EvaluacionController extends Controller
             'imagenes' => $evaluacion->imagenes->map(function ($imagen) {
                 return [
                     'id' => $imagen->id,
-                    'url' => 'data:image/jpeg;base64,' . $imagen->contenido_base64
+                    'url' => 'data:image/jpg;base64,' . $imagen->contenido_base64
                 ];
             })->toArray()
         ];
