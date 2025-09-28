@@ -1,4 +1,3 @@
-import { Button } from '@/components/ui/button';
 import { Link } from '@inertiajs/react';
 import { FileText } from 'lucide-react';
 
@@ -38,7 +37,7 @@ const formatImageSrc = (imagen: string) => {
         return imagen;
     }
     // Si es una URL normal, la devuelve tal como está
-    if (imagen.startsWith('http') || imagen.startsWith('/')) {
+    if (imagen.startsWith('https')) {
         return imagen;
     }
     // Si es base64 puro, le agrega el prefijo
