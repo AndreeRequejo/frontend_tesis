@@ -114,6 +114,7 @@ export default function Prediction() {
         let comentario = '';
         let confianza = 0;
         let tiempo_procesamiento = 0;
+        let probabilidades = null;
 
         if (isSimplePrediction) {
             const pred = prediccion as PrediccionSimple;
@@ -121,20 +122,25 @@ export default function Prediction() {
             confianza = pred.confianza;
             tiempo_procesamiento = pred.tiempo_procesamiento;
             comentario = `Evaluación automática con ${pred.confianza_porcentaje} de confianza`;
+            probabilidades = pred.probabilidades;
         } else if (isBatchPrediction) {
             const pred = prediccion as PrediccionBatch;
-            // Para batch, usar la predicción con mayor confianza
+            // Para batch, usar la predicción con mayor clase (más severa)
             const prediccionesExitosas = pred.predicciones.filter((p) => p.success);
             if (prediccionesExitosas.length > 0) {
-                const mejorPrediccion = prediccionesExitosas.reduce((mejor, actual) =>
-                    (actual.confianza || 0) > (mejor.confianza || 0) ? actual : mejor,
+                // Buscar la predicción con mayor clase (más severa)
+                const prediccionMasSevera = prediccionesExitosas.reduce((mayor, actual) =>
+                    (actual.prediccion_class || 0) > (mayor.prediccion_class || 0) ? actual : mayor,
                 );
-                clasificacion = mejorPrediccion.prediccion_label || '';
-                tiempo_procesamiento = pred.tiempo_procesamiento;
-                comentario = `Evaluación automática (${pred.successful}/${pred.total_images} imágenes procesadas)`;
+                clasificacion = prediccionMasSevera.prediccion_label || '';
+                confianza = prediccionMasSevera.confianza || 0;
+                probabilidades = prediccionMasSevera.probabilidades || null;
             }
+            tiempo_procesamiento = pred.tiempo_procesamiento;
+            comentario = `Evaluación automática (${pred.successful}/${pred.total_images} imágenes procesadas) - Clasificación más severa detectada`;
         }
 
+        // Usar la ruta POST /evaluaciones que mapea al método store
         router.post('/evaluaciones', {
             paciente_id: paciente.id,
             clasificacion,
@@ -143,15 +149,20 @@ export default function Prediction() {
             es_prediccion_automatica: true,
             confianza,
             tiempo_procesamiento,
-            probabilidades: isSimplePrediction ? (prediccion as PrediccionSimple).probabilidades : null,
+            probabilidades,
         }, {
             onSuccess: () => {
                 toast.success('Evaluación guardada exitosamente');
-                router.visit('/historial');
+                // No necesitamos redirigir manualmente, el controlador lo hace automáticamente
             },
             onError: (errors) => {
                 console.error('Errores:', errors);
-                toast.error('Error al guardar la evaluación');
+                // Mostrar el error específico si existe
+                if (errors.general) {
+                    toast.error(errors.general);
+                } else {
+                    toast.error('Error al guardar la evaluación');
+                }
             },
             onFinish: () => {
                 setIsSaving(false);
