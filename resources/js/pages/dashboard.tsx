@@ -44,7 +44,7 @@ export default function Dashboard({ pacientesRecientes, evaluacionesRecientes }:
             <div className='m-4 flex flex-col gap-3'>
                 <div className="rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 p-5 text-white shadow-lg">
                     <h2 className="mb-1 text-xl font-semibold">Bienvenido</h2>
-                    <p className="mb-4 text-blue-100">Sistema de clasificación de gravedad de acné mediante IA</p>
+                    <p className="mb-4 text-blue-100">Evalúa la gravedad del acné mediante una imagen facial</p>
                     <Button asChild variant="secondary" className="w-full text-primary">
                         <Link href="/evaluacion">
                             <Camera size={18} className="mr-2" />
