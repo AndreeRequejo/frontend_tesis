@@ -31,15 +31,13 @@ Route::middleware(['auth'])->group(function () {
     // Rutas de evaluaciones
     Route::get('evaluacion', [EvaluacionController::class, 'index'])->name('evaluacion');
     Route::post('evaluaciones', [EvaluacionController::class, 'store'])->name('evaluaciones.store');
-    Route::get('evaluaciones/{id}', [EvaluacionController::class, 'show'])->name('evaluaciones.show');
     Route::put('evaluaciones/{id}', [EvaluacionController::class, 'update'])->name('evaluaciones.update');
     Route::delete('evaluaciones/{id}', [EvaluacionController::class, 'destroy'])->name('evaluaciones.destroy');
-    Route::get('evaluaciones/estadisticas/general', [EvaluacionController::class, 'estadisticas'])->name('evaluaciones.estadisticas');
-    Route::get('evaluaciones/buscar/avanzada', [EvaluacionController::class, 'buscar'])->name('evaluaciones.buscar');
 
     // Rutas de predicción
     Route::post('evaluacion/predecir', [EvaluacionController::class, 'predecir'])->name('evaluacion.predecir');
-
+    
+    // Ruta para detalla de evaluación
     Route::get('evaluacion/{id}', [HistorialController::class, 'show'])->name('evaluacion.detalle');
 });
 
