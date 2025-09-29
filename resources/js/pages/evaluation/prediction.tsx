@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, usePage } from '@inertiajs/react';
-import { AlertCircle, ArrowLeft, Calendar, CheckCircle, Clock, Image as ImageIcon, Save, Target, TrendingUp, User } from 'lucide-react';
+import { AlertCircle, ArrowLeft, Calendar, CheckCircle, Clock, Image as ImageIcon, Save, Target, TrendingUp } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'react-hot-toast';
 
@@ -70,9 +70,9 @@ const getClassificationColor = (label: string) => {
         case 'ausente':
             return 'bg-green-100 text-green-800 border-green-200';
         case 'leve':
-            return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+            return 'bg-green-100 text-green-800 border-green-200';
         case 'moderado':
-            return 'bg-orange-100 text-orange-800 border-orange-200';
+            return 'bg-yellow-100 text-yellow-800 border-yellow-200';
         case 'severo':
             return 'bg-red-100 text-red-800 border-red-200';
         default:
@@ -141,33 +141,37 @@ export default function Prediction() {
         }
 
         // Usar la ruta POST /evaluaciones que mapea al método store
-        router.post('/evaluaciones', {
-            paciente_id: paciente.id,
-            clasificacion,
-            comentario,
-            imagenes,
-            es_prediccion_automatica: true,
-            confianza,
-            tiempo_procesamiento,
-            probabilidades,
-        }, {
-            onSuccess: () => {
-                toast.success('Evaluación guardada exitosamente');
-                // No necesitamos redirigir manualmente, el controlador lo hace automáticamente
+        router.post(
+            '/evaluaciones',
+            {
+                paciente_id: paciente.id,
+                clasificacion,
+                comentario,
+                imagenes,
+                es_prediccion_automatica: true,
+                confianza,
+                tiempo_procesamiento,
+                probabilidades,
             },
-            onError: (errors) => {
-                console.error('Errores:', errors);
-                // Mostrar el error específico si existe
-                if (errors.general) {
-                    toast.error(errors.general);
-                } else {
-                    toast.error('Error al guardar la evaluación');
-                }
+            {
+                onSuccess: () => {
+                    toast.success('Evaluación guardada exitosamente');
+                    // No necesitamos redirigir manualmente, el controlador lo hace automáticamente
+                },
+                onError: (errors) => {
+                    console.error('Errores:', errors);
+                    // Mostrar el error específico si existe
+                    if (errors.general) {
+                        toast.error(errors.general);
+                    } else {
+                        toast.error('Error al guardar la evaluación');
+                    }
+                },
+                onFinish: () => {
+                    setIsSaving(false);
+                },
             },
-            onFinish: () => {
-                setIsSaving(false);
-            }
-        });
+        );
     };
 
     const handleBack = () => {
@@ -205,43 +209,24 @@ export default function Prediction() {
             <Head title="Resultados de Predicción" />
             <div className="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-4">
                 {/* Header */}
-                <div className="flex items-center gap-4">
-                    <Button variant="outline" size="icon" onClick={handleBack}>
-                        <ArrowLeft className="h-4 w-4" />
-                    </Button>
-                    <h1 className="text-2xl font-bold">Resultados de Predicción</h1>
-                    <CheckCircle className="h-6 w-6 text-green-500" />
+                <div>
+                    <div className="flex items-center gap-4">
+                        <Button variant="outline" size="icon" onClick={handleBack}>
+                            <ArrowLeft className="h-4 w-4" />
+                        </Button>
+                        <h1 className="text-2xl font-bold">Resultados de Predicción</h1>
+                        <CheckCircle className="h-6 w-6 text-green-500" />
+                    </div>
+                    <div className='ml-13'>
+                        <p className="text-sm font-bold">
+                            Paciente:
+                            <span className="font-light">
+                                {' '}
+                                {paciente.nombre} - {paciente.dni}
+                            </span>
+                        </p>
+                    </div>
                 </div>
-
-                {/* Información del paciente */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <User className="h-5 w-5" />
-                            Información del Paciente
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-                            <div>
-                                <p className="text-sm text-gray-600">Nombre</p>
-                                <p className="font-semibold">{paciente.nombre}</p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-gray-600">DNI</p>
-                                <p className="font-semibold">{paciente.dni}</p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-gray-600">Edad</p>
-                                <p className="font-semibold">{paciente.edad} años</p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-gray-600">Género</p>
-                                <p className="font-semibold">{paciente.genero}</p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
 
                 {/* Imágenes evaluadas */}
                 <Card>
@@ -404,7 +389,7 @@ export default function Prediction() {
                 {/* Botones de acción */}
                 <div className="flex justify-end gap-4">
                     <Button variant="outline" onClick={handleBack}>
-                        Realizar otra evaluación
+                        Nueva evaluación
                     </Button>
                     <Button onClick={handleSave} disabled={isSaving}>
                         <Save className="mr-2 h-4 w-4" />
