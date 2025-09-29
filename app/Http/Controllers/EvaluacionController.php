@@ -18,10 +18,26 @@ class EvaluacionController extends Controller
      */
     public function index(Request $request)
     {
-        // Obtener solo los 5 últimos pacientes registrados
-        $pacientes = Paciente::orderBy('created_at', 'desc')
-            ->take(5)
-            ->get();
+        $query = Paciente::query();
+
+        // Obtener el total de pacientes registrados
+        $totalPacientes = Paciente::count();
+
+        // Si hay término de búsqueda, aplicar filtros y cargar todos los resultados
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('nombres', 'like', '%' . $search . '%')
+                  ->orWhere('apellidos', 'like', '%' . $search . '%')
+                  ->orWhere('dni', 'like', '%' . $search . '%');
+            });
+            
+            // Obtener todos los pacientes que coincidan con la búsqueda
+            $pacientes = $query->orderBy('created_at', 'desc')->get();
+        } else {
+            // Si no hay búsqueda, cargar solo los 5 más recientes
+            $pacientes = $query->orderBy('created_at', 'desc')->take(5)->get();
+        }
 
         // Si se pasa un paciente_id, buscarlo para preseleccionarlo
         $pacienteSeleccionado = null;
@@ -31,7 +47,9 @@ class EvaluacionController extends Controller
 
         return Inertia::render('evaluation/index', [
             'pacientes' => $pacientes,
-            'pacienteSeleccionado' => $pacienteSeleccionado
+            'totalPacientes' => $totalPacientes,
+            'pacienteSeleccionado' => $pacienteSeleccionado,
+            'filters' => $request->only(['search'])
         ]);
     }
 
@@ -100,39 +118,6 @@ class EvaluacionController extends Controller
     }
 
     /**
-     * Mostrar una evaluación específica
-     */
-    public function show($id)
-    {
-        $evaluacion = Evaluacion::with(['paciente', 'imagenes'])
-            ->findOrFail($id);
-
-        $data = [
-            'id' => $evaluacion->id,
-            'paciente' => [
-                'id' => $evaluacion->paciente->id,
-                'nombre' => $evaluacion->paciente->nombre_completo,
-                'dni' => $evaluacion->paciente->dni,
-                'edad' => $evaluacion->paciente->edad,
-                'genero' => $evaluacion->paciente->genero,
-                'telefono' => $evaluacion->paciente->telefono,
-            ],
-            'fecha' => $evaluacion->fecha->format('d/m/Y'),
-            'hora' => $evaluacion->hora->format('H:i'),
-            'clasificacion' => $evaluacion->clasificacion,
-            'comentario' => $evaluacion->comentario,
-            'imagenes' => $evaluacion->imagenes->map(function ($imagen) {
-                return [
-                    'id' => $imagen->id,
-                    'url' => 'data:image/jpg;base64,' . $imagen->contenido_base64
-                ];
-            })->toArray()
-        ];
-
-        return response()->json($data);
-    }
-
-    /**
      * Actualizar una evaluación existente
      */
     public function update(Request $request, $id)
@@ -163,77 +148,6 @@ class EvaluacionController extends Controller
         $evaluacion->delete();
 
         return redirect()->route('historial')->with('success', 'Evaluación eliminada exitosamente');
-    }
-
-    /**
-     * Obtener estadísticas de evaluaciones
-     */
-    public function estadisticas()
-    {
-        $totalEvaluaciones = Evaluacion::count();
-
-        $estadisticasPorSeveridad = Evaluacion::select('clasificacion', DB::raw('count(*) as total'))
-            ->groupBy('clasificacion')
-            ->get()
-            ->pluck('total', 'clasificacion');
-
-        $evaluacionesRecientes = Evaluacion::with('paciente')
-            ->orderBy('fecha', 'desc')
-            ->orderBy('hora', 'desc')
-            ->limit(5)
-            ->get()
-            ->map(function ($evaluacion) {
-                return [
-                    'id' => $evaluacion->id,
-                    'paciente' => $evaluacion->paciente->nombre_completo,
-                    'fecha' => $evaluacion->fecha->format('d/m/Y'),
-                    'clasificacion' => $evaluacion->clasificacion
-                ];
-            });
-
-        return response()->json([
-            'total_evaluaciones' => $totalEvaluaciones,
-            'por_severidad' => $estadisticasPorSeveridad,
-            'recientes' => $evaluacionesRecientes
-        ]);
-    }
-
-    /**
-     * Buscar evaluaciones por criterios específicos
-     */
-    public function buscar(Request $request)
-    {
-        $query = Evaluacion::with(['paciente', 'imagenPrincipal']);
-
-        // Filtrar por paciente
-        if ($request->filled('paciente_id')) {
-            $query->where('paciente_id', $request->paciente_id);
-        }
-
-        // Filtrar por clasificación
-        if ($request->filled('clasificacion')) {
-            $query->where('clasificacion', $request->clasificacion);
-        }
-
-        // Filtrar por rango de fechas
-        if ($request->filled('fecha_inicio')) {
-            $query->whereDate('fecha', '>=', $request->fecha_inicio);
-        }
-
-        if ($request->filled('fecha_fin')) {
-            $query->whereDate('fecha', '<=', $request->fecha_fin);
-        }
-
-        // Buscar por texto en comentarios
-        if ($request->filled('texto')) {
-            $query->where('comentario', 'like', '%' . $request->texto . '%');
-        }
-
-        $evaluaciones = $query->orderBy('fecha', 'desc')
-            ->orderBy('hora', 'desc')
-            ->paginate(10);
-
-        return response()->json($evaluaciones);
     }
 
     /**
