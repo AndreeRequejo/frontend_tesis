@@ -164,7 +164,6 @@ export default function Historial({ evaluaciones, filters }: Props) {
                                 disabled={!evaluaciones.prev_page_url}
                             >
                                 <ChevronLeft className="h-4 w-4" />
-                                Anterior
                             </Button>
                             
                             <div className="flex items-center gap-1">
@@ -187,7 +186,6 @@ export default function Historial({ evaluaciones, filters }: Props) {
                                 onClick={() => evaluaciones.next_page_url && handlePageChange(evaluaciones.next_page_url)}
                                 disabled={!evaluaciones.next_page_url}
                             >
-                                Siguiente
                                 <ChevronRight className="h-4 w-4" />
                             </Button>
                         </div>

@@ -209,7 +209,6 @@ export default function Pacientes() {
                                 disabled={!pacientes.prev_page_url}
                             >
                                 <ChevronLeft className="h-4 w-4" />
-                                Anterior
                             </Button>
 
                             <div className="flex items-center gap-1">
@@ -232,7 +231,6 @@ export default function Pacientes() {
                                 onClick={() => pacientes.next_page_url && handlePageChange(pacientes.next_page_url)}
                                 disabled={!pacientes.next_page_url}
                             >
-                                Siguiente
                                 <ChevronRight className="h-4 w-4" />
                             </Button>
                         </div>
