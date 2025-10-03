@@ -1,4 +1,4 @@
-import { Alert, AlertDescription } from '@/components/ui/alert';
+// import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertTriangle, Camera, Lightbulb } from 'lucide-react';
 
@@ -21,11 +21,11 @@ export function ImageRecommendations() {
         },
     ];
 
-    const importantNotes = [
-        'Rostro limpio, sin maquillaje ni productos aplicados.',
-        'Evitar el uso de filtros o edición de la imagen.',
-        'Evitar sombras en el rostro.',
-    ];
+    // const importantNotes = [
+    //     'Rostro limpio, sin maquillaje ni productos aplicados.',
+    //     'Evitar el uso de filtros o edición de la imagen.',
+    //     'Evitar sombras en el rostro.',
+    // ];
 
     return (
         <div className="space-y-4">
@@ -49,7 +49,7 @@ export function ImageRecommendations() {
                             </div>
                         ))}
                     </div>
-                    <div className="space-y-2 pt-3">
+                    {/* <div className="space-y-2 pt-3">
                         <div className="flex items-center gap-2 font-bold text-amber-600">
                             <AlertTriangle className="h-5 w-5" />
                             Consideraciones importantes
@@ -61,7 +61,7 @@ export function ImageRecommendations() {
                                 </AlertDescription>
                             ))}
                         </Alert>
-                    </div>
+                    </div> */}
                 </CardContent>
             </Card>
         </div>
