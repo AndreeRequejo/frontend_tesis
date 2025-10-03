@@ -24,8 +24,8 @@ interface LoginProps {
 
 export default function Login({ status, canResetPassword }: LoginProps) {
     const { data, setData, post, processing, errors, reset } = useForm<Required<LoginForm>>({
-        email: '',
-        password: '',
+        email: 'andree09requejo@gmail.com',
+        password: '159357An@',
         remember: false,
     });
         const [showPassword, setShowPassword] = useState(false);
@@ -53,7 +53,6 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                             tabIndex={1}
                             autoComplete="email"
                             value={data.email}
-                            defaultValue="andree09requejo@gmail.com"
                             onChange={(e) => setData('email', e.target.value)}
                             placeholder="correo@ejemplo.com"
                         />
@@ -77,7 +76,6 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                                 tabIndex={2}
                                 autoComplete="current-password"
                                 value={data.password}
-                                defaultValue="159357An@"
                                 onChange={(e) => setData('password', e.target.value)}
                                 placeholder="••••••••"
                                 style={{ paddingRight: '2.5rem' }}
