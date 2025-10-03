@@ -82,9 +82,9 @@ export function EditPatientModal({ isOpen, onClose, onSubmit, patient }: EditPat
                 <form onSubmit={handleSubmit}>
                     <div className="grid gap-4 py-4">
                         {/* Primera fila - DNI y Nombres */}
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="grid gap-2">
-                                <Label htmlFor="edit-dni">DNI</Label>
+                                <Label htmlFor="edit-dni">Doc. Identif.</Label>
                                 <Input
                                     id="edit-dni"
                                     value={formData.dni}
@@ -140,7 +140,7 @@ export function EditPatientModal({ isOpen, onClose, onSubmit, patient }: EditPat
                                     onValueChange={(value: 'Masculino' | 'Femenino') => setFormData({...formData, genero: value})}
                                 >
                                     <SelectTrigger>
-                                        <SelectValue placeholder="Selecciona el género" />
+                                        <SelectValue placeholder="Selecciona" />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="Masculino">Masculino</SelectItem>
