@@ -81,8 +81,8 @@ export function CreatePatientModal({ isOpen, onClose, onSubmit }: CreatePatientM
                                     type='tel'
                                     value={formData.dni}
                                     onChange={(e) => setFormData({...formData, dni: e.target.value})}
-                                    placeholder="12345678"
-                                    maxLength={9}
+                                    placeholder="74020421"
+                                    maxLength={8}
                                     required
                                 />
                             </div>
@@ -116,12 +116,11 @@ export function CreatePatientModal({ isOpen, onClose, onSubmit }: CreatePatientM
                                 <Label htmlFor="edad">Edad</Label>
                                 <Input
                                     id="edad"
-                                    type="number"
+                                    type="tel"
                                     value={formData.edad}
                                     onChange={(e) => setFormData({...formData, edad: e.target.value})}
                                     placeholder="25"
-                                    min="11"
-                                    max="40"
+                                    maxLength={2}
                                     required
                                 />
                             </div>

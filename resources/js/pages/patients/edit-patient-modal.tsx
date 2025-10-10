@@ -88,6 +88,7 @@ export function EditPatientModal({ isOpen, onClose, onSubmit, patient }: EditPat
                                 <Input
                                     id="edit-dni"
                                     value={formData.dni}
+                                    type='tel'
                                     onChange={(e) => setFormData({...formData, dni: e.target.value})}
                                     placeholder="12345678"
                                     maxLength={8}
@@ -124,12 +125,11 @@ export function EditPatientModal({ isOpen, onClose, onSubmit, patient }: EditPat
                                 <Label htmlFor="edit-edad">Edad</Label>
                                 <Input
                                     id="edit-edad"
-                                    type="number"
+                                    type="tel"
                                     value={formData.edad}
                                     onChange={(e) => setFormData({...formData, edad: e.target.value})}
                                     placeholder="25"
-                                    min="0"
-                                    max="150"
+                                    maxLength={2}
                                     required
                                 />
                             </div>
@@ -155,7 +155,7 @@ export function EditPatientModal({ isOpen, onClose, onSubmit, patient }: EditPat
                             <Label htmlFor="edit-telefono">Teléfono (Opcional)</Label>
                             <Input
                                 id="edit-telefono"
-                                type='number'
+                                type='tel'
                                 value={formData.telefono}
                                 onChange={(e) => setFormData({...formData, telefono: e.target.value})}
                                 placeholder="987654321"
