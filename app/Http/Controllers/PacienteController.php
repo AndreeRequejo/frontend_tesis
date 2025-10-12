@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Paciente;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class PacienteController extends Controller
 {
@@ -110,7 +111,7 @@ class PacienteController extends Controller
     }
 
     /**
-     * Mostrar el reporte del paciente con sus evaluaciones
+     * Generar y descargar el reporte PDF del paciente
      */
     public function reporte($id)
     {
@@ -118,24 +119,12 @@ class PacienteController extends Controller
             $q->orderBy('fecha', 'desc');
         }])->findOrFail($id);
 
-        // Si no tiene evaluaciones, mostrar solo el modal y no abrir el reporte
+        // Si no tiene evaluaciones, redirigir con mensaje de error
         if ($paciente->evaluaciones->isEmpty()) {
-            return Inertia::render('reports/ReportePaciente', [
-                'paciente' => [
-                    'id' => $paciente->id,
-                    'nombre' => $paciente->nombres,
-                    'apellido' => $paciente->apellidos,
-                    'edad' => $paciente->edad,
-                    'genero' => $paciente->genero,
-                    'telefono' => $paciente->telefono,
-                    'dni' => $paciente->dni,
-                ],
-                'evaluaciones' => [],
-                'showModalNoEvaluaciones' => true,
-            ]);
+            return redirect()->back()->with('error', 'Este paciente no tiene evaluaciones registradas.');
         }
 
-        // Formatear datos para el frontend
+        // Formatear datos para la vista
         $evaluaciones = $paciente->evaluaciones->map(function($ev) {
             return [
                 'id' => $ev->id,
@@ -149,7 +138,7 @@ class PacienteController extends Controller
             ];
         });
 
-        return Inertia::render('reports/ReportePaciente', [
+        $datos = [
             'paciente' => [
                 'id' => $paciente->id,
                 'nombre' => $paciente->nombres,
@@ -160,8 +149,24 @@ class PacienteController extends Controller
                 'dni' => $paciente->dni,
             ],
             'evaluaciones' => $evaluaciones,
-            'showModalNoEvaluaciones' => false,
+        ];
+
+        // Generar PDF
+        $pdf = Pdf::loadView('reports.reporte-paciente', $datos);
+        
+        // Configuraciones del PDF
+        $pdf->setPaper('A4', 'portrait');
+        $pdf->setOptions([
+            'defaultFont' => 'Arial',
+            'isHtml5ParserEnabled' => true,
+            'isPhpEnabled' => true
         ]);
+
+        // Nombre del archivo
+        $nombreArchivo = 'REPORTE_PACIENTE_' . strtoupper($paciente->nombres) . '_' . strtoupper($paciente->apellidos) . '.pdf';
+
+        // Descargar el PDF
+        return $pdf->download($nombreArchivo);
     }
 
     /**

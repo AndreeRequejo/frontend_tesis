@@ -89,7 +89,9 @@ export default function DetallePaciente({ paciente }: DetalleProps) {
             });
             return;
         }
-        router.visit(`/reporte-paciente/${paciente.id}`);
+        // Crear enlace temporal para descargar el PDF
+        const downloadUrl = `/reporte-paciente/${paciente.id}`;
+        window.open(downloadUrl, '_blank');
     };
 
     const formatDate = (dateString: string) => {

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { ArrowLeft, FileText, Trash2, Edit3, Save, X } from 'lucide-react';
+import { ArrowLeft, Trash2, Edit3, Save, X } from 'lucide-react';
 import { useState, type ChangeEvent, useEffect } from 'react';
 
 interface DetalleProps {
@@ -77,10 +77,6 @@ export default function DetalleEvaluacion({ evaluacion }: DetalleProps) {
 
     const handleGoBack = () => {
         router.visit('/historial');
-    };
-
-    const handleGeneratePdf = () => {
-        router.post(`/historial/${evaluacion.id}/pdf`);
     };
 
     const handleSaveComment = () => {
