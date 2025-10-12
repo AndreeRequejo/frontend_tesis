@@ -79,13 +79,6 @@ class EvaluacionSeeder extends Seeder
                 'hora' => '13:15'
             ],
             [
-                'paciente_dni' => '87654321',
-                'clasificacion' => 'Ausente',
-                'comentario' => 'Control post-tratamiento, sin lesiones activas',
-                'fecha' => '2025-07-15',
-                'hora' => '12:00'
-            ],
-            [
                 'paciente_dni' => '12345678',
                 'clasificacion' => 'Leve',
                 'comentario' => 'Primeras lesiones detectadas, inicio de tratamiento preventivo',
