@@ -95,27 +95,29 @@ export default function Historial({ evaluaciones, filters }: Props) {
                 </div>
 
                 {/* Filtros y búsqueda */}
-                <div className="flex flex-col sm:flex-row gap-4 items-center">
+                <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
                     {/* Barra de búsqueda */}
-                    <div className="relative flex-1">
+                    <div className="relative w-full sm:flex-1">
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                         <Input
                             placeholder="Buscar por paciente..."
-                            className="pl-10"
+                            className="pl-10 w-full"
                             value={searchTerm}
                             onChange={(e) => handleSearch(e.target.value)}
                         />
                     </div>
 
                     {/* Filtro por severidad */}
-                    <div className="flex items-center gap-2">
-                        <Filter className="h-4 w-4 text-gray-500" />
+                    <div className="flex items-center w-full sm:w-auto">
                         <Select value={selectedSeveridad} onValueChange={handleFilterBySeverity}>
-                            <SelectTrigger className="w-48">
-                                <SelectValue placeholder="Filtrar por severidad" />
+                            <SelectTrigger className="w-full sm:w-48">
+                                <div className="flex items-center gap-2">
+                                    <Filter className="h-4 w-4 text-gray-500" />
+                                    <SelectValue placeholder="Filtrar por severidad" />
+                                </div>
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="all">Todas las severidades</SelectItem>
+                                <SelectItem value="all">Todo</SelectItem>
                                 <SelectItem value="Leve">Leve</SelectItem>
                                 <SelectItem value="Moderado">Moderado</SelectItem>
                                 <SelectItem value="Severo">Severo</SelectItem>
