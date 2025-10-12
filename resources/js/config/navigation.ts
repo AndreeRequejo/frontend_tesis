@@ -1,12 +1,7 @@
-import { LayoutGrid, UsersRound, FileUser, ScanFace } from 'lucide-react';
+import { LayoutGrid, UsersRound, FileUser, ScanFace, CircleUserRound } from 'lucide-react';
 import { type NavItem } from '@/types';
 
 export const mainNavItems: NavItem[] = [
-  {
-    title: 'Inicio',
-    href: '/dashboard',
-    icon: LayoutGrid,
-  },
   {
     title: 'Evaluación',
     href: '/evaluacion',
@@ -18,8 +13,18 @@ export const mainNavItems: NavItem[] = [
     icon: UsersRound,
   },
   {
+    title: 'Inicio',
+    href: '/dashboard',
+    icon: LayoutGrid,
+  },
+  {
     title: 'Historial',
     href: '/historial',
     icon: FileUser,
+  },
+  {
+    title: 'Perfil',
+    href: '/settings/profile',
+    icon: CircleUserRound,
   },
 ];
