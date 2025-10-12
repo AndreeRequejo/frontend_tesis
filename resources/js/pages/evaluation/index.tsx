@@ -120,9 +120,9 @@ export default function Evaluacion() {
                                             onChange={(e) => handleSearch(e.target.value)}
                                         />
                                     </div>
-                                    <Button variant="outline" onClick={() => setIsCreateModalOpen(true)} className="flex items-center gap-2">
+                                    <Button variant="default" onClick={() => setIsCreateModalOpen(true)} className="flex items-center gap-2 ">
                                         <Plus className="h-4 w-4" />
-                                        Nuevo Paciente
+                                        Agregar
                                     </Button>
                                 </div>
 
