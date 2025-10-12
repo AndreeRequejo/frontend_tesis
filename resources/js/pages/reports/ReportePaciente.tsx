@@ -26,7 +26,7 @@ interface Evaluacion {
 
 const ReportePaciente: React.FC = () => {
   const { paciente, evaluaciones, showModalNoEvaluaciones } = usePage().props as unknown as { paciente: Paciente; evaluaciones: Evaluacion[]; showModalNoEvaluaciones?: boolean };
-
+  
   return (
     <div className="max-w-3xl mx-auto py-8 px-4">
       <div className="mb-4">
@@ -99,7 +99,7 @@ const ReportePaciente: React.FC = () => {
           </Card>
           <PDFDownloadLink
             document={<ReportePDF paciente={paciente} evaluaciones={evaluaciones} />}
-            fileName={`reporte_paciente_${paciente.id}.pdf`}
+            fileName={`REPORTE_PACIENTE_${(paciente.nombre).toUpperCase()}_${paciente.apellido.toUpperCase()}.pdf`}
           >
             {({ loading }) => (
               <Button className="mt-4 w-full" size="lg">

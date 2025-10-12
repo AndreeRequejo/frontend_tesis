@@ -89,13 +89,4 @@ class HistorialController extends Controller
             'evaluacion' => $data
         ]);
     }
-
-    /**
-     * Generar PDF de una evaluación
-     */
-    public function generarPdf($id)
-    {
-        // TODO: Implementar generación de PDF
-        return response()->json(['message' => 'PDF generado correctamente']);
-    }
 }

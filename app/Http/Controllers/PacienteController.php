@@ -143,7 +143,8 @@ class PacienteController extends Controller
                 'resultado' => $ev->clasificacion,
                 'comentario' => $ev->comentario,
                 'imagenes' => $ev->imagenes->map(function($img) {
-                    return 'data:image/jpeg;base64,' . $img->contenido_base64;
+                    $mimeType = $this->detectMimeType($img->contenido_base64);
+                    return "data:{$mimeType};base64," . $img->contenido_base64;
                 })->toArray(),
             ];
         });
@@ -161,5 +162,30 @@ class PacienteController extends Controller
             'evaluaciones' => $evaluaciones,
             'showModalNoEvaluaciones' => false,
         ]);
+    }
+
+    /**
+     * Detecta el tipo MIME de una imagen basándose en su contenido base64
+     */
+    private function detectMimeType($base64Content)
+    {
+        // Decodificar el contenido base64 para obtener los primeros bytes
+        $imageData = base64_decode($base64Content);
+        
+        // Obtener información de la imagen
+        $finfo = new \finfo(FILEINFO_MIME_TYPE);
+        $mimeType = $finfo->buffer($imageData);
+        
+        // Validar que sea una imagen válida
+        $validMimeTypes = [
+            'image/jpeg' => 'image/jpeg',
+            'image/jpg' => 'image/jpeg',
+            'image/png' => 'image/png',
+            'image/gif' => 'image/gif',
+            'image/webp' => 'image/webp',
+            'image/bmp' => 'image/bmp'
+        ];
+        
+        return isset($validMimeTypes[$mimeType]) ? $validMimeTypes[$mimeType] : 'image/png';
     }
 }
