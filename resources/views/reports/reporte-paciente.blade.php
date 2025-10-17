@@ -62,12 +62,14 @@
         .patient-info {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 16px;
+            gap: 16px 24px;
             margin-bottom: 24px;
         }
         
         .info-item {
-            margin-bottom: 12px;
+            margin-bottom: 0;
+            display: flex;
+            flex-direction: column;
         }
         
         .label {
@@ -202,6 +204,9 @@
                     <span class="label">Teléfono:</span>
                     <span class="value">{{ $paciente['telefono'] }}</span>
                 </div>
+                <div class="info-item">
+                    <!-- Espacio vacío para mantener la estructura del grid -->
+                </div>
                 @endif
             </div>
             
@@ -213,7 +218,7 @@
                             <th style="width: 20%">Fecha</th>
                             <th style="width: 25%">Resultado</th>
                             <th style="width: 30%">Comentario</th>
-                            <th style="width: 25%">Imágenes</th>
+                            <th style="width: 25%">Imagen</th>
                         </tr>
                     </thead>
                     <tbody>
