@@ -1,4 +1,5 @@
 import { EvaluacionCard } from '@/components/evaluacion-card';
+import { DetalleEvaluacionModal } from '@/components/detalle-evaluacion-modal';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
@@ -42,6 +43,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 export default function DetallePaciente({ paciente }: DetalleProps) {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [modalOpen, setModalOpen] = useState(false);
+    const [selectedEvaluacionId, setSelectedEvaluacionId] = useState<number | null>(null);
 
     const handleGoBack = () => {
         router.visit('/pacientes');
@@ -49,6 +52,16 @@ export default function DetallePaciente({ paciente }: DetalleProps) {
 
     const handleEdit = () => {
         setIsEditModalOpen(true);
+    };
+
+    const handleViewDetails = (evaluacionId: number) => {
+        setSelectedEvaluacionId(evaluacionId);
+        setModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setModalOpen(false);
+        setSelectedEvaluacionId(null);
     };
 
     const handleEditSubmit = (formData: PacienteFormData) => {
@@ -209,7 +222,7 @@ export default function DetallePaciente({ paciente }: DetalleProps) {
                                             severidad={evaluacion.clasificacion}
                                             descripcion={evaluacion.comentario || 'Sin comentarios'}
                                             imagen={evaluacion.imagen_principal?.contenido_base64}
-                                            // ...sin PDF...
+                                            onViewDetails={() => handleViewDetails(evaluacion.id)}
                                         />
                                     ))}
                                 </div>
@@ -230,6 +243,15 @@ export default function DetallePaciente({ paciente }: DetalleProps) {
 
                 {/* Modal de edición */}
                 <EditPatientModal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} onSubmit={handleEditSubmit} patient={paciente} />
+
+                {/* Modal de detalle de evaluación */}
+                <DetalleEvaluacionModal
+                    isOpen={modalOpen}
+                    onClose={handleCloseModal}
+                    evaluacionId={selectedEvaluacionId}
+                    showPatientInfo={false} // No mostrar info del paciente porque ya estamos en su detalle
+                    showActions={true}
+                />
             </div>
             <Toaster position="top-right" />
         </AppLayout>

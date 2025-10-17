@@ -9,6 +9,7 @@ interface EvaluacionCardProps {
     severidad: 'Ausente' | 'Leve' | 'Moderado' | 'Severo';
     descripcion: string;
     imagen?: string;
+    onViewDetails?: () => void; // Función opcional para manejar clics
 }
 
 const getSeveridadColor = (severidad: string) => {
@@ -52,10 +53,11 @@ export function EvaluacionCard({
     severidad,
     descripcion,
     imagen,
+    onViewDetails,
 }: EvaluacionCardProps) {
 
-    return (
-        <Link href={`/evaluacion/${id}`} className="block cursor-pointer rounded-lg border bg-white p-4 shadow transition-shadow hover:shadow-md">
+    const content = (
+        <div className="block cursor-pointer rounded-lg border bg-white p-4 shadow transition-shadow hover:shadow-md">
             <div className="mb-2 flex items-start justify-between">
                 <div className="flex-1">
                     <h3 className="text-lg font-semibold text-gray-900">{pacienteNombre}</h3>
@@ -80,6 +82,21 @@ export function EvaluacionCard({
                     <p className="line-clamp-2 text-sm text-gray-600">{descripcion}</p>
                 </div>
             </div>
+        </div>
+    );
+
+    // Si hay un onViewDetails, usar un div con onClick, si no, usar Link
+    if (onViewDetails) {
+        return (
+            <div onClick={onViewDetails}>
+                {content}
+            </div>
+        );
+    }
+
+    return (
+        <Link href={`/evaluacion/${id}`}>
+            {content}
         </Link>
     );
 }

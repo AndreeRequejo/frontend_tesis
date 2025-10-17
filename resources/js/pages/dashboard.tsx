@@ -6,6 +6,8 @@ import { Camera } from 'lucide-react';
 import { Link } from '@inertiajs/react';
 import { PatientCard } from '@/components/paciente-card';
 import { EvaluacionCard } from '@/components/evaluacion-card';
+import { DetalleEvaluacionModal } from '@/components/detalle-evaluacion-modal';
+import { useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -38,6 +40,18 @@ interface DashboardProps {
 }
 
 export default function Dashboard({ pacientesRecientes, evaluacionesRecientes }: DashboardProps) {
+    const [modalOpen, setModalOpen] = useState(false);
+    const [selectedEvaluacionId, setSelectedEvaluacionId] = useState<number | null>(null);
+
+    const handleViewDetails = (evaluacionId: number) => {
+        setSelectedEvaluacionId(evaluacionId);
+        setModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setModalOpen(false);
+        setSelectedEvaluacionId(null);
+    };
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
@@ -102,7 +116,7 @@ export default function Dashboard({ pacientesRecientes, evaluacionesRecientes }:
                                     severidad={evaluacion.severidad}
                                     imagen={evaluacion.imagen || undefined}
                                     descripcion={evaluacion.descripcion}
-                                    // ...sin PDF...
+                                    onViewDetails={() => handleViewDetails(evaluacion.id)}
                                 />
                             ))}
                         </div>
@@ -115,6 +129,15 @@ export default function Dashboard({ pacientesRecientes, evaluacionesRecientes }:
                         </div>
                     )}
                 </div>
+
+                {/* Modal de detalle de evaluación */}
+                <DetalleEvaluacionModal
+                    isOpen={modalOpen}
+                    onClose={handleCloseModal}
+                    evaluacionId={selectedEvaluacionId}
+                    showPatientInfo={true}
+                    showActions={true}
+                />
             </div>
         </AppLayout>
     );
