@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Camera, ImageIcon, X } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 import { useRef } from 'react';
 
 // Detectar si es móvil
@@ -21,7 +22,7 @@ export function ImageCaptureSection({ capturedImages, setCapturedImages }: Image
     // Función para seleccionar imagen de la galería (móvil) o dispositivo (desktop)
     const handleSelectFromGallery = () => {
         if (capturedImages.length >= MAX_IMAGES) {
-            alert(`Ya has alcanzado el máximo de ${MAX_IMAGES} imágenes.`);
+            toast.error(`Ya has alcanzado el máximo de ${MAX_IMAGES} imágenes.`);
             return;
         }
 
@@ -33,7 +34,7 @@ export function ImageCaptureSection({ capturedImages, setCapturedImages }: Image
     // Función para abrir cámara directamente (solo móvil)
     const handleOpenCamera = () => {
         if (capturedImages.length >= MAX_IMAGES) {
-            alert(`Ya has alcanzado el máximo de ${MAX_IMAGES} imágenes.`);
+            toast.error(`Ya has alcanzado el máximo de ${MAX_IMAGES} imágenes.`);
             return;
         }
 
@@ -51,7 +52,7 @@ export function ImageCaptureSection({ capturedImages, setCapturedImages }: Image
         const filesToProcess = Array.from(files).slice(0, remainingSlots);
 
         if (files.length > remainingSlots) {
-            alert(`Solo puedes agregar ${remainingSlots} imagen(es) más. Se seleccionarán las primeras ${remainingSlots}.`);
+            toast.error(`Solo puedes agregar ${remainingSlots} imagen. Se seleccionará ${remainingSlots}.`);
         }
 
         // Procesar cada archivo seleccionado
