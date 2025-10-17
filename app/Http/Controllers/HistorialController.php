@@ -32,8 +32,16 @@ class HistorialController extends Controller
         // Ordenar por fecha y hora más reciente
         $query->orderBy('fecha', 'desc')->orderBy('hora', 'desc');
 
-        // Paginación
-        $evaluaciones = $query->paginate(5)->withQueryString();
+        // Paginación con parámetro personalizado 'pag'
+        $perPage = $request->input('pag', 10); // Default 10 elementos por página
+        
+        // Validar que el valor esté dentro de los valores permitidos
+        $allowedPerPage = [5, 10, 15, 25, 50];
+        if (!in_array($perPage, $allowedPerPage)) {
+            $perPage = 10;
+        }
+        
+        $evaluaciones = $query->paginate($perPage)->withQueryString();
 
         // Transformar los datos para el frontend
         $evaluaciones->getCollection()->transform(function ($evaluacion) {
@@ -55,6 +63,7 @@ class HistorialController extends Controller
             'filters' => [
                 'search' => $request->get('search'),
                 'severidad' => $request->get('severidad'),
+                'pag' => $perPage,
             ]
         ]);
     }
@@ -62,7 +71,7 @@ class HistorialController extends Controller
     /**
      * Mostrar el detalle de una evaluación específica
      */
-    public function show($id)
+    public function show(Request $request, $id)
     {
         $evaluacion = Evaluacion::with(['paciente', 'imagenes'])
             ->findOrFail($id);
@@ -85,6 +94,16 @@ class HistorialController extends Controller
             })->toArray()
         ];
 
+        // Si es una petición AJAX, devolver JSON para el modal
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'props' => [
+                    'evaluacion' => $data
+                ]
+            ]);
+        }
+
+        // Si es una petición normal, devolver la vista Inertia
         return Inertia::render('history/detalle', [
             'evaluacion' => $data
         ]);
