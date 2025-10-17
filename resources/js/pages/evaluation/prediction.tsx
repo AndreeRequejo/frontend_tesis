@@ -339,11 +339,20 @@ export default function Prediction() {
                                         return (
                                             <>
                                                 {/* Clasificación principal */}
-                                                <div className="text-center">
-                                                    <Badge className={`px-4 py-2 text-lg ${getClassificationColor(pred.prediccion_label)}`}>
-                                                        {pred.prediccion_label}
-                                                    </Badge>
-                                                    <p className="mt-2 text-sm text-gray-600">Confianza: {pred.confianza_porcentaje}</p>
+                                                <div className="space-y-4">
+                                                    <div className="text-center space-y-3">
+                                                        <div>
+                                                            <h3 className="mb-2 text-gray-700">Gravedad de acné:</h3>
+                                                            <Badge className={`px-6 py-3 text-xl font-bold ${getClassificationColor(pred.prediccion_label)}`}>
+                                                                {pred.prediccion_label}
+                                                            </Badge>
+                                                        </div>
+                                                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                                                            <p className="text-sm text-blue-700 font-medium">
+                                                                Nivel de confianza: <span className="font-bold">{pred.confianza_porcentaje}</span>
+                                                            </p>
+                                                        </div>
+                                                    </div>
                                                 </div>
 
                                                 {/* Probabilidades */}
