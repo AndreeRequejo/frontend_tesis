@@ -1,5 +1,5 @@
 import { EvaluacionCard } from '@/components/evaluacion-card';
-import { DetalleEvaluacionModal } from '@/components/detalle-evaluacion-modal';
+import { DetalleEvaluacionModal } from '@/pages/history/detalle-evaluacion-modal';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';

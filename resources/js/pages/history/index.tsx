@@ -5,7 +5,7 @@ import { EvaluacionCard } from '@/components/evaluacion-card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { DetalleEvaluacionModal } from '@/components/detalle-evaluacion-modal';
+import { DetalleEvaluacionModal } from '@/pages/history/detalle-evaluacion-modal';
 import { 
     Search, 
     Filter, 
@@ -318,7 +318,7 @@ export default function HistoryIndex({ evaluaciones, filters }: Props) {
                     isOpen={modalOpen}
                     onClose={handleCloseModal}
                     evaluacionId={selectedEvaluacionId}
-                    showPatientInfo={true}
+                    showPatientInfo={false}
                     showActions={true}
                 />
             </div>

@@ -6,7 +6,7 @@ import { Camera } from 'lucide-react';
 import { Link } from '@inertiajs/react';
 import { PatientCard } from '@/components/paciente-card';
 import { EvaluacionCard } from '@/components/evaluacion-card';
-import { DetalleEvaluacionModal } from '@/components/detalle-evaluacion-modal';
+import { DetalleEvaluacionModal } from '@/pages/history/detalle-evaluacion-modal';
 import { useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
