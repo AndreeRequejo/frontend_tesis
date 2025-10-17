@@ -135,7 +135,7 @@ export default function Dashboard({ pacientesRecientes, evaluacionesRecientes }:
                     isOpen={modalOpen}
                     onClose={handleCloseModal}
                     evaluacionId={selectedEvaluacionId}
-                    showPatientInfo={true}
+                    showPatientInfo={false}
                     showActions={true}
                 />
             </div>

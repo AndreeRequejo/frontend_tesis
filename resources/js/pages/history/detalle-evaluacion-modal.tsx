@@ -8,7 +8,7 @@ import {
     DialogHeader, 
     DialogTitle 
 } from '@/components/ui/dialog';
-import { Activity, Save, X, Edit3, Trash2 } from 'lucide-react';
+import { ScanFace, Save, X, Edit3, Trash2 } from 'lucide-react';
 import { router } from '@inertiajs/react';
 import toast from 'react-hot-toast';
 
@@ -171,7 +171,7 @@ export function DetalleEvaluacionModal({
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-3">
                         <div className="p-2 bg-blue-100 rounded-lg">
-                            <Activity className="h-5 w-5 text-blue-600" />
+                            <ScanFace className="h-5 w-5 text-blue-600" />
                         </div>
                         Detalle de Evaluación
                     </DialogTitle>
