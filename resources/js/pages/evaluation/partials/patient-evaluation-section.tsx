@@ -1,8 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft } from 'lucide-react';
-import { useState } from 'react';
-import { toast } from 'react-hot-toast';
+import { ArrowLeft, AlertTriangle, X } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { router } from '@inertiajs/react';
 import { Paciente } from '@/pages/patients/types';
 import { ImageCaptureSection } from './image-capture-section';
@@ -16,17 +15,32 @@ interface PatientEvaluationSectionProps {
 export function PatientEvaluationSection({ selectedPatient, onBackToSelection }: PatientEvaluationSectionProps) {
     const [capturedImages, setCapturedImages] = useState<string[]>([]);
     const [isEvaluating, setIsEvaluating] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     const getPatientFullName = (patient: Paciente) => {
         return `${patient.nombres} ${patient.apellidos}`;
     };
 
+    // useEffect para cerrar automáticamente la alerta después de 2 segundos
+    useEffect(() => {
+        if (errorMessage) {
+            const timer = setTimeout(() => {
+                setErrorMessage(null);
+            }, 4000); // 4 segundos
+
+            // Limpiar el timeout si el componente se desmonta o si el errorMessage cambia
+            return () => clearTimeout(timer);
+        }
+    }, [errorMessage]);
+
     const handleEvaluatePatient = async () => {
         if (!selectedPatient || capturedImages.length === 0) {
-            toast.error('Debe seleccionar un paciente y agregar al menos una imagen');
+            setErrorMessage('Debe seleccionar un paciente y agregar al menos una imagen');
             return;
         }
 
+        // Limpiar errores previos
+        setErrorMessage(null);
         setIsEvaluating(true);
 
         try {
@@ -39,21 +53,22 @@ export function PatientEvaluationSection({ selectedPatient, onBackToSelection }:
                 {
                     onSuccess: () => {
                         // La redirección se maneja automáticamente por Inertia
+                        setErrorMessage(null);
                     },
                     onError: (errors) => {
                         console.error('Error:', errors);
 
-                        let errorMessage = 'Error al procesar la evaluación';
+                        let errorMsg = 'Error al procesar la evaluación';
 
                         if (errors.prediccion) {
-                            errorMessage = errors.prediccion;
+                            errorMsg = errors.prediccion;
                         } else if (typeof errors === 'string') {
-                            errorMessage = errors;
+                            errorMsg = errors;
                         } else if (errors.message) {
-                            errorMessage = errors.message;
+                            errorMsg = errors.message;
                         }
 
-                        toast.error(errorMessage);
+                        setErrorMessage(errorMsg);
                     },
                     onFinish: () => {
                         setIsEvaluating(false);
@@ -62,7 +77,7 @@ export function PatientEvaluationSection({ selectedPatient, onBackToSelection }:
             );
         } catch (error) {
             console.error('Error:', error);
-            toast.error('Error de conexión al procesar la evaluación');
+            setErrorMessage('Error de conexión al procesar la evaluación');
             setIsEvaluating(false);
         }
     };
@@ -97,6 +112,23 @@ export function PatientEvaluationSection({ selectedPatient, onBackToSelection }:
                             </div>
                         </CardContent>
                     </Card>
+
+                    {/* Alerta de error */}
+                    {errorMessage && (
+                        <div className="flex items-start gap-3 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                            <AlertTriangle className="h-5 w-5 text-yellow-600 mt-0.5 flex-shrink-0" />
+                            <div className="flex-1">
+                                <p className="text-sm text-yellow-800 font-medium">Error en la evaluación</p>
+                                <p className="text-sm text-yellow-700 mt-1">{errorMessage}</p>
+                            </div>
+                            <button
+                                onClick={() => setErrorMessage(null)}
+                                className="text-yellow-600 cursor-pointer hover:text-yellow-800 transition-colors"
+                            >
+                                <X className="h-4 w-4" />
+                            </button>
+                        </div>
+                    )}
 
                     {/* Sección de captura de imagen */}
                     <ImageCaptureSection capturedImages={capturedImages} setCapturedImages={setCapturedImages} />
