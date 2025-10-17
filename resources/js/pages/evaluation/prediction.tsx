@@ -109,22 +109,6 @@ export default function Prediction() {
     const isSimplePrediction = 'prediccion_class' in prediccion;
     const isBatchPrediction = 'total_images' in prediccion;
 
-    // Inicializar comentario con el texto automático
-    useState(() => {
-        if (isSimplePrediction) {
-            const pred = prediccion as PrediccionSimple;
-            // Convertir probabilidades a texto
-            const probText = Object.entries(pred.probabilidades)
-                .sort(([, a], [, b]) => b - a)
-                .map(([clase, prob]) => `${clase}: ${(prob * 100).toFixed(1)}%`)
-                .join(', ');
-            setComentario(`Clasificación: ${pred.prediccion_label} con un nivel de confianza de ${pred.confianza_porcentaje}. Distribución de probabilidades: ${probText}`);
-        } else if (isBatchPrediction) {
-            const pred = prediccion as PrediccionBatch;
-            setComentario(`Evaluación automática (${pred.successful}/${pred.total_images} imágenes procesadas) - Clasificación más severa detectada`);
-        }
-    });
-
     // Función para obtener el layout de las imágenes según la cantidad
     const getImageLayout = (count: number) => {
         switch (count) {
@@ -153,6 +137,38 @@ export default function Prediction() {
     };
 
     const imageLayout = getImageLayout(imagenes.length);
+
+    // Función para obtener la clasificación más severa en batch
+    const getMostSevereClassification = () => {
+        if (isBatchPrediction) {
+            const pred = prediccion as PrediccionBatch;
+            const prediccionesExitosas = pred.predicciones.filter((p) => p.success);
+            if (prediccionesExitosas.length > 0) {
+                const prediccionMasSevera = prediccionesExitosas.reduce((mayor, actual) =>
+                    (actual.prediccion_class || 0) > (mayor.prediccion_class || 0) ? actual : mayor,
+                );
+                return prediccionMasSevera.prediccion_label || '';
+            }
+        }
+        return '';
+    };
+
+    // Inicializar comentario con el texto automático
+    useState(() => {
+        if (isSimplePrediction) {
+            const pred = prediccion as PrediccionSimple;
+            // Convertir probabilidades a texto
+            const probText = Object.entries(pred.probabilidades)
+                .sort(([, a], [, b]) => b - a)
+                .map(([clase, prob]) => `${clase}: ${(prob * 100).toFixed(1)}%`)
+                .join(', ');
+            setComentario(`Clasificación: ${pred.prediccion_label} con un nivel de confianza de ${pred.confianza_porcentaje}. Distribución de probabilidades: ${probText}`);
+        } else if (isBatchPrediction) {
+            const pred = prediccion as PrediccionBatch;
+            const clasificacionSevera = getMostSevereClassification();
+            setComentario(`Evaluación automática (${pred.successful}/${pred.total_images} imágenes procesadas) - Clasificación más severa detectada: ${clasificacionSevera}`);
+        }
+    });
 
     const handleSave = () => {
         setIsSaving(true);
