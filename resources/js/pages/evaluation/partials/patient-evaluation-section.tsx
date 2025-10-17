@@ -18,7 +18,7 @@ export function PatientEvaluationSection({ selectedPatient, onBackToSelection }:
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     const getPatientFullName = (patient: Paciente) => {
-        return `${patient.nombres} ${patient.apellidos}`;
+        return `${patient.apellidos} ${patient.nombres}`;
     };
 
     // useEffect para cerrar automáticamente la alerta después de 2 segundos

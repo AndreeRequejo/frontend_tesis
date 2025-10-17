@@ -47,7 +47,7 @@ export default function Evaluacion() {
     }, [filters.search]);
 
     const getPatientFullName = (patient: Paciente) => {
-        return `${patient.nombres} ${patient.apellidos}`;
+        return `${patient.apellidos} ${patient.nombres}`;
     };
 
     const handleSearch = (value: string) => {
