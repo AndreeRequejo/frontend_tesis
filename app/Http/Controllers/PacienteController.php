@@ -26,12 +26,20 @@ class PacienteController extends Controller
             });
         }
 
-        // Paginación
-        $pacientes = $query->orderBy('created_at', 'desc')->paginate(6);
+        // Paginación con parámetro personalizado 'pag'
+        $perPage = $request->input('pag', 10); // Default 10 elementos por página
+        
+        // Validar que el valor esté dentro de los valores permitidos
+        $allowedPerPage = [5, 10, 15, 25, 50];
+        if (!in_array($perPage, $allowedPerPage)) {
+            $perPage = 10;
+        }
+        
+        $pacientes = $query->orderBy('created_at', 'desc')->paginate($perPage);
 
         return Inertia::render('patients/index', [
             'pacientes' => $pacientes,
-            'filters' => $request->only(['search'])
+            'filters' => $request->only(['search', 'pag'])
         ]);
     }
 

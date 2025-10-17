@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/react';
-import { ArrowLeft, Download, Edit3, FileText, Plus } from 'lucide-react';
+import { ArrowLeft, Download, Edit3, FileText } from 'lucide-react';
 import { useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 import { EditPatientModal } from './edit-patient-modal';
@@ -64,13 +64,6 @@ export default function DetallePaciente({ paciente }: DetalleProps) {
                     toast.error(errorMessage as string);
                 });
             },
-        });
-    };
-
-    const handleNewEvaluation = () => {
-        // Redirigir a evaluación con el paciente preseleccionado
-        router.visit('/evaluacion', {
-            data: { paciente_id: paciente.id },
         });
     };
 
@@ -153,7 +146,7 @@ export default function DetallePaciente({ paciente }: DetalleProps) {
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between">
                             <CardTitle>Información Personal</CardTitle>
-                            <Button variant="outline" size="sm" onClick={handleEdit} className="flex items-center gap-2">
+                            <Button variant="default" size="sm" onClick={handleEdit} className="flex items-center gap-2">
                                 <Edit3 className="h-4 w-4" />
                                 Editar
                             </Button>
@@ -197,13 +190,9 @@ export default function DetallePaciente({ paciente }: DetalleProps) {
                                 <p className="mt-1 text-sm text-gray-500">Historial de evaluaciones realizadas</p>
                             </div>
                             <div className="flex items-center gap-2">
-                                <Button variant="outline" onClick={handleGenerateReport} className="flex items-center gap-2">
+                                <Button variant="default" onClick={handleGenerateReport} className="flex items-center gap-2">
                                     <Download className="h-4 w-4" />
                                     Reporte
-                                </Button>
-                                <Button onClick={handleNewEvaluation} className="flex items-center gap-2">
-                                    <Plus className="h-4 w-4" />
-                                    Nueva
                                 </Button>
                             </div>
                         </CardHeader>
