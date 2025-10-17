@@ -44,13 +44,13 @@ class PacienteController extends Controller
             'dni' => 'required|string|max:8|unique:paciente,dni',
             'nombres' => 'required|string|max:255',
             'apellidos' => 'required|string|max:255',
-            'edad' => 'required|integer|min:11|max:40',
+            'edad' => 'required|integer|min:11|max:30',
             'genero' => 'required|in:Masculino,Femenino',
             'telefono' => 'nullable|string|max:9|unique:paciente,telefono',
         ], [
             'dni.unique' => 'El DNI ingresado ya se encuentra registrado.',
             'edad.min' => 'La edad mínima es 11 años.',
-            'edad.max' => 'La edad máxima es 40 años.',
+            'edad.max' => 'La edad máxima es 30 años.',
             'telefono.unique' => 'El teléfono ingresado ya se encuentra registrado.',
             'genero.required' => 'Seleccione el género del paciente.'
         ]);
@@ -79,14 +79,14 @@ class PacienteController extends Controller
             'dni' => 'required|string|max:8|unique:paciente,dni,' . $paciente->id,
             'nombres' => 'required|string|max:255',
             'apellidos' => 'required|string|max:255',
-            'edad' => 'required|integer|min:11|max:40',
+            'edad' => 'required|integer|min:11|max:30',
             'genero' => 'required|in:Masculino,Femenino',
             'telefono' => 'nullable|string|max:9|unique:paciente,telefono,' . $paciente->id,
         ], [
             'dni.unique' => 'El DNI ingresado ya se encuentra registrado.',
             'telefono.unique' => 'El teléfono ingresado ya se encuentra registrado.',
             'edad.min' => 'La edad mínima es 11 años.',
-            'edad.max' => 'La edad máxima es 40 años.',
+            'edad.max' => 'La edad máxima es 30 años.',
             'genero.required' => 'Seleccione el género del paciente.'
         ]);
 
