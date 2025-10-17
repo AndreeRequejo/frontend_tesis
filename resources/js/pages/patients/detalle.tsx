@@ -77,21 +77,49 @@ export default function DetallePaciente({ paciente }: DetalleProps) {
     const handleGenerateReport = () => {
         if (!paciente.evaluaciones || paciente.evaluaciones.length === 0) {
             toast.error('Este paciente no tiene evaluaciones registradas.', {
-                duration: 500,
+                duration: 1500,
                 position: 'top-center',
                 icon: '⚠️',
-                style: {
-                    background: '#fff',
-                    color: '#333',
-                    borderRadius: '8px',
-                    fontWeight: 'bold',
-                },
             });
             return;
         }
-        // Crear enlace temporal para descargar el PDF
-        const downloadUrl = `/reporte-paciente/${paciente.id}`;
-        window.open(downloadUrl, '_blank');
+
+        // Función que retorna una promesa para descargar el PDF
+        const downloadReport = async () => {
+            const downloadUrl = `/reporte-paciente/${paciente.id}`;
+            
+            // Realizar la petición para obtener el PDF
+            const response = await fetch(downloadUrl);
+            
+            if (!response.ok) {
+                throw new Error('Error al generar el reporte');
+            }
+
+            // Obtener el blob del PDF
+            const blob = await response.blob();
+            
+            // Crear URL temporal y descargar
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `Reporte-${paciente.nombres} ${paciente.apellidos}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+            
+            return 'Reporte descargado correctamente';
+        };
+
+        // Usar toast.promise para mostrar el estado de la descarga
+        toast.promise(
+            downloadReport(),
+            {
+                loading: 'Generando reporte...',
+                success: <b>¡Reporte descargado!</b>,
+                error: <b>Error al generar el reporte.</b>,
+            }
+        );
     };
 
     const formatDate = (dateString: string) => {
