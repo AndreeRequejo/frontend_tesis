@@ -8,37 +8,38 @@ use App\Http\Controllers\HistorialController;
 use App\Http\Controllers\EvaluacionController;
 
 Route::middleware(['auth'])->group(function () {
+    // Dashboard accesible para ambos roles
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
+    // RUTAS COMPARTIDAS (ambos roles pueden acceder)
+    Route::middleware(['role:medico|secretario'])->group(function () {
+        Route::get('pacientes', [PacienteController::class, 'index'])->name('pacientes.index');
+        Route::post('pacientes', [PacienteController::class, 'store'])->name('pacientes.store');
+        Route::put('pacientes/{paciente}', [PacienteController::class, 'update'])->name('pacientes.update');
+    });
 
-    // Rutas de pacientes
-    Route::resource('pacientes', PacienteController::class)->names([
-        'index' => 'pacientes.index',
-        'store' => 'pacientes.store',
-        'show' => 'pacientes.show',
-        'update' => 'pacientes.update',
-        'destroy' => 'pacientes.destroy',
-    ])->except(['create', 'edit']);
+    // RUTAS SOLO PARA MÉDICOS
+    Route::middleware(['role:medico'])->group(function () {
+        // Funciones adicionales de pacientes que solo médicos pueden usar
+        Route::get('pacientes/{paciente}', [PacienteController::class, 'show'])->name('pacientes.show');
+        Route::delete('pacientes/{paciente}', [PacienteController::class, 'destroy'])->name('pacientes.destroy');
 
-    // Ruta para reporte de paciente
-    Route::get('reporte-paciente/{id}', [PacienteController::class, 'reporte'])->name('paciente.reporte');
+        // Reportes (solo médicos)
+        Route::get('reporte-paciente/{id}', [PacienteController::class, 'reporte'])->name('paciente.reporte');
 
-    // Rutas del historial
-    Route::get('historial', [HistorialController::class, 'index'])->name('historial');
-    Route::get('historial/{id}', [HistorialController::class, 'show'])->name('historial.detalle');
-    Route::post('historial/{id}/pdf', [HistorialController::class, 'generarPdf'])->name('historial.pdf');
+        // Historial médico (solo médicos)
+        Route::get('historial', [HistorialController::class, 'index'])->name('historial');
+        Route::get('historial/{id}', [HistorialController::class, 'show'])->name('historial.detalle');
+        Route::post('historial/{id}/pdf', [HistorialController::class, 'generarPdf'])->name('historial.pdf');
 
-    // Rutas de evaluaciones
-    Route::get('evaluacion', [EvaluacionController::class, 'index'])->name('evaluacion');
-    Route::post('evaluaciones', [EvaluacionController::class, 'store'])->name('evaluaciones.store');
-    Route::put('evaluaciones/{id}', [EvaluacionController::class, 'update'])->name('evaluaciones.update');
-    Route::delete('evaluaciones/{id}', [EvaluacionController::class, 'destroy'])->name('evaluaciones.destroy');
-
-    // Rutas de predicción
-    Route::post('evaluacion/predecir', [EvaluacionController::class, 'predecir'])->name('evaluacion.predecir');
-    
-    // Ruta para detalla de evaluación
-    Route::get('evaluacion/{id}', [HistorialController::class, 'show'])->name('evaluacion.detalle');
+        // Evaluaciones (solo médicos)
+        Route::get('evaluacion', [EvaluacionController::class, 'index'])->name('evaluacion');
+        Route::post('evaluaciones', [EvaluacionController::class, 'store'])->name('evaluaciones.store');
+        Route::put('evaluaciones/{id}', [EvaluacionController::class, 'update'])->name('evaluaciones.update');
+        Route::delete('evaluaciones/{id}', [EvaluacionController::class, 'destroy'])->name('evaluaciones.destroy');
+        Route::post('evaluacion/predecir', [EvaluacionController::class, 'predecir'])->name('evaluacion.predecir');
+        Route::get('evaluacion/{id}', [HistorialController::class, 'show'])->name('evaluacion.detalle');
+    });
 });
 
 require __DIR__.'/settings.php';
