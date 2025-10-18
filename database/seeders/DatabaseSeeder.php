@@ -34,8 +34,8 @@ class DatabaseSeeder extends Seeder
         $elizabeth->assignRole('medico'); // Asignar rol de médico
 
         $secretaria = User::factory()->create([
-            'name' => 'Juan David',
-            'email' => 'secretaria@gmail.com',
+            'name' => 'Maria Gonzales',
+            'email' => 'maria@gmail.com',
             'password' => bcrypt('1234'),
         ]);
         $secretaria->assignRole('secretario'); // Asignar rol de secretaria
