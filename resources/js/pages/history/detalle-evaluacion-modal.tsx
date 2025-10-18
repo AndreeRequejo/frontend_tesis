@@ -118,6 +118,7 @@ export function DetalleEvaluacionModal({
         } else if (!isOpen) {
             setEvaluacion(null);
             setIsEditingComment(false);
+            setIsSubmitting(false); // Resetear estado de submitting al cerrar
         }
     }, [isOpen, evaluacionId, loadEvaluacion]);
 
@@ -160,6 +161,8 @@ export function DetalleEvaluacionModal({
             },
             onError: () => {
                 toast.error('Error al eliminar la evaluación');
+            },
+            onFinish: () => {
                 setIsSubmitting(false);
             }
         });
@@ -252,7 +255,7 @@ export function DetalleEvaluacionModal({
                                 <CardTitle>Comentarios</CardTitle>
                                 {!isEditingComment && showActions && (
                                     <Button 
-                                        variant="outline" 
+                                        variant="default" 
                                         size="sm"
                                         onClick={() => setIsEditingComment(true)}
                                         className="flex items-center gap-2"
