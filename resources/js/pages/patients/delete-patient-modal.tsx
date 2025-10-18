@@ -7,6 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { AlertTriangle } from 'lucide-react';
 
 interface DeletePatientModalProps {
     isOpen: boolean;
@@ -24,10 +25,20 @@ export function DeletePatientModal({ isOpen, onClose, onConfirm, patientName }: 
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Confirmar Eliminación</DialogTitle>
-                    <DialogDescription>
-                        ¿Estás seguro de que deseas eliminar al paciente {patientName}? 
-                        Esta acción no se puede deshacer.
+                    <DialogTitle className="flex items-center gap-2">
+                        <AlertTriangle className="h-5 w-5 text-red-500" />
+                        Confirmar Eliminación
+                    </DialogTitle>
+                    <DialogDescription className="space-y-3">
+                        <p>
+                            ¿Estás seguro de que deseas eliminar al paciente <strong>{patientName}</strong>?
+                        </p>
+                        <div className="bg-red-50 border border-red-200 rounded-md p-3 text-red-400">
+                            <strong>Advertencia: </strong>No se puede eliminar un paciente que tiene evaluaciones registradas
+                        </div>
+                        <p className="text-sm text-gray-600">
+                            Esta acción no se puede deshacer.
+                        </p>
                     </DialogDescription>
                 </DialogHeader>
                 <DialogFooter>

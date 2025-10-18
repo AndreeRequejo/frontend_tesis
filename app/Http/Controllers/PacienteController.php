@@ -123,6 +123,15 @@ class PacienteController extends Controller
      */
     public function destroy(Paciente $paciente)
     {
+        // Verificar si el paciente tiene evaluaciones
+        $evaluacionesCount = $paciente->evaluaciones()->count();
+        
+        if ($evaluacionesCount > 0) {
+            return redirect()->back()->withErrors([
+                'delete' => "No se puede eliminar el paciente porque tiene {$evaluacionesCount} evaluación(es) registrada(s). Debe eliminar las evaluaciones primero."
+            ]);
+        }
+
         $paciente->delete();
 
         return redirect()->back()->with('success', 'Paciente eliminado exitosamente.');

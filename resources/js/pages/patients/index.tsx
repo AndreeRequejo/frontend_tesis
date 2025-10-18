@@ -171,8 +171,30 @@ export default function Pacientes() {
                     setSelectedPatient(null);
                     toast.success('Paciente eliminado correctamente');
                 },
-                onError: () => {
-                    toast.error('Error al eliminar el paciente');
+                onError: (errors) => {
+                    // Manejar errores de validación de Laravel
+                    let errorMessage = 'Error al eliminar el paciente';
+                    
+                    if (errors && typeof errors === 'object') {
+                        // Si viene del withErrors() de Laravel
+                        if (errors.delete) {
+                            errorMessage = errors.delete;
+                        } else if (errors.message) {
+                            errorMessage = errors.message;
+                        } else {
+                            // Tomar el primer error disponible
+                            const firstError = Object.values(errors)[0];
+                            if (Array.isArray(firstError)) {
+                                errorMessage = firstError[0];
+                            } else if (typeof firstError === 'string') {
+                                errorMessage = firstError;
+                            }
+                        }
+                    } else if (typeof errors === 'string') {
+                        errorMessage = errors;
+                    }
+                    
+                    toast.error(errorMessage);
                 },
             });
         }
