@@ -50,48 +50,6 @@ class EvaluacionSeeder extends Seeder
                 'fecha' => '2025-07-28',
                 'hora' => '14:20'
             ],
-            [
-                'paciente_dni' => '11223344',
-                'clasificacion' => 'Moderado',
-                'comentario' => 'Pápulas inflamatorias en mejillas, evolución favorable',
-                'fecha' => '2025-07-25',
-                'hora' => '09:45'
-            ],
-            [
-                'paciente_dni' => '55667788',
-                'clasificacion' => 'Leve',
-                'comentario' => 'Comedones cerrados dispersos, mejoría notable desde última consulta',
-                'fecha' => '2025-07-22',
-                'hora' => '16:45'
-            ],
-            [
-                'paciente_dni' => '99887766',
-                'clasificacion' => 'Severo',
-                'comentario' => 'Nódulos inflamatorios profundos, derivar a dermatología',
-                'fecha' => '2025-07-20',
-                'hora' => '11:30'
-            ],
-            [
-                'paciente_dni' => '33445566',
-                'clasificacion' => 'Moderado',
-                'comentario' => 'Lesiones pustulosas en zona mandibular',
-                'fecha' => '2025-07-18',
-                'hora' => '13:15'
-            ],
-            [
-                'paciente_dni' => '12345678',
-                'clasificacion' => 'Leve',
-                'comentario' => 'Primeras lesiones detectadas, inicio de tratamiento preventivo',
-                'fecha' => '2025-07-10',
-                'hora' => '08:30'
-            ],
-            [
-                'paciente_dni' => '55667788',
-                'clasificacion' => 'Moderado',
-                'comentario' => 'Recaída después de suspender tratamiento',
-                'fecha' => '2025-07-08',
-                'hora' => '17:20'
-            ]
         ];
 
         foreach ($evaluaciones as $evaluacionData) {
@@ -106,8 +64,8 @@ class EvaluacionSeeder extends Seeder
                     'hora' => $evaluacionData['hora']
                 ]);
 
-                // Crear entre 1 y 3 imágenes por evaluación
-                $numImagenes = rand(1, 3);
+                // Crear imágenes asociadas a la evaluación
+                $numImagenes = 1;
                 for ($i = 0; $i < $numImagenes; $i++) {
                     Imagen::create([
                         'evaluacion_id' => $evaluacion->id,
