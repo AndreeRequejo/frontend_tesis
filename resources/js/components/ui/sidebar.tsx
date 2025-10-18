@@ -2,8 +2,8 @@ import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
 import { PanelLeftIcon } from "lucide-react"
-import { BottomBar } from '@/components/bottom-bar';
-import { mainNavItems } from '@/config/navigation';
+import { BottomBar } from '@/components/mobile-menu';
+import { useNavigationMobile } from '@/hooks/useNavigationMobile';
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -163,6 +163,7 @@ function Sidebar({
   collapsible?: "offcanvas" | "icon" | "none"
 }) {
   const { isMobile, state, /*openMobile, setOpenMobile*/ } = useSidebar()
+  const { mainNavItems } = useNavigationMobile()
 
   if (collapsible === "none") {
     return (

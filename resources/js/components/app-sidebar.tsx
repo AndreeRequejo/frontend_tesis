@@ -4,31 +4,8 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { LayoutGrid, UsersRound, FileUser, ScanFace } from 'lucide-react';
 import AppLogo from './app-logo';
-
-const mainNavItems: NavItem[] = [
-    {
-        title: 'Inicio',
-        href: '/dashboard',
-        icon: LayoutGrid,
-    },
-    {
-        title: 'Evaluación',
-        href: '/evaluacion',
-        icon: ScanFace,
-    },
-    {
-        title: 'Pacientes',
-        href: '/pacientes',
-        icon: UsersRound,
-    },
-    {
-        title: 'Historial evaluaciones',
-        href: '/historial',
-        icon: FileUser,
-    },
-];
+import { useNavigation } from '@/hooks/useNavigation';
 
 const footerNavItems: NavItem[] = [
     // {
@@ -44,6 +21,8 @@ const footerNavItems: NavItem[] = [
 ];
 
 export function AppSidebar() {
+    const { mainNavItems, user, isMedico, isSecretario } = useNavigation();
+
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
@@ -65,6 +44,14 @@ export function AppSidebar() {
             <SidebarFooter>
                 <NavFooter items={footerNavItems} className="mt-auto" />
                 <NavUser />
+                
+                {/* Mostrar rol del usuario */}
+                {user && (
+                    <div className="px-2 py-1 text-xs text-muted-foreground text-center">
+                        {isMedico && "👨‍⚕️ Médico"}
+                        {isSecretario && "👩‍💼 Admisión"}
+                    </div>
+                )}
             </SidebarFooter>
         </Sidebar>
     );
