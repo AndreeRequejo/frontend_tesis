@@ -5,7 +5,7 @@ export interface Paciente {
     apellidos: string;
     edad: number;
     genero: 'Masculino' | 'Femenino';
-    telefono?: string;
+    telefono?: string | null;
     created_at?: string;
     updated_at?: string;
 }

@@ -37,7 +37,7 @@ export function CreatePatientModal({ isOpen, onClose, onSubmit }: CreatePatientM
             apellidos: formData.apellidos,
             edad: parseInt(formData.edad),
             genero: formData.genero as 'Masculino' | 'Femenino',
-            telefono: formData.telefono || undefined
+            telefono: formData.telefono.trim() || null
         });
         setFormData({ 
             dni: '', 

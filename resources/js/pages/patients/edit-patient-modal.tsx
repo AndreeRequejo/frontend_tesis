@@ -62,7 +62,7 @@ export function EditPatientModal({ isOpen, onClose, onSubmit, patient }: EditPat
             apellidos: formData.apellidos,
             edad: parseInt(formData.edad),
             genero: formData.genero as 'Masculino' | 'Femenino',
-            telefono: formData.telefono || undefined
+            telefono: formData.telefono.trim() || null
         });
     };
 

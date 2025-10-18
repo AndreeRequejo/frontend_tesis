@@ -63,6 +63,11 @@ class PacienteController extends Controller
             'genero.required' => 'Seleccione el género del paciente.'
         ]);
 
+        // Si el teléfono está vacío, establecerlo como null
+        if (empty($validated['telefono'])) {
+            $validated['telefono'] = null;
+        }
+
         Paciente::create($validated);
 
         return redirect()->back()->with('success', 'Paciente creado exitosamente.');
@@ -97,6 +102,11 @@ class PacienteController extends Controller
             'edad.max' => 'La edad máxima es 30 años.',
             'genero.required' => 'Seleccione el género del paciente.'
         ]);
+
+        // Si el teléfono está vacío, establecerlo como null
+        if (empty($validated['telefono'])) {
+            $validated['telefono'] = null;
+        }
 
         $paciente->update($validated);
 
