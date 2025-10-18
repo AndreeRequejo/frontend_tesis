@@ -24,6 +24,7 @@ import { CreatePatientModal } from './create-patient-modal';
 import { DeletePatientModal } from './delete-patient-modal';
 import { EditPatientModal } from './edit-patient-modal';
 import { Paciente, PacienteFormData, PaginatedResponse } from './types';
+import { RoleHelper, User as UserType } from '@/lib/roleHelper';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -38,11 +39,21 @@ interface PageProps {
         search?: string;
         pag?: number;
     };
+    auth: {
+        user: UserType;
+    };
     [key: string]: unknown;
 }
 
 export default function Pacientes() {
-    const { pacientes, filters } = usePage<PageProps>().props;
+    const { pacientes, filters, auth } = usePage<PageProps>().props;
+    const user = auth.user;
+    
+    // Verificar permisos del usuario
+    const canViewDetails = RoleHelper.isMedico(user);
+    const canDeletePatients = RoleHelper.hasPermission(user, 'eliminar_pacientes');
+    const canEditPatients = RoleHelper.hasPermission(user, 'editar_pacientes');
+    const canCreatePatients = RoleHelper.hasPermission(user, 'crear_pacientes');
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -80,6 +91,12 @@ export default function Pacientes() {
     }, [searchTerm, filters?.search, perPage, isInitialLoad]);
 
     const handleEdit = (id: number) => {
+        // Verificar permisos antes de editar
+        if (!canEditPatients) {
+            toast.error('No tienes permisos para editar pacientes');
+            return;
+        }
+        
         const patient = pacientes.data.find((p) => p.id === id);
         if (patient) {
             // Asegurar que se limpie el estado anterior y se establezca el nuevo
@@ -92,6 +109,12 @@ export default function Pacientes() {
     };
 
     const handleDelete = (id: number) => {
+        // Verificar permisos antes de eliminar
+        if (!canDeletePatients) {
+            toast.error('No tienes permisos para eliminar pacientes');
+            return;
+        }
+        
         const patient = pacientes.data.find((p) => p.id === id);
         if (patient) {
             setSelectedPatient(patient);
@@ -100,6 +123,11 @@ export default function Pacientes() {
     };
 
     const handleViewDetails = (id: number) => {
+        // Solo médicos pueden ver detalles
+        if (!canViewDetails) {
+            toast.error('No tienes permisos para ver los detalles del paciente');
+            return;
+        }
         router.visit(`/pacientes/${id}`);
     };
 
@@ -275,13 +303,15 @@ export default function Pacientes() {
                                 <div className="text-2xl font-bold">{pacientes.total}</div>
                                 <div className="text-blue-100 text-sm">Pacientes registrados</div>
                             </div>
-                            <Button 
-                                className="bg-white text-blue-600 hover:bg-blue-50 border-0 shadow-md flex items-center gap-2" 
-                                onClick={() => setIsCreateModalOpen(true)}
-                            >
-                                <Plus className="h-4 w-4" />
-                                Nuevo Paciente
-                            </Button>
+                            {canCreatePatients && (
+                                <Button 
+                                    className="bg-white text-blue-600 hover:bg-blue-50 border-0 shadow-md flex items-center gap-2" 
+                                    onClick={() => setIsCreateModalOpen(true)}
+                                >
+                                    <Plus className="h-4 w-4" />
+                                    Nuevo Paciente
+                                </Button>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -304,10 +334,12 @@ export default function Pacientes() {
                 <div className="rounded-lg border bg-white shadow-sm">
                     {pacientes.data.length > 0 ? (
                         <>
-                            <div className="px-4 py-2 bg-blue-50 border-b border-blue-100 text-sm text-blue-700 flex items-center gap-2">
-                                <Eye className="h-4 w-4" />
-                                <span>Haz clic en cualquier fila para ver el detalle completo del paciente</span>
-                            </div>
+                            {canViewDetails && (
+                                <div className="px-4 py-2 bg-blue-50 border-b border-blue-100 text-sm text-blue-700 flex items-center gap-2">
+                                    <Eye className="h-4 w-4" />
+                                    <span>Haz clic en cualquier fila para ver el detalle completo del paciente</span>
+                                </div>
+                            )}
                             <Table>
                             <TableHeader>
                                 <TableRow className="bg-gray-50/50">
@@ -337,8 +369,8 @@ export default function Pacientes() {
                                 {pacientes.data.map((paciente) => (
                                     <TableRow 
                                         key={paciente.id} 
-                                        className="hover:bg-blue-50/50 transition-colors cursor-pointer"
-                                        onClick={() => handleViewDetails(paciente.id)}
+                                        className={`hover:bg-blue-50/50 transition-colors ${canViewDetails ? 'cursor-pointer' : ''}`}
+                                        onClick={canViewDetails ? () => handleViewDetails(paciente.id) : undefined}
                                     >
                                         <TableCell>
                                             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white font-semibold text-sm">
@@ -402,42 +434,53 @@ export default function Pacientes() {
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <div className="flex items-center justify-end gap-2">
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handleViewDetails(paciente.id);
-                                                    }}
-                                                    className="h-8 w-8 p-0 hover:bg-green-50 hover:border-green-300"
-                                                    title="Ver detalles"
-                                                >
-                                                    <Eye className="h-4 w-4 text-green-600" />
-                                                </Button>
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handleEdit(paciente.id);
-                                                    }}
-                                                    className="h-8 w-8 p-0 hover:bg-blue-50 hover:border-blue-300"
-                                                    title="Editar paciente"
-                                                >
-                                                    <Edit2 className="h-4 w-4 text-blue-600" />
-                                                </Button>
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handleDelete(paciente.id);
-                                                    }}
-                                                    className="h-8 w-8 p-0 hover:bg-red-50 hover:border-red-300"
-                                                    title="Eliminar paciente"
-                                                >
-                                                    <Trash2 className="h-4 w-4 text-red-600" />
-                                                </Button>
+                                                {/* Botón Ver detalles - Solo médicos */}
+                                                {canViewDetails && (
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleViewDetails(paciente.id);
+                                                        }}
+                                                        className="h-8 w-8 p-0 hover:bg-green-50 hover:border-green-300"
+                                                        title="Ver detalles"
+                                                    >
+                                                        <Eye className="h-4 w-4 text-green-600" />
+                                                    </Button>
+                                                )}
+                                                
+                                                {/* Botón Editar - Médicos y Secretarios */}
+                                                {canEditPatients && (
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleEdit(paciente.id);
+                                                        }}
+                                                        className="h-8 w-8 p-0 hover:bg-blue-50 hover:border-blue-300"
+                                                        title="Editar paciente"
+                                                    >
+                                                        <Edit2 className="h-4 w-4 text-blue-600" />
+                                                    </Button>
+                                                )}
+                                                
+                                                {/* Botón Eliminar - Solo médicos */}
+                                                {canDeletePatients && (
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleDelete(paciente.id);
+                                                        }}
+                                                        className="h-8 w-8 p-0 hover:bg-red-50 hover:border-red-300"
+                                                        title="Eliminar paciente"
+                                                    >
+                                                        <Trash2 className="h-4 w-4 text-red-600" />
+                                                    </Button>
+                                                )}
                                             </div>
                                         </TableCell>
                                     </TableRow>
@@ -464,25 +507,35 @@ export default function Pacientes() {
                 {/* Paginación inferior */}
                 <PaginationComponent />
 
-                {/* Modales */}
-                <CreatePatientModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} onSubmit={handleCreateSubmit} />
+                {/* Modales - Solo mostrar si el usuario tiene permisos */}
+                {canCreatePatients && (
+                    <CreatePatientModal 
+                        isOpen={isCreateModalOpen} 
+                        onClose={() => setIsCreateModalOpen(false)} 
+                        onSubmit={handleCreateSubmit} 
+                    />
+                )}
 
-                <EditPatientModal
-                    isOpen={isEditModalOpen}
-                    onClose={() => {
-                        setIsEditModalOpen(false);
-                        setSelectedPatient(null);
-                    }}
-                    onSubmit={handleEditSubmit}
-                    patient={selectedPatient}
-                />
+                {canEditPatients && (
+                    <EditPatientModal
+                        isOpen={isEditModalOpen}
+                        onClose={() => {
+                            setIsEditModalOpen(false);
+                            setSelectedPatient(null);
+                        }}
+                        onSubmit={handleEditSubmit}
+                        patient={selectedPatient}
+                    />
+                )}
 
-                <DeletePatientModal
-                    isOpen={isDeleteModalOpen}
-                    onClose={() => setIsDeleteModalOpen(false)}
-                    onConfirm={handleDeleteConfirm}
-                    patientName={selectedPatient ? getPatientFullName(selectedPatient) : undefined}
-                />
+                {canDeletePatients && (
+                    <DeletePatientModal
+                        isOpen={isDeleteModalOpen}
+                        onClose={() => setIsDeleteModalOpen(false)}
+                        onConfirm={handleDeleteConfirm}
+                        patientName={selectedPatient ? getPatientFullName(selectedPatient) : undefined}
+                    />
+                )}
             </div>
             <Toaster position="top-right" />
         </AppLayout>
