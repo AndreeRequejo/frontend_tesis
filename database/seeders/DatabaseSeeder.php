@@ -13,19 +13,34 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // Primero crear roles y permisos
+        $this->call([
+            RolePermissionSeeder::class,
+        ]);
 
-        User::factory()->create([
+        // Crear usuarios específicos y asignar roles
+        $andree = User::factory()->create([
             'name' => 'Andree Requejo',
             'email' => 'andree09requejo@gmail.com',
             'password' => bcrypt('159357An@'),
         ]);
+        $andree->assignRole('medico'); // Asignar rol de médico
 
-        User::factory()->create([
+        $elizabeth = User::factory()->create([
             'name' => 'Elizabeth Guevara',
             'email' => 'elizabeth@gmail.com',
             'password' => bcrypt('123456'),
         ]);
+        $elizabeth->assignRole('medico'); // Asignar rol de médico
 
+        $secretaria = User::factory()->create([
+            'name' => 'Juan David',
+            'email' => 'secretaria@gmail.com',
+            'password' => bcrypt('1234'),
+        ]);
+        $secretaria->assignRole('secretario'); // Asignar rol de secretaria
+
+        // Ejecutar otros seeders
         $this->call([
             PacienteSeeder::class,
             EvaluacionSeeder::class,
