@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
-import { Camera, Users, FileText, Activity } from 'lucide-react';
+import { Camera, Users } from 'lucide-react';
 import { Link } from '@inertiajs/react';
 import { PatientCard } from '@/components/paciente-card';
 import { EvaluacionCard } from '@/components/evaluacion-card';
@@ -50,7 +50,6 @@ export default function Dashboard({ pacientesRecientes, evaluacionesRecientes, a
 
     // Verificar roles del usuario
     const isMedico = RoleHelper.isMedico(user);
-    const isSecretario = RoleHelper.isSecretario(user);
 
     const handleViewDetails = (evaluacionId: number) => {
         setSelectedEvaluacionId(evaluacionId);
