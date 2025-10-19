@@ -1,20 +1,12 @@
-import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
-import { Head, router } from '@inertiajs/react';
 import { EvaluacionCard } from '@/components/evaluacion-card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import AppLayout from '@/layouts/app-layout';
 import { DetalleEvaluacionModal } from '@/pages/history/detalle-evaluacion-modal';
-import { 
-    Search, 
-    Filter, 
-    ChevronLeft, 
-    ChevronRight, 
-    FileText,
-    Activity,
-    Eye
-} from 'lucide-react';
+import { type BreadcrumbItem } from '@/types';
+import { Head, router } from '@inertiajs/react';
+import { Activity, ChevronLeft, ChevronRight, Eye, FileText, Filter, Search } from 'lucide-react';
 import { useState } from 'react';
 import { Toaster } from 'react-hot-toast';
 
@@ -70,48 +62,64 @@ export default function HistoryIndex({ evaluaciones, filters }: Props) {
 
     const handleSearch = (value: string) => {
         setSearchTerm(value);
-        router.get('/historial', { 
-            search: value,
-            severidad: selectedSeveridad === 'all' ? undefined : selectedSeveridad,
-            pag: perPage
-        }, { 
-            preserveState: true,
-            preserveScroll: true 
-        });
+        router.get(
+            '/historial',
+            {
+                search: value,
+                severidad: selectedSeveridad === 'all' ? undefined : selectedSeveridad,
+                pag: perPage,
+            },
+            {
+                preserveState: true,
+                preserveScroll: true,
+            },
+        );
     };
 
     const handleFilterBySeverity = (value: string) => {
         setSelectedSeveridad(value);
-        router.get('/historial', { 
-            search: searchTerm,
-            severidad: value === 'all' ? undefined : value,
-            pag: perPage
-        }, { 
-            preserveState: true,
-            preserveScroll: true 
-        });
+        router.get(
+            '/historial',
+            {
+                search: searchTerm,
+                severidad: value === 'all' ? undefined : value,
+                pag: perPage,
+            },
+            {
+                preserveState: true,
+                preserveScroll: true,
+            },
+        );
     };
 
     const handlePerPageChange = (value: string) => {
         const newPerPage = parseInt(value);
         setPerPage(newPerPage);
-        router.get('/historial', { 
-            search: searchTerm,
-            severidad: selectedSeveridad === 'all' ? undefined : selectedSeveridad,
-            pag: newPerPage
-        }, { 
-            preserveState: true,
-            replace: true 
-        });
+        router.get(
+            '/historial',
+            {
+                search: searchTerm,
+                severidad: selectedSeveridad === 'all' ? undefined : selectedSeveridad,
+                pag: newPerPage,
+            },
+            {
+                preserveState: true,
+                replace: true,
+            },
+        );
     };
 
     const handlePageChange = (url: string) => {
         if (url) {
-            router.get(url, {
-                search: searchTerm,
-                severidad: selectedSeveridad === 'all' ? undefined : selectedSeveridad,
-                pag: perPage
-            }, { preserveState: true });
+            router.get(
+                url,
+                {
+                    search: searchTerm,
+                    severidad: selectedSeveridad === 'all' ? undefined : selectedSeveridad,
+                    pag: perPage,
+                },
+                { preserveState: true },
+            );
         }
     };
 
@@ -127,13 +135,13 @@ export default function HistoryIndex({ evaluaciones, filters }: Props) {
 
     // Componente de paginación reutilizable
     const PaginationComponent = () => (
-        <div className="bg-white p-4 rounded-lg border shadow-sm">
-            <div className="flex items-center justify-between flex-wrap gap-4">
+        <div className="rounded-lg border bg-white p-4 shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
                         <span className="text-sm text-gray-600">Mostrar:</span>
                         <Select value={perPage.toString()} onValueChange={handlePerPageChange}>
-                            <SelectTrigger className="w-20 h-8">
+                            <SelectTrigger className="h-8 w-20">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -150,7 +158,7 @@ export default function HistoryIndex({ evaluaciones, filters }: Props) {
                         Total: <span className="font-medium">{evaluaciones.total}</span> evaluaciones
                     </div>
                 </div>
-                
+
                 {evaluaciones.last_page > 1 && (
                     <div className="flex items-center gap-2">
                         <Button
@@ -172,10 +180,7 @@ export default function HistoryIndex({ evaluaciones, filters }: Props) {
                                     size="sm"
                                     onClick={() => link.url && handlePageChange(link.url)}
                                     disabled={!link.url}
-                                    className={link.active 
-                                        ? 'bg-blue-600 hover:bg-blue-700 border-blue-600' 
-                                        : 'border-gray-200 hover:bg-gray-50'
-                                    }
+                                    className={link.active ? 'border-blue-600 bg-blue-600 hover:bg-blue-700' : 'border-gray-200 hover:bg-gray-50'}
                                 >
                                     {link.label}
                                 </Button>
@@ -201,13 +206,13 @@ export default function HistoryIndex({ evaluaciones, filters }: Props) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Historial" />
-            <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
+            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 {/* Header moderno */}
-                <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg p-6 text-white">
+                <div className="rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 p-6 text-white">
                     <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
                         <div className="space-y-2">
                             <div className="flex items-center gap-3">
-                                <div className="p-2 bg-white/20 rounded-lg">
+                                <div className="rounded-lg bg-white/20 p-2">
                                     <Activity className="h-6 w-6" />
                                 </div>
                                 <div>
@@ -217,45 +222,43 @@ export default function HistoryIndex({ evaluaciones, filters }: Props) {
                             </div>
                         </div>
                         <div className="flex items-center gap-4">
-                            <div className="text-right hidden sm:block">
+                            <div className="hidden text-right sm:block">
                                 <div className="text-2xl font-bold">{evaluaciones.total}</div>
-                                <div className="text-blue-100 text-sm">Evaluaciones registradas</div>
+                                <div className="text-sm text-blue-100">Evaluaciones registradas</div>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 {/* Filtros y búsqueda */}
-                <div className="bg-white p-4 rounded-lg border shadow-sm">
-                    <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
-                        {/* Barra de búsqueda */}
-                        <div className="relative w-full sm:flex-1">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                            <Input
-                                placeholder="Buscar por paciente..."
-                                className="pl-10 w-full border-gray-200 focus:border-blue-400 focus:ring-blue-400"
-                                value={searchTerm}
-                                onChange={(e) => handleSearch(e.target.value)}
-                            />
-                        </div>
+                <div className="flex flex-col items-stretch gap-4 sm:flex-row sm:items-center">
+                    {/* Barra de búsqueda */}
+                    <div className="relative w-full sm:flex-1">
+                        <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
+                        <Input
+                            placeholder="Buscar por paciente..."
+                            className="w-full border-gray-200 pl-10 focus:border-blue-400 focus:ring-blue-400"
+                            value={searchTerm}
+                            onChange={(e) => handleSearch(e.target.value)}
+                        />
+                    </div>
 
-                        {/* Filtro por severidad */}
-                        <div className="flex items-center w-full sm:w-auto">
-                            <Select value={selectedSeveridad} onValueChange={handleFilterBySeverity}>
-                                <SelectTrigger className="w-full sm:w-48">
-                                    <div className="flex items-center gap-2">
-                                        <Filter className="h-4 w-4 text-gray-500" />
-                                        <SelectValue placeholder="Filtrar por severidad" />
-                                    </div>
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">Todo</SelectItem>
-                                    <SelectItem value="Leve">Leve</SelectItem>
-                                    <SelectItem value="Moderado">Moderado</SelectItem>
-                                    <SelectItem value="Severo">Severo</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
+                    {/* Filtro por severidad */}
+                    <div className="flex w-full items-center sm:w-auto">
+                        <Select value={selectedSeveridad} onValueChange={handleFilterBySeverity}>
+                            <SelectTrigger className="w-full sm:w-48">
+                                <div className="flex items-center gap-2">
+                                    <Filter className="h-4 w-4 text-gray-500" />
+                                    <SelectValue placeholder="Filtrar por severidad" />
+                                </div>
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">Todo</SelectItem>
+                                <SelectItem value="Leve">Leve</SelectItem>
+                                <SelectItem value="Moderado">Moderado</SelectItem>
+                                <SelectItem value="Severo">Severo</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
                 </div>
 
@@ -263,10 +266,10 @@ export default function HistoryIndex({ evaluaciones, filters }: Props) {
                 <PaginationComponent />
 
                 {/* Lista de evaluaciones */}
-                <div className="bg-white rounded-lg border shadow-sm">
+                <div className="rounded-lg border bg-white shadow-sm">
                     {evaluaciones.data.length > 0 ? (
                         <>
-                            <div className="px-4 py-2 bg-blue-50 border-b border-blue-100 text-sm text-blue-700 flex items-center gap-2">
+                            <div className="flex items-center gap-2 border-b border-blue-100 bg-blue-50 px-4 py-2 text-sm text-blue-700">
                                 <Eye className="h-4 w-4" />
                                 <span>Haz clic en cualquier evaluación para ver los detalles completos</span>
                             </div>
@@ -274,7 +277,7 @@ export default function HistoryIndex({ evaluaciones, filters }: Props) {
                                 {evaluaciones.data.map((evaluacion) => (
                                     <div
                                         key={evaluacion.id}
-                                        className="p-4 hover:bg-blue-50/50 transition-colors cursor-pointer"
+                                        className="cursor-pointer p-4 transition-colors hover:bg-blue-50/50"
                                         onClick={() => handleViewDetails(evaluacion.id)}
                                     >
                                         <EvaluacionCard
@@ -293,18 +296,14 @@ export default function HistoryIndex({ evaluaciones, filters }: Props) {
                         </>
                     ) : (
                         <div className="py-16 text-center">
-                            <FileText className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                            <div className="text-gray-500 text-lg font-medium mb-2">
-                                {searchTerm || selectedSeveridad !== 'all' 
-                                    ? 'No se encontraron evaluaciones' 
-                                    : 'No hay evaluaciones registradas'
-                                }
+                            <FileText className="mx-auto mb-4 h-12 w-12 text-gray-300" />
+                            <div className="mb-2 text-lg font-medium text-gray-500">
+                                {searchTerm || selectedSeveridad !== 'all' ? 'No se encontraron evaluaciones' : 'No hay evaluaciones registradas'}
                             </div>
-                            <div className="text-gray-400 text-sm">
+                            <div className="text-sm text-gray-400">
                                 {searchTerm || selectedSeveridad !== 'all'
                                     ? 'Intenta con otros términos de búsqueda o filtros'
-                                    : 'Las evaluaciones aparecerán aquí una vez que se registren'
-                                }
+                                    : 'Las evaluaciones aparecerán aquí una vez que se registren'}
                             </div>
                         </div>
                     )}
