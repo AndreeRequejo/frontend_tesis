@@ -103,10 +103,16 @@ export default function Evaluacion() {
                 {!selectedPatient ? (
                     /* Selección de Paciente */
                     <>
-                        <h1 className="text-2xl font-bold">Nueva Evaluación</h1>
-                        <Card>
+                        <div className="flex items-center gap-4">
+                            <div className="h-10 w-1 bg-gradient-to-b from-blue-500 to-blue-600 rounded-full"></div>
+                            <h1 className="text-2xl font-bold">Nueva Evaluación</h1>
+                        </div>
+                        <Card className="shadow-lg hover:shadow-xl transition-shadow duration-200">
                             <CardHeader>
-                                <CardTitle>Seleccionar Paciente</CardTitle>
+                                <CardTitle className="text-blue-700 flex items-center gap-2">
+                                    <Search className="h-5 w-5" />
+                                    Seleccionar Paciente
+                                </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 {/* Barra de búsqueda con botón de crear */}
@@ -120,7 +126,7 @@ export default function Evaluacion() {
                                             onChange={(e) => handleSearch(e.target.value)}
                                         />
                                     </div>
-                                    <Button variant="default" onClick={() => setIsCreateModalOpen(true)} className="flex items-center gap-2 ">
+                                    <Button variant="default" onClick={() => setIsCreateModalOpen(true)} className="flex items-center gap-2">
                                         <Plus className="h-4 w-4" />
                                         Agregar
                                     </Button>
@@ -142,24 +148,42 @@ export default function Evaluacion() {
                                                 <div
                                                     key={paciente.id}
                                                     onClick={() => handlePatientSelect(paciente)}
-                                                    className="cursor-pointer rounded-lg border p-4 shadow transition-all hover:bg-gray-50 hover:shadow-md"
+                                                    className="cursor-pointer rounded-lg border border-blue-100 p-4 shadow-sm bg-white hover:bg-blue-50 hover:shadow-md hover:border-blue-200 transition-all duration-200"
                                                 >
-                                                    <h3 className="pb-1 text-lg font-semibold">{getPatientFullName(paciente)}</h3>
-                                                    <div className="flex flex-col">
-                                                        <span className="text-sm text-gray-600">
-                                                            {paciente.edad} años • {paciente.genero}
-                                                        </span>
-                                                        <span className="text-sm text-gray-600">DNI: {paciente.dni}</span>
+                                                    <div className="flex items-center justify-between">
+                                                        <div>
+                                                            <h3 className="pb-1 text-lg font-semibold text-blue-700">{getPatientFullName(paciente)}</h3>
+                                                            <div className="flex flex-col gap-1">
+                                                                <span className="text-sm text-gray-600">
+                                                                    {paciente.edad} años • {paciente.genero}
+                                                                </span>
+                                                                <div className="inline-flex items-center gap-2 rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700 w-fit">
+                                                                    <span className="text-xs text-blue-600">DNI</span>
+                                                                    <span className="font-semibold">{paciente.dni}</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div className="text-blue-400">
+                                                            →
+                                                        </div>
                                                     </div>
                                                 </div>
                                             ))}
                                         </>
                                     ) : (
-                                        <div className="py-8 text-center text-gray-500">
-                                            {searchTerm ? 
-                                                `No se encontraron pacientes con ese criterio de búsqueda. (Total registrados: ${totalPacientes})` : 
-                                                'No hay pacientes registrados.'
-                                            }
+                                        <div className="py-12 text-center">
+                                            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-blue-100 to-blue-100 shadow-lg">
+                                                <Search className="h-8 w-8 text-blue-500" />
+                                            </div>
+                                            <h3 className="mb-2 text-lg font-medium text-slate-700">
+                                                {searchTerm ? 'No se encontraron pacientes' : 'No hay pacientes registrados'}
+                                            </h3>
+                                            <p className="mx-auto mb-6 max-w-sm text-slate-500">
+                                                {searchTerm ? 
+                                                    `No se encontraron pacientes con ese criterio de búsqueda. (Total registrados: ${totalPacientes})` : 
+                                                    'Comienza creando el primer paciente para realizar evaluaciones.'
+                                                }
+                                            </p>
                                         </div>
                                     )}
                                 </div>
