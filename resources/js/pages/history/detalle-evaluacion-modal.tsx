@@ -214,21 +214,35 @@ export function DetalleEvaluacionModal({
                         {/* Resultado de la evaluación */}
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between">
-                                <div>
-                                    <CardTitle>Resultado de clasificación:</CardTitle>
-                                    <p className="text-sm text-gray-500 mt-1">
+                                <div className="flex-1">
+                                    <div className="flex items-center justify-between gap-3 mb-1">
+                                        <CardTitle>Resultado de clasificación:</CardTitle>
+                                        {showActions && (
+                                            <Button 
+                                                variant="destructive"
+                                                size="sm"
+                                                onClick={handleDelete}
+                                                disabled={isSubmitting}
+                                                className="flex items-center gap-2"
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                                {isSubmitting ? 'Eliminando...' : 'Eliminar'}
+                                            </Button>
+                                        )}
+                                    </div>
+                                    <p className="text-sm text-gray-500">
                                         {evaluacion.fecha} {evaluacion.hora}
                                     </p>
+                                    <span className={`inline-block mt-2 px-3 py-1 rounded-full text-sm font-medium border ${getSeveridadColor(evaluacion.clasificacion)}`}>
+                                        {evaluacion.clasificacion}
+                                    </span>
                                 </div>
-                                <span className={`px-3 py-1 rounded-full text-sm font-medium border ${getSeveridadColor(evaluacion.clasificacion)}`}>
-                                    {evaluacion.clasificacion}
-                                </span>
                             </CardHeader>
                             <CardContent className="space-y-6">
                                 {/* Imágenes de la evaluación */}
                                 {evaluacion.imagenes.length > 0 && (
                                     <div>
-                                        <h4 className="font-medium mb-3">Imágenes de la evaluación</h4>
+                                        <h4 className="font-medium mb-3">Imagen de la evaluación:</h4>
                                         <div className={`grid gap-4 ${getImageGridClass(evaluacion.imagenes.length)}`}>
                                             {evaluacion.imagenes.map((imagen: string, index: number) => (
                                                 <div 
@@ -238,8 +252,7 @@ export function DetalleEvaluacionModal({
                                                     <img 
                                                         src={formatImageSrc(imagen)} 
                                                         alt={`Evaluación ${index + 1}`}
-                                                        className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform"
-                                                        onClick={() => window.open(formatImageSrc(imagen), '_blank')}
+                                                        className="w-full h-full object-cover"
                                                     />
                                                 </div>
                                             ))}
@@ -303,39 +316,6 @@ export function DetalleEvaluacionModal({
                                 )}
                             </CardContent>
                         </Card>
-
-                        {/* Acciones (opcional) */}
-                        {showActions && (
-                            <div className="flex flex-col sm:flex-row gap-3 justify-between pt-4 border-t">
-                                <Button 
-                                    variant="destructive"
-                                    onClick={handleDelete}
-                                    disabled={isSubmitting}
-                                    className="flex items-center gap-2"
-                                >
-                                    <Trash2 className="h-4 w-4" />
-                                    {isSubmitting ? 'Eliminando...' : 'Eliminar'}
-                                </Button>
-                                <Button 
-                                    onClick={onClose}
-                                    className="bg-blue-600 hover:bg-blue-700"
-                                >
-                                    Cerrar
-                                </Button>
-                            </div>
-                        )}
-
-                        {/* Botón de cerrar simple si no hay acciones */}
-                        {!showActions && (
-                            <div className="flex justify-end pt-4 border-t">
-                                <Button 
-                                    onClick={onClose}
-                                    className="bg-blue-600 hover:bg-blue-700"
-                                >
-                                    Cerrar
-                                </Button>
-                            </div>
-                        )}
                     </div>
                 ) : (
                     <div className="flex items-center justify-center py-8">
