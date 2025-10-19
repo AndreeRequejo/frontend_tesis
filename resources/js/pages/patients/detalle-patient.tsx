@@ -1,8 +1,8 @@
 import { EvaluacionCard } from '@/components/evaluacion-card';
-import { DetalleEvaluacionModal } from '@/pages/history/detalle-evaluacion-modal';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
+import { DetalleEvaluacionModal } from '@/pages/history/detalle-evaluacion-modal';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/react';
 import { ArrowLeft, Download, Edit3, FileText } from 'lucide-react';
@@ -93,17 +93,17 @@ export default function DetallePaciente({ paciente }: DetalleProps) {
         // Función que retorna una promesa para descargar el PDF
         const downloadReport = async () => {
             const downloadUrl = `/reporte-paciente/${paciente.id}`;
-            
+
             // Realizar la petición para obtener el PDF
             const response = await fetch(downloadUrl);
-            
+
             if (!response.ok) {
                 throw new Error('Error al generar el reporte');
             }
 
             // Obtener el blob del PDF
             const blob = await response.blob();
-            
+
             // Crear URL temporal y descargar
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
@@ -113,19 +113,16 @@ export default function DetallePaciente({ paciente }: DetalleProps) {
             link.click();
             document.body.removeChild(link);
             window.URL.revokeObjectURL(url);
-            
+
             return 'Reporte descargado correctamente';
         };
 
         // Usar toast.promise para mostrar el estado de la descarga
-        toast.promise(
-            downloadReport(),
-            {
-                loading: 'Generando reporte...',
-                success: <b>¡Reporte descargado!</b>,
-                error: <b>Error al generar el reporte.</b>,
-            }
-        );
+        toast.promise(downloadReport(), {
+            loading: 'Generando reporte...',
+            success: <b>¡Reporte descargado!</b>,
+            error: <b>Error al generar el reporte.</b>,
+        });
     };
 
     const formatDate = (dateString: string) => {
@@ -148,18 +145,28 @@ export default function DetallePaciente({ paciente }: DetalleProps) {
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 {/* Header con botón de regreso */}
                 <div className="flex items-center gap-4">
-                    <Button variant="outline" size="icon" onClick={handleGoBack} className="flex-shrink-0">
-                        <ArrowLeft className="h-4 w-4" />
+                    <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={handleGoBack}
+                        className="flex-shrink-0 border-blue-200 transition-colors hover:border-blue-300 hover:bg-blue-50"
+                    >
+                        <ArrowLeft className="h-4 w-4 text-blue-600" />
                     </Button>
                     <h1 className="text-2xl font-bold">Detalles del Paciente</h1>
                 </div>
 
                 <div className="grid gap-6">
                     {/* Información del paciente */}
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between">
-                            <CardTitle>Información Personal</CardTitle>
-                            <Button variant="default" size="sm" onClick={handleEdit} className="flex items-center gap-2">
+                    <Card className="border-l-4 border-l-blue-500 shadow-lg transition-shadow duration-200 hover:shadow-xl">
+                        <CardHeader className="flex flex-row items-center justify-between bg-gradient-to-r">
+                            <CardTitle className="text-blue-700">Información Personal</CardTitle>
+                            <Button
+                                variant="default"
+                                size="sm"
+                                onClick={handleEdit}
+                                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
+                            >
                                 <Edit3 className="h-4 w-4" />
                                 Editar
                             </Button>
@@ -168,27 +175,27 @@ export default function DetallePaciente({ paciente }: DetalleProps) {
                             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 <div className="space-y-3">
                                     <div>
-                                        <h3 className="text-lg font-semibold">{getPatientFullName()}</h3>
+                                        <h3 className="text-lg font-semibold text-blue-700">{getPatientFullName()}</h3>
                                         <p className="text-sm text-gray-600">
                                             {paciente.edad} años • {paciente.genero}
                                         </p>
                                     </div>
 
                                     <div>
-                                        <p className="text-sm font-medium text-gray-500">DNI</p>
-                                        <p className="text-sm">{paciente.dni}</p>
+                                        <p className="text-sm font-medium">Documento Ident.</p>
+                                        <p className="font-mono text-sm font-semibold text-blue-600">{paciente.dni}</p>
                                     </div>
 
                                     <div>
-                                        <p className="text-sm font-medium text-gray-500">Fecha de registro</p>
-                                        <p className="text-sm">{formatDate(paciente.created_at || '')}</p>
+                                        <p className="text-sm font-medium">Fecha de registro:</p>
+                                        <p className="font-mono text-sm">{formatDate(paciente.created_at || '')}</p>
                                     </div>
                                 </div>
 
                                 <div className="space-y-3">
                                     <div>
-                                        <p className="text-sm font-medium text-gray-500">Teléfono</p>
-                                        <p className="text-sm">{paciente.telefono || 'No registrado'}</p>
+                                        <p className="text-sm font-medium">Teléfono:</p>
+                                        <p className="font-mono text-sm">{paciente.telefono || 'No registrado'}</p>
                                     </div>
                                 </div>
                             </div>
@@ -196,20 +203,24 @@ export default function DetallePaciente({ paciente }: DetalleProps) {
                     </Card>
 
                     {/* Evaluaciones */}
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between">
+                    <Card className="border-l-4 border-l-blue-500 shadow-lg transition-shadow duration-200 hover:shadow-xl">
+                        <CardHeader className="flex flex-row items-center justify-between bg-gradient-to-r">
                             <div>
-                                <CardTitle>Evaluaciones</CardTitle>
-                                <p className="mt-1 text-sm text-gray-500">Historial de evaluaciones realizadas</p>
+                                <CardTitle className="text-blue-700">Evaluaciones</CardTitle>
+                                <p className="mt-1 text-sm">Historial de evaluaciones realizadas</p>
                             </div>
                             <div className="flex items-center gap-2">
-                                <Button variant="default" onClick={handleGenerateReport} className="flex items-center gap-2">
+                                <Button
+                                    variant="default"
+                                    onClick={handleGenerateReport}
+                                    className="flex items-center gap-2 bg-blue-600 shadow-lg hover:bg-blue-700 hover:shadow-blue-200"
+                                >
                                     <Download className="h-4 w-4" />
                                     Reporte
                                 </Button>
                             </div>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="to-blue-25 bg-gradient-to-br from-white">
                             {paciente.evaluaciones && paciente.evaluaciones.length > 0 ? (
                                 <div className="space-y-4">
                                     {paciente.evaluaciones.map((evaluacion) => (
@@ -228,11 +239,11 @@ export default function DetallePaciente({ paciente }: DetalleProps) {
                                 </div>
                             ) : (
                                 <div className="py-12 text-center">
-                                    <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
-                                        <FileText className="h-8 w-8 text-gray-400" />
+                                    <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-blue-100 to-blue-100 shadow-lg">
+                                        <FileText className="h-8 w-8 text-blue-500" />
                                     </div>
-                                    <h3 className="mb-2 text-lg font-medium text-gray-900">No hay evaluaciones registradas</h3>
-                                    <p className="mx-auto mb-6 max-w-sm text-gray-500">
+                                    <h3 className="mb-2 text-lg font-medium text-slate-700">No hay evaluaciones registradas</h3>
+                                    <p className="mx-auto mb-6 max-w-sm text-slate-500">
                                         Este paciente aún no tiene evaluaciones. Crea la primera evaluación para comenzar el seguimiento.
                                     </p>
                                 </div>
