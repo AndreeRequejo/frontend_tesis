@@ -136,7 +136,7 @@ export default function DetallePaciente({ paciente }: DetalleProps) {
     };
 
     const getPatientFullName = () => {
-        return `${paciente.nombres} ${paciente.apellidos}`;
+        return `${paciente.apellidos} ${paciente.nombres}`;
     };
 
     return (
