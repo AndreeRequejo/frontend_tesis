@@ -17,14 +17,14 @@ export const mainNavItems: NavItem[] = [
     icon: LayoutGrid,
   },
   {
-    title: 'Pacientes',
-    href: '/pacientes',
-    icon: UsersRound,
-  },
-  {
     title: 'Evaluación',
     href: '/evaluacion',
     icon: ScanFace,
+  },
+  {
+    title: 'Pacientes',
+    href: '/pacientes',
+    icon: UsersRound,
   },
   {
     title: 'Historial',
@@ -43,10 +43,9 @@ export const useNavigation = () => {
       // Definir qué rutas puede ver cada rol
       const routePermissions: Record<string, string[]> = {
         '/dashboard': ['medico', 'secretario'],
-        '/pacientes': ['medico', 'secretario'],
         '/evaluacion': ['medico'],
+        '/pacientes': ['medico', 'secretario'],
         '/historial': ['medico'],
-        '/settings/profile': ['medico', 'secretario'],
       };
 
       const allowedRoles = routePermissions[item.href] || [];
