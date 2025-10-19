@@ -1,9 +1,9 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, AlertTriangle, X } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import { router } from '@inertiajs/react';
 import { Paciente } from '@/pages/patients/types';
+import { router } from '@inertiajs/react';
+import { AlertTriangle, ArrowLeft, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { ImageCaptureSection } from './image-capture-section';
 import { ImageRecommendations } from './image-recommendations';
 
@@ -86,8 +86,13 @@ export function PatientEvaluationSection({ selectedPatient, onBackToSelection }:
         <div className="space-y-6">
             {/* Header */}
             <div className="flex items-center gap-4">
-                <Button variant="outline" size="icon" onClick={onBackToSelection}>
-                    <ArrowLeft className="h-4 w-4" />
+                <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={onBackToSelection}
+                    className="flex-shrink-0 border-blue-200 transition-colors hover:border-blue-300 hover:bg-blue-50"
+                >
+                    <ArrowLeft className="h-4 w-4 text-blue-600" />
                 </Button>
                 <h1 className="text-2xl font-bold">Nueva Evaluación</h1>
             </div>
@@ -115,15 +120,15 @@ export function PatientEvaluationSection({ selectedPatient, onBackToSelection }:
 
                     {/* Alerta de error */}
                     {errorMessage && (
-                        <div className="flex items-start gap-3 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                            <AlertTriangle className="h-5 w-5 text-yellow-600 mt-0.5 flex-shrink-0" />
+                        <div className="flex items-start gap-3 rounded-lg border border-yellow-200 bg-yellow-50 p-4">
+                            <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0 text-yellow-600" />
                             <div className="flex-1">
-                                <p className="text-sm text-yellow-800 font-medium">Error en la evaluación</p>
-                                <p className="text-sm text-yellow-700 mt-1">{errorMessage}</p>
+                                <p className="text-sm font-medium text-yellow-800">Error en la evaluación</p>
+                                <p className="mt-1 text-sm text-yellow-700">{errorMessage}</p>
                             </div>
                             <button
                                 onClick={() => setErrorMessage(null)}
-                                className="text-yellow-600 cursor-pointer hover:text-yellow-800 transition-colors"
+                                className="cursor-pointer text-yellow-600 transition-colors hover:text-yellow-800"
                             >
                                 <X className="h-4 w-4" />
                             </button>
@@ -134,12 +139,7 @@ export function PatientEvaluationSection({ selectedPatient, onBackToSelection }:
                     <ImageCaptureSection capturedImages={capturedImages} setCapturedImages={setCapturedImages} />
 
                     {/* Botón de evaluación */}
-                    <Button 
-                        className="w-full" 
-                        size="lg" 
-                        onClick={handleEvaluatePatient} 
-                        disabled={capturedImages.length === 0 || isEvaluating}
-                    >
+                    <Button className="w-full" size="lg" onClick={handleEvaluatePatient} disabled={capturedImages.length === 0 || isEvaluating}>
                         {isEvaluating ? 'Evaluando...' : 'Evaluar paciente'}
                     </Button>
                 </div>
