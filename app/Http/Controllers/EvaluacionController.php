@@ -222,13 +222,80 @@ class EvaluacionController extends Controller
     }
 
     /**
+     * Comprimir imagen manteniendo la calidad adecuada para predicción
+     */
+    private function comprimirImagen($imagenBase64, $calidadJpeg = 85, $maxWidth = 800, $maxHeight = 600)
+    {
+        try {
+            // Decodificar la imagen base64
+            $imageData = base64_decode(preg_replace('/^data:image\/[^;]+;base64,/', '', $imagenBase64));
+            
+            // Crear imagen desde string
+            $image = imagecreatefromstring($imageData);
+            if (!$image) {
+                throw new \Exception('No se pudo crear la imagen desde los datos base64');
+            }
+            
+            // Obtener dimensiones originales
+            $originalWidth = imagesx($image);
+            $originalHeight = imagesy($image);
+            
+            // Calcular nuevas dimensiones manteniendo la proporción
+            $ratio = min($maxWidth / $originalWidth, $maxHeight / $originalHeight);
+            
+            // Solo redimensionar si la imagen es más grande que los límites
+            if ($ratio < 1) {
+                $newWidth = (int)($originalWidth * $ratio);
+                $newHeight = (int)($originalHeight * $ratio);
+                
+                // Crear nueva imagen redimensionada
+                $resizedImage = imagecreatetruecolor($newWidth, $newHeight);
+                
+                // Mantener transparencia para PNG
+                imagealphablending($resizedImage, false);
+                imagesavealpha($resizedImage, true);
+                
+                // Redimensionar
+                imagecopyresampled(
+                    $resizedImage, $image,
+                    0, 0, 0, 0,
+                    $newWidth, $newHeight,
+                    $originalWidth, $originalHeight
+                );
+                
+                imagedestroy($image);
+                $image = $resizedImage;
+            }
+            
+            // Comprimir y convertir a JPEG
+            ob_start();
+            imagejpeg($image, null, $calidadJpeg);
+            $compressedData = ob_get_contents();
+            ob_end_clean();
+            
+            // Limpiar memoria
+            imagedestroy($image);
+            
+            return base64_encode($compressedData);
+            
+        } catch (\Exception $e) {
+            Log::error('Error al comprimir imagen: ' . $e->getMessage());
+            // Si falla la compresión, retornar la imagen original
+            return preg_replace('/^data:image\/[^;]+;base64,/', '', $imagenBase64);
+        }
+    }
+
+    /**
      * Predicción para una sola imagen
      */
     private function predecirImagen($imagenBase64, $backendUrl)
     {
         try {
+            // Comprimir la imagen antes de procesarla
+            $imagenComprimida = $this->comprimirImagen($imagenBase64);
+            
             // Convertir base64 a archivo temporal
-            $imageData = base64_decode(preg_replace('/^data:image\/[^;]+;base64,/', '', $imagenBase64));
+            $imageData = base64_decode($imagenComprimida);
             $tempFile = tempnam(sys_get_temp_dir(), 'prediction_') . '.jpg';
             file_put_contents($tempFile, $imageData);
 
@@ -271,7 +338,10 @@ class EvaluacionController extends Controller
 
             // Convertir cada imagen base64 a archivo temporal
             foreach ($imagenesBase64 as $index => $imagenBase64) {
-                $imageData = base64_decode(preg_replace('/^data:image\/[^;]+;base64,/', '', $imagenBase64));
+                // Comprimir la imagen antes de procesarla
+                $imagenComprimida = $this->comprimirImagen($imagenBase64);
+                
+                $imageData = base64_decode($imagenComprimida);
                 $tempFile = tempnam(sys_get_temp_dir(), 'batch_prediction_' . $index . '_') . '.jpg';
                 file_put_contents($tempFile, $imageData);
                 $tempFiles[] = $tempFile;
