@@ -101,9 +101,9 @@ export function PatientEvaluationSection({ selectedPatient, onBackToSelection }:
                 {/* Columna izquierda: Información del paciente y captura de imagen */}
                 <div className="space-y-6 lg:col-span-2">
                     {/* Información del paciente seleccionado */}
-                    <Card>
+                    <Card className='border-l-4 border-l-blue-500 shadow-xs'>
                         <CardHeader>
-                            <CardTitle>Paciente Seleccionado</CardTitle>
+                            <CardTitle className='text-blue-600'>Paciente Seleccionado</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <div className="flex items-center justify-between">
@@ -113,7 +113,10 @@ export function PatientEvaluationSection({ selectedPatient, onBackToSelection }:
                                         {selectedPatient.edad} años • {selectedPatient.genero}
                                     </p>
                                 </div>
-                                <div className="text-sm text-gray-500">DNI: {selectedPatient.dni}</div>
+                                <div className="inline-flex items-center gap-2 rounded-full bg-blue-100 px-3 py-1.5 text-sm font-medium text-blue-700">
+                                    <span className="text-blue-600">DNI</span>
+                                    <span className="font-semibold">{selectedPatient.dni}</span>
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
