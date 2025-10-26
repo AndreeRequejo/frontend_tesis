@@ -8,7 +8,7 @@ import {
     DialogHeader, 
     DialogTitle 
 } from '@/components/ui/dialog';
-import { ScanFace, Save, X, Edit3, Trash2 } from 'lucide-react';
+import { ScanFace, Save, X, Edit3, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { router } from '@inertiajs/react';
 import toast from 'react-hot-toast';
 
@@ -71,6 +71,7 @@ export function DetalleEvaluacionModal({
     const [isEditingComment, setIsEditingComment] = useState(false);
     const [comentarioEditado, setComentarioEditado] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
     // Función para cargar los datos de la evaluación
     const loadEvaluacion = useCallback(async () => {
@@ -109,6 +110,7 @@ export function DetalleEvaluacionModal({
             setEvaluacion(null);
             setIsEditingComment(false);
             setIsSubmitting(false); // Resetear estado de submitting al cerrar
+            setCurrentImageIndex(0); // Resetear índice de imagen
         }
     }, [isOpen, evaluacionId, loadEvaluacion]);
 
@@ -156,6 +158,20 @@ export function DetalleEvaluacionModal({
                 setIsSubmitting(false);
             }
         });
+    };
+
+    const nextImage = () => {
+        if (!evaluacion) return;
+        setCurrentImageIndex((prev) => 
+            prev === evaluacion.imagenes.length - 1 ? 0 : prev + 1
+        );
+    };
+
+    const prevImage = () => {
+        if (!evaluacion) return;
+        setCurrentImageIndex((prev) => 
+            prev === 0 ? evaluacion.imagenes.length - 1 : prev - 1
+        );
     };
 
     return (
@@ -234,17 +250,62 @@ export function DetalleEvaluacionModal({
                                     {/* Imágenes de la evaluación */}
                                     {evaluacion.imagenes.length > 0 && (
                                         <div>
-                                            <h4 className="font-medium mb-3">Imagen de la evaluación:</h4>
-                                            <div className="flex justify-center">
-                                                {evaluacion.imagenes.map((imagen: string, index: number) => (
-                                                    <img 
-                                                        key={index}
-                                                        src={formatImageSrc(imagen)} 
-                                                        alt={`Evaluación ${index + 1}`}
-                                                        className="h-auto w-full max-w-[220px] rounded-lg object-contain shadow-md"
-                                                    />
-                                                ))}
+                                            <h4 className="font-medium mb-3">
+                                                {evaluacion.imagenes.length === 1 
+                                                    ? 'Imagen de la evaluación:' 
+                                                    : `Imágenes de la evaluación (${currentImageIndex + 1}/${evaluacion.imagenes.length}):`
+                                                }
+                                            </h4>
+                                            <div className="flex items-center justify-center gap-3">
+                                                {/* Botón anterior - solo si hay más de 1 imagen */}
+                                                {evaluacion.imagenes.length > 1 && (
+                                                    <Button
+                                                        variant="outline"
+                                                        size="icon"
+                                                        className="flex-shrink-0 bg-white/90 hover:bg-white"
+                                                        onClick={prevImage}
+                                                    >
+                                                        <ChevronLeft className="h-4 w-4" />
+                                                    </Button>
+                                                )}
+                                                
+                                                {/* Imagen actual */}
+                                                <img 
+                                                    src={formatImageSrc(evaluacion.imagenes[currentImageIndex])} 
+                                                    alt={`Evaluación ${currentImageIndex + 1}`}
+                                                    className="h-auto w-full max-w-[220px] rounded-lg object-contain shadow-md"
+                                                />
+                                                
+                                                {/* Botón siguiente - solo si hay más de 1 imagen */}
+                                                {evaluacion.imagenes.length > 1 && (
+                                                    <Button
+                                                        variant="outline"
+                                                        size="icon"
+                                                        className="flex-shrink-0 bg-white/90 hover:bg-white"
+                                                        onClick={nextImage}
+                                                    >
+                                                        <ChevronRight className="h-4 w-4" />
+                                                    </Button>
+                                                )}
                                             </div>
+                                            
+                                            {/* Indicadores de puntos - solo si hay más de 1 imagen */}
+                                            {evaluacion.imagenes.length > 1 && (
+                                                <div className="flex justify-center gap-2 mt-3">
+                                                    {evaluacion.imagenes.map((_, index) => (
+                                                        <button
+                                                            key={index}
+                                                            onClick={() => setCurrentImageIndex(index)}
+                                                            className={`w-2 h-2 rounded-full transition-all ${
+                                                                index === currentImageIndex 
+                                                                    ? 'bg-blue-600 w-6' 
+                                                                    : 'bg-gray-300 hover:bg-gray-400'
+                                                            }`}
+                                                            aria-label={`Ir a imagen ${index + 1}`}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            )}
                                         </div>
                                     )}
                                 </CardContent>
