@@ -59,16 +59,6 @@ const formatImageSrc = (imagen: string) => {
     return `data:image/jpeg;base64,${imagen}`;
 };
 
-const getImageGridClass = (imageCount: number) => {
-    if (imageCount === 1) {
-        return 'grid-cols-1 max-w-md mx-auto';
-    } else if (imageCount === 2) {
-        return 'grid-cols-1 md:grid-cols-2';
-    } else {
-        return 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3';
-    }
-};
-
 export function DetalleEvaluacionModal({ 
     isOpen, 
     onClose, 
@@ -170,7 +160,7 @@ export function DetalleEvaluacionModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="lg:max-w-3xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-3">
                         <div className="p-2 bg-blue-100 rounded-lg">
@@ -211,59 +201,57 @@ export function DetalleEvaluacionModal({
                             </Card>
                         )}
 
-                        {/* Resultado de la evaluación */}
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between">
-                                <div className="flex-1">
-                                    <div className="flex items-center justify-between gap-3 mb-1">
-                                        <CardTitle>Resultado de clasificación:</CardTitle>
-                                        {showActions && (
-                                            <Button 
-                                                variant="destructive"
-                                                size="sm"
-                                                onClick={handleDelete}
-                                                disabled={isSubmitting}
-                                                className="flex items-center gap-2"
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                                {isSubmitting ? 'Eliminando...' : 'Eliminar'}
-                                            </Button>
-                                        )}
-                                    </div>
-                                    <p className="text-sm text-gray-500">
-                                        {evaluacion.fecha} {evaluacion.hora}
-                                    </p>
-                                    <span className={`inline-block mt-2 px-3 py-1 rounded-full text-sm font-medium border ${getSeveridadColor(evaluacion.clasificacion)}`}>
-                                        {evaluacion.clasificacion}
-                                    </span>
-                                </div>
-                            </CardHeader>
-                            <CardContent className="space-y-6">
-                                {/* Imágenes de la evaluación */}
-                                {evaluacion.imagenes.length > 0 && (
-                                    <div>
-                                        <h4 className="font-medium mb-3">Imagen de la evaluación:</h4>
-                                        <div className={`grid gap-4 ${getImageGridClass(evaluacion.imagenes.length)}`}>
-                                            {evaluacion.imagenes.map((imagen: string, index: number) => (
-                                                <div 
-                                                    key={index}
-                                                    className="aspect-square rounded-lg bg-gray-100 overflow-hidden border shadow-sm"
+                        {/* Contenedor horizontal para las cards principales */}
+                        <div className="flex flex-col lg:flex-row gap-6 lg:justify-center">
+                            {/* Resultado de la evaluación */}
+                            <Card className="flex-1">
+                                <CardHeader className="flex flex-row items-center justify-between">
+                                    <div className="flex-1">
+                                        <div className="flex items-center justify-between gap-3 mb-1">
+                                            <CardTitle>Resultado de clasificación:</CardTitle>
+                                            {showActions && (
+                                                <Button 
+                                                    variant="destructive"
+                                                    size="sm"
+                                                    onClick={handleDelete}
+                                                    disabled={isSubmitting}
+                                                    className="flex items-center gap-2"
                                                 >
+                                                    <Trash2 className="h-4 w-4" />
+                                                    {isSubmitting ? 'Eliminando...' : 'Eliminar'}
+                                                </Button>
+                                            )}
+                                        </div>
+                                        <p className="text-sm text-gray-500">
+                                            {evaluacion.fecha} {evaluacion.hora}
+                                        </p>
+                                        <span className={`inline-block mt-2 px-3 py-1 rounded-full text-sm font-medium border ${getSeveridadColor(evaluacion.clasificacion)}`}>
+                                            {evaluacion.clasificacion}
+                                        </span>
+                                    </div>
+                                </CardHeader>
+                                <CardContent className="space-y-6">
+                                    {/* Imágenes de la evaluación */}
+                                    {evaluacion.imagenes.length > 0 && (
+                                        <div>
+                                            <h4 className="font-medium mb-3">Imagen de la evaluación:</h4>
+                                            <div className="flex justify-center">
+                                                {evaluacion.imagenes.map((imagen: string, index: number) => (
                                                     <img 
+                                                        key={index}
                                                         src={formatImageSrc(imagen)} 
                                                         alt={`Evaluación ${index + 1}`}
-                                                        className="w-full h-full object-cover"
+                                                        className="h-auto w-full max-w-[220px] rounded-lg object-contain shadow-md"
                                                     />
-                                                </div>
-                                            ))}
+                                                ))}
+                                            </div>
                                         </div>
-                                    </div>
-                                )}
-                            </CardContent>
-                        </Card>
+                                    )}
+                                </CardContent>
+                            </Card>
 
-                        {/* Comentarios */}
-                        <Card>
+                            {/* Comentarios */}
+                            <Card className="flex-1">
                             <CardHeader className="flex flex-row items-center justify-between">
                                 <CardTitle>Comentarios</CardTitle>
                                 {!isEditingComment && showActions && (
@@ -316,6 +304,7 @@ export function DetalleEvaluacionModal({
                                 )}
                             </CardContent>
                         </Card>
+                        </div>
                     </div>
                 ) : (
                     <div className="flex items-center justify-center py-8">
