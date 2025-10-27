@@ -78,9 +78,12 @@ export function CreatePatientModal({ isOpen, onClose, onSubmit }: CreatePatientM
                                 <Label htmlFor="dni">Doc. Ident.</Label>
                                 <Input
                                     id="dni"
-                                    type='tel'
-                                    value={formData.dni}
-                                    onChange={(e) => setFormData({...formData, dni: e.target.value})}
+                                    type='text'
+                                    value={formData.dni.replace(/\D/g, '')}
+                                    onChange={(e) => {
+                                        const value = e.target.value.replace(/\D/g, '');
+                                        setFormData({...formData, dni: value});
+                                    }}
                                     placeholder="74020421"
                                     maxLength={8}
                                     required
@@ -146,9 +149,12 @@ export function CreatePatientModal({ isOpen, onClose, onSubmit }: CreatePatientM
                             <Label htmlFor="telefono">Teléfono (Opcional)</Label>
                             <Input
                                 id="telefono"
-                                type='tel'
-                                value={formData.telefono}
-                                onChange={(e) => setFormData({...formData, telefono: e.target.value})}
+                                type='text'
+                                value={formData.telefono.replace(/\D/g, '')}
+                                onChange={(e) => {
+                                    const value = e.target.value.replace(/\D/g, '');
+                                    setFormData({...formData, telefono: value});
+                                }}
                                 placeholder="987654321"
                                 maxLength={9}
                             />

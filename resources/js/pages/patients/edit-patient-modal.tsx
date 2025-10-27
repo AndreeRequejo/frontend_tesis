@@ -87,9 +87,12 @@ export function EditPatientModal({ isOpen, onClose, onSubmit, patient }: EditPat
                                 <Label htmlFor="edit-dni">Doc. Identif.</Label>
                                 <Input
                                     id="edit-dni"
-                                    value={formData.dni}
-                                    type='tel'
-                                    onChange={(e) => setFormData({...formData, dni: e.target.value})}
+                                    value={formData.dni.replace(/\D/g, '')}
+                                    type='text'
+                                    onChange={(e) => {
+                                        const value = e.target.value.replace(/\D/g, '');
+                                        setFormData({...formData, dni: value});
+                                    }}
                                     placeholder="12345678"
                                     maxLength={8}
                                     required
@@ -155,9 +158,12 @@ export function EditPatientModal({ isOpen, onClose, onSubmit, patient }: EditPat
                             <Label htmlFor="edit-telefono">Teléfono (Opcional)</Label>
                             <Input
                                 id="edit-telefono"
-                                type='tel'
-                                value={formData.telefono}
-                                onChange={(e) => setFormData({...formData, telefono: e.target.value})}
+                                type='text'
+                                value={formData.telefono.replace(/\D/g, '')}
+                                onChange={(e) => {
+                                    const value = e.target.value.replace(/\D/g, '');
+                                    setFormData({...formData, telefono: value});
+                                }}
                                 placeholder="987654321"
                                 maxLength={9}
                             />
