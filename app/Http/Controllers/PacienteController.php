@@ -49,17 +49,19 @@ class PacienteController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'dni' => 'required|string|max:8|unique:paciente,dni',
+            'dni' => 'required|string|min:8|max:8|unique:paciente,dni',
             'nombres' => 'required|string|max:255',
             'apellidos' => 'required|string|max:255',
             'edad' => 'required|integer|min:11|max:30',
             'genero' => 'required|in:Masculino,Femenino',
-            'telefono' => 'nullable|string|max:9|unique:paciente,telefono',
+            'telefono' => 'nullable|string|min:9|max:9|unique:paciente,telefono',
         ], [
+            'dni.min' => 'El DNI debe tener al menos 8 caracteres.',
             'dni.unique' => 'El DNI ingresado ya se encuentra registrado.',
             'edad.min' => 'La edad mínima es 11 años.',
             'edad.max' => 'La edad máxima es 30 años.',
             'telefono.unique' => 'El teléfono ingresado ya se encuentra registrado.',
+            'telefono.min' => 'El teléfono debe tener al menos 9 caracteres.',
             'genero.required' => 'Seleccione el género del paciente.'
         ]);
 
