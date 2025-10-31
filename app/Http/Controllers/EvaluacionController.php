@@ -89,14 +89,16 @@ class EvaluacionController extends Controller
             // Crear la evaluación
             $evaluacion = Evaluacion::create($evaluacionData);
 
-            // Crear las imágenes asociadas
+            // Crear las imágenes asociadas — comprimir al momento de guardar
             foreach ($request->imagenes as $imagenBase64) {
-                // Remover el prefijo data:image si existe
-                $imagenBase64 = preg_replace('/^data:image\/[^;]+;base64,/', '', $imagenBase64);
+                // La función comprimirImagen maneja la eliminación del prefijo data:image/...;base64,
+                // y devuelve la cadena base64 del JPEG comprimido.
+                $imagenComprimida = $this->comprimirImagen($imagenBase64);
 
                 Imagen::create([
                     'evaluacion_id' => $evaluacion->id,
-                    'contenido_base64' => $imagenBase64
+                    // Guardamos la imagen ya comprimida (base64 sin prefijo)
+                    'contenido_base64' => $imagenComprimida
                 ]);
             }
 
@@ -291,11 +293,11 @@ class EvaluacionController extends Controller
     private function predecirImagen($imagenBase64, $backendUrl)
     {
         try {
-            // Comprimir la imagen antes de procesarla
-            $imagenComprimida = $this->comprimirImagen($imagenBase64);
-            
+            // Base64 sin el prefijo data:image
+            $imagen = preg_replace('/^data:image\/[^;]+;base64,/', '', $imagenBase64);
+
             // Convertir base64 a archivo temporal
-            $imageData = base64_decode($imagenComprimida);
+            $imageData = base64_decode($imagen);
             $tempFile = tempnam(sys_get_temp_dir(), 'prediction_') . '.jpg';
             file_put_contents($tempFile, $imageData);
 
@@ -338,10 +340,10 @@ class EvaluacionController extends Controller
 
             // Convertir cada imagen base64 a archivo temporal
             foreach ($imagenesBase64 as $index => $imagenBase64) {
-                // Comprimir la imagen antes de procesarla
-                $imagenComprimida = $this->comprimirImagen($imagenBase64);
-                
-                $imageData = base64_decode($imagenComprimida);
+                // Base64 sin el prefijo data:image
+                $imagen = preg_replace('/^data:image\/[^;]+;base64,/', '', $imagenBase64);
+
+                $imageData = base64_decode($imagen);
                 $tempFile = tempnam(sys_get_temp_dir(), 'batch_prediction_' . $index . '_') . '.jpg';
                 file_put_contents($tempFile, $imageData);
                 $tempFiles[] = $tempFile;
