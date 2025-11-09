@@ -6,10 +6,12 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PacienteController;
 use App\Http\Controllers\HistorialController;
 use App\Http\Controllers\EvaluacionController;
+use App\Http\Controllers\PruebaController;
 
 Route::middleware(['auth'])->group(function () {
     // Dashboard accesible para ambos roles
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('prueba', [PruebaController::class, 'index']);
 
     // RUTAS COMPARTIDAS (ambos roles pueden acceder)
     Route::middleware(['role:medico|secretario'])->group(function () {

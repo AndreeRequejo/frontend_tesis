@@ -1,7 +1,7 @@
 import { usePage } from '@inertiajs/react';
 import { User, RoleHelper } from '@/lib/roleHelper';
 import { type NavItem } from '@/types';
-import { LayoutGrid, UsersRound, FileUser, ScanFace } from 'lucide-react';
+import { LayoutGrid, UsersRound, FileUser, ScanFace, FlaskConical } from 'lucide-react';
 
 interface AuthProps extends Record<string, unknown> {
   auth: {
@@ -31,6 +31,11 @@ export const mainNavItems: NavItem[] = [
     href: '/historial',
     icon: FileUser,
   },
+  // {
+  //   title: 'Prueba',
+  //   href: '/prueba',
+  //   icon: FlaskConical,
+  // },
 ];
 
 export const useNavigation = () => {
@@ -46,6 +51,7 @@ export const useNavigation = () => {
         '/evaluacion': ['medico'],
         '/pacientes': ['medico', 'secretario'],
         '/historial': ['medico'],
+        // '/prueba': ['medico', 'secretario']
       };
 
       const allowedRoles = routePermissions[item.href] || [];
