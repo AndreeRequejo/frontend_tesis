@@ -6,6 +6,7 @@ import { AlertTriangle, ArrowLeft, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { ImageCaptureSection } from './image-capture-section';
 import { ImageRecommendations } from './image-recommendations';
+import { analyzeAcneSeverity, ENABLE_MODEL_ANALYSIS } from '@/services/model';
 
 interface PatientEvaluationSectionProps {
     selectedPatient: Paciente;
@@ -44,6 +45,22 @@ export function PatientEvaluationSection({ selectedPatient, onBackToSelection }:
         setIsEvaluating(true);
 
         try {
+            // Convertir base64 a objeto File para verificación con modelo externo (si está habilitado)
+            const firstImageBase64 = capturedImages[0];
+            const response = await fetch(firstImageBase64);
+            const blob = await response.blob();
+            const imageFile = new File([blob], "evaluation_image.jpg", { type: blob.type });
+
+            // Verificar si el análisis con modelo externo está habilitado
+            if (ENABLE_MODEL_ANALYSIS) {
+                // Llamar al modelo para verificar si el rostro está limpio
+                const analysisResult = await analyzeAcneSeverity(imageFile);
+
+                // Almacenar resultado en sessionStorage para usarlo en la página de predicción
+                sessionStorage.setItem('model_analysis', JSON.stringify(analysisResult));
+            }
+
+            // Ahora llamar al backend para la predicción
             router.post(
                 '/evaluacion/predecir',
                 {
@@ -52,11 +69,12 @@ export function PatientEvaluationSection({ selectedPatient, onBackToSelection }:
                 },
                 {
                     onSuccess: () => {
-                        // La redirección se maneja automáticamente por Inertia
                         setErrorMessage(null);
                     },
                     onError: (errors) => {
                         console.error('Error:', errors);
+                        // Limpiar sessionStorage en caso de error
+                        sessionStorage.removeItem('model_analysis');
 
                         let errorMsg = 'Error al procesar la evaluación';
 
@@ -77,7 +95,8 @@ export function PatientEvaluationSection({ selectedPatient, onBackToSelection }:
             );
         } catch (error) {
             console.error('Error:', error);
-            setErrorMessage('Error de conexión al procesar la evaluación');
+            const errorMessage = error instanceof Error ? error.message : 'Error de conexión al procesar la evaluación';
+            setErrorMessage(errorMessage);
             setIsEvaluating(false);
         }
     };

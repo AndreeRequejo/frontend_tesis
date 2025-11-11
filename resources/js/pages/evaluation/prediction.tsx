@@ -6,8 +6,9 @@ import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, usePage } from '@inertiajs/react';
 import { AlertCircle, ArrowLeft, Calendar, CheckCircle, Clock, Image as ImageIcon, Save, Target, TrendingUp } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
+import type { AnalysisResult } from '@/types/analysis';
 
 interface PacienteData {
     id: number;
@@ -104,10 +105,41 @@ export default function Prediction() {
     const { success, paciente, imagenes, prediccion, fecha_evaluacion } = usePage<PredictionPageProps>().props;
     const [isSaving, setIsSaving] = useState(false);
     const [comentario, setComentario] = useState('');
+    
+    // Verificar si el modelo externo detectó "Limpio" (rostro limpio)
+    const [modelOverride, setModelOverride] = useState<AnalysisResult | null>(null);
+    const [finalPrediccion, setFinalPrediccion] = useState(prediccion);
+
+    // Al montar, verificar si hay análisis del modelo externo en sessionStorage
+    useEffect(() => {
+        const modelData = sessionStorage.getItem('model_analysis');
+        if (modelData) {
+            try {
+                const analysis: AnalysisResult = JSON.parse(modelData);
+                if (analysis.severity === 'Limpio') {
+                    // Sobrescribir predicción para mostrar Ausente
+                    setModelOverride(analysis);
+                    setFinalPrediccion({
+                        success: true,
+                        prediccion_class: 0,
+                        prediccion_label: 'Ausente',
+                        confianza: 1.0,
+                        confianza_porcentaje: '100.0%',
+                        probabilidades: {},
+                        tiempo_procesamiento: 0,
+                    } as PrediccionSimple);
+                }
+                // Limpiar de sessionStorage
+                sessionStorage.removeItem('model_analysis');
+            } catch (e) {
+                console.error('Error parsing model analysis:', e);
+            }
+        }
+    }, []);
 
     // Determinar si es predicción simple o batch
-    const isSimplePrediction = 'prediccion_class' in prediccion;
-    const isBatchPrediction = 'total_images' in prediccion;
+    const isSimplePrediction = 'prediccion_class' in finalPrediccion;
+    const isBatchPrediction = 'total_images' in finalPrediccion;
 
     // Función para obtener el layout de las imágenes según la cantidad
     const getImageLayout = (count: number) => {
@@ -138,37 +170,46 @@ export default function Prediction() {
 
     const imageLayout = getImageLayout(imagenes.length);
 
-    // Función para obtener la clasificación más severa en batch
-    const getMostSevereClassification = () => {
-        if (isBatchPrediction) {
-            const pred = prediccion as PrediccionBatch;
-            const prediccionesExitosas = pred.predicciones.filter((p) => p.success);
-            if (prediccionesExitosas.length > 0) {
-                const prediccionMasSevera = prediccionesExitosas.reduce((mayor, actual) =>
-                    (actual.prediccion_class || 0) > (mayor.prediccion_class || 0) ? actual : mayor,
-                );
-                return prediccionMasSevera.prediccion_label || '';
-            }
-        }
-        return '';
-    };
-
     // Inicializar comentario con el texto automático
-    useState(() => {
-        if (isSimplePrediction) {
-            const pred = prediccion as PrediccionSimple;
-            // Convertir probabilidades a texto
-            const probText = Object.entries(pred.probabilidades)
-                .sort(([, a], [, b]) => b - a)
-                .map(([clase, prob]) => `${clase}: ${(prob * 100).toFixed(1)}%`)
-                .join(', ');
-            setComentario(`Clasificación: ${pred.prediccion_label} con un nivel de confianza de ${pred.confianza_porcentaje}. Distribución de probabilidades: ${probText}`);
+    useEffect(() => {
+        // Función para obtener la clasificación más severa en batch
+        const getMostSevereClassification = () => {
+            if (isBatchPrediction) {
+                const pred = finalPrediccion as PrediccionBatch;
+                const prediccionesExitosas = pred.predicciones.filter((p) => p.success);
+                if (prediccionesExitosas.length > 0) {
+                    const prediccionMasSevera = prediccionesExitosas.reduce((mayor, actual) =>
+                        (actual.prediccion_class || 0) > (mayor.prediccion_class || 0) ? actual : mayor,
+                    );
+                    return prediccionMasSevera.prediccion_label || '';
+                }
+            }
+            return '';
+        };
+
+        if (modelOverride) {
+            // Si hay sobrescritura del modelo externo, usar su explicación
+            setComentario(modelOverride.explanation);
+        } else if (isSimplePrediction) {
+            const pred = finalPrediccion as PrediccionSimple;
+            
+            // Verificar si la clasificación es Ausente (omitir probabilidades)
+            if (pred.prediccion_label === 'Ausente') {
+                setComentario(`Clasificación: ${pred.prediccion_label} - Rostro limpio sin acné visible detectado por análisis automático.`);
+            } else {
+                // Convertir probabilidades a texto
+                const probText = Object.entries(pred.probabilidades || {})
+                    .sort(([, a], [, b]) => b - a)
+                    .map(([clase, prob]) => `${clase}: ${(prob * 100).toFixed(1)}%`)
+                    .join(', ');
+                setComentario(`Clasificación: ${pred.prediccion_label} con un nivel de confianza de ${pred.confianza_porcentaje}. Distribución de probabilidades: ${probText}`);
+            }
         } else if (isBatchPrediction) {
-            const pred = prediccion as PrediccionBatch;
+            const pred = finalPrediccion as PrediccionBatch;
             const clasificacionSevera = getMostSevereClassification();
             setComentario(`Evaluación automática (${pred.successful}/${pred.total_images} imágenes procesadas) - Clasificación más severa detectada: ${clasificacionSevera}`);
         }
-    });
+    }, [modelOverride, finalPrediccion, isSimplePrediction, isBatchPrediction]);
 
     const handleSave = () => {
         setIsSaving(true);
@@ -179,13 +220,21 @@ export default function Prediction() {
         let probabilidades = null;
 
         if (isSimplePrediction) {
-            const pred = prediccion as PrediccionSimple;
+            const pred = finalPrediccion as PrediccionSimple;
             clasificacion = pred.prediccion_label;
-            confianza = pred.confianza;
-            tiempo_procesamiento = pred.tiempo_procesamiento;
-            probabilidades = pred.probabilidades;
+            
+            // Si es Ausente, enviar confianza de 100% pero omitir probabilidades
+            if (clasificacion === 'Ausente') {
+                confianza = 1.0;
+                probabilidades = null;
+                tiempo_procesamiento = 0;
+            } else {
+                confianza = pred.confianza;
+                tiempo_procesamiento = pred.tiempo_procesamiento;
+                probabilidades = pred.probabilidades;
+            }
         } else if (isBatchPrediction) {
-            const pred = prediccion as PrediccionBatch;
+            const pred = finalPrediccion as PrediccionBatch;
             // Para batch, usar la predicción con mayor clase (más severa)
             const prediccionesExitosas = pred.predicciones.filter((p) => p.success);
             if (prediccionesExitosas.length > 0) {
@@ -335,7 +384,8 @@ export default function Prediction() {
                             {isSimplePrediction && (
                                 <>
                                     {(() => {
-                                        const pred = prediccion as PrediccionSimple;
+                                        const pred = finalPrediccion as PrediccionSimple;
+                                        const isAusente = pred.prediccion_label === 'Ausente';
                                         return (
                                             <>
                                                 {/* Clasificación principal */}
@@ -347,29 +397,35 @@ export default function Prediction() {
                                                                 {pred.prediccion_label}
                                                             </Badge>
                                                         </div>
-                                                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                                                            <p className="text-sm text-blue-700 font-medium">
-                                                                Nivel de confianza: <span className="font-bold">{pred.confianza_porcentaje}</span>
-                                                            </p>
-                                                        </div>
+                                                        {!isAusente && (
+                                                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                                                                <p className="text-sm text-blue-700 font-medium">
+                                                                    Nivel de confianza: <span className="font-bold">{pred.confianza_porcentaje}</span>
+                                                                </p>
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 </div>
 
-                                                {/* Probabilidades */}
-                                                <div>
-                                                    <h4 className="mb-3 flex items-center gap-2 font-semibold">
-                                                        <TrendingUp className="h-4 w-4" />
-                                                        Distribución de Probabilidades
-                                                    </h4>
-                                                    <ProbabilityBars probabilidades={pred.probabilidades} />
-                                                </div>
+                                                {/* Probabilidades - Solo si NO es Ausente */}
+                                                {!isAusente && pred.probabilidades && Object.keys(pred.probabilidades).length > 0 && (
+                                                    <div>
+                                                        <h4 className="mb-3 flex items-center gap-2 font-semibold">
+                                                            <TrendingUp className="h-4 w-4" />
+                                                            Distribución de Probabilidades
+                                                        </h4>
+                                                        <ProbabilityBars probabilidades={pred.probabilidades} />
+                                                    </div>
+                                                )}
 
                                 {/* Información técnica */}
                                 <div className="flex items-center justify-between text-sm text-gray-600">
-                                    <div className="flex items-center gap-2">
-                                        <Clock className="h-4 w-4" />
-                                        Tiempo: {pred.tiempo_procesamiento}ms
-                                    </div>
+                                    {!isAusente && (
+                                        <div className="flex items-center gap-2">
+                                            <Clock className="h-4 w-4" />
+                                            Tiempo: {pred.tiempo_procesamiento}ms
+                                        </div>
+                                    )}
                                     <div className="flex items-center gap-2">
                                         <Calendar className="h-4 w-4" />
                                         {new Date(fecha_evaluacion).toLocaleString()}
@@ -398,7 +454,7 @@ export default function Prediction() {
             {isBatchPrediction && (
                 <>
                     {(() => {
-                        const pred = prediccion as PrediccionBatch;
+                        const pred = finalPrediccion as PrediccionBatch;
                         return (
                             <>
                                 {/* Resumen general */}
