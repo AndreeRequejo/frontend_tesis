@@ -22,7 +22,7 @@ interface Evaluacion {
     pacienteNombre: string;
     fecha: string;
     hora: string;
-    severidad: 'Leve' | 'Moderado' | 'Severo';
+    severidad: 'Ausente' | 'Leve' | 'Moderado' | 'Severo';
     descripcion: string;
     imagen?: string;
 }
@@ -254,6 +254,7 @@ export default function HistoryIndex({ evaluaciones, filters }: Props) {
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="all">Todo</SelectItem>
+                                <SelectItem value="Ausente">Ausente</SelectItem>
                                 <SelectItem value="Leve">Leve</SelectItem>
                                 <SelectItem value="Moderado">Moderado</SelectItem>
                                 <SelectItem value="Severo">Severo</SelectItem>
