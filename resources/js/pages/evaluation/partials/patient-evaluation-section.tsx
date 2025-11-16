@@ -53,11 +53,21 @@ export function PatientEvaluationSection({ selectedPatient, onBackToSelection }:
 
             // Verificar si el análisis con modelo externo está habilitado
             if (ENABLE_MODEL_ANALYSIS) {
-                // Llamar al modelo para verificar si el rostro está limpio
-                const analysisResult = await analyzeAcneSeverity(imageFile);
+                try {
+                    // Llamar al modelo para verificar si el rostro está limpio
+                    const analysisResult = await analyzeAcneSeverity(imageFile);
 
-                // Almacenar resultado en sessionStorage para usarlo en la página de predicción
-                sessionStorage.setItem('model_analysis', JSON.stringify(analysisResult));
+                    // Almacenar resultado en sessionStorage para usarlo en la página de predicción
+                    sessionStorage.setItem('model_analysis', JSON.stringify(analysisResult));
+                } catch (modelError) {
+                    // Si el modelo lanza un error (por ejemplo, no es un rostro real), mostrar el error y detener
+                    const errorMsg = modelError instanceof Error 
+                        ? modelError.message 
+                        : 'No se pudo analizar la imagen. Por favor, intenta con una foto clara de un rostro humano.';
+                    setErrorMessage(errorMsg);
+                    setIsEvaluating(false);
+                    return; // Detener la ejecución
+                }
             }
 
             // Ahora llamar al backend para la predicción

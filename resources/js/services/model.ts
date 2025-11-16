@@ -32,19 +32,29 @@ export const analyzeAcneSeverity = async (imageFile: File): Promise<AnalysisResu
   const imagePart = await fileToGenerativePart(imageFile);
 
   try {
-    // ¿El rostro está libre de acné visible?
-    const clearCheckResponse = await ai.models.generateContent({
+    // Verificar si es un rostro humano real y si está libre de acné visible
+    const analysisResponse = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: { parts: [
-        { text: "Is the person's face in this image free of visible acne? Answer with only 'Yes' or 'No'." },
+        { text: "Analyze this image and answer two questions:\n1. Is this a real human face (not animated, cartoon, drawing, or artificial)?\n2. If it's a real human face, is it free of visible acne?\n\nRespond in this exact format:\nFace: [Yes/No]\nClear: [Yes/No]\n\nExample responses:\n- If it's a real human face with no acne: 'Face: Yes\\nClear: Yes'\n- If it's a real human face with acne: 'Face: Yes\\nClear: No'\n- If it's not a real human face: 'Face: No\\nClear: N/A'" },
         imagePart
       ] },
     });
 
-    const clearResult = (clearCheckResponse.text || '').trim().toLowerCase();
+    const result = (analysisResponse.text || '').trim().toLowerCase();
+    console.log('Respuesta del modelo:', result);
 
-    if (clearResult.includes('yes')) {
+    // Verificar si es un rostro real
+    if (!result.includes('face: yes')) {
+      // No es un rostro real, lanzar error
+      console.log('Imagen rechazada: no es un rostro humano real');
+      throw new Error('No se detectó un rostro humano real en la imagen. Por favor, sube una foto clara de un rostro humano.');
+    }
+
+    // Si es un rostro real, verificar si está limpio
+    if (result.includes('clear: yes')) {
       // Si está limpio, retornar 'Limpio' (que será convertido a 'Ausente' en el frontend)
+      console.log('Rostro detectado: limpio (sin acné)');
       return {
         severity: 'Limpio',
         explanation: 'No se detectó acné visible en la imagen proporcionada.',
@@ -52,6 +62,7 @@ export const analyzeAcneSeverity = async (imageFile: File): Promise<AnalysisResu
     }
 
     // Si no está limpio, retornar un marcador indicando presencia de acné
+    console.log('Rostro detectado: con acné presente');
     return {
       severity: 'Presencia',
       explanation: 'Visible signs of acne detected. Backend prediction will be used.',
@@ -99,6 +110,17 @@ export const analyzeAcneSeverity = async (imageFile: File): Promise<AnalysisResu
 
   } catch (e) {
     console.error("Error calling generative API:", e);
-    throw new Error("Failed to analyze image. Please try again.");
+    
+    // Proporcionar mensajes de error más específicos
+    if (e instanceof Error) {
+      // Si el error ya tiene un mensaje específico (como el de validación de rostro), mantenerlo
+      if (e.message.includes('rostro humano real')) {
+        throw e;
+      }
+      // Para otros errores, proporcionar contexto adicional
+      throw new Error(`Error al analizar la imagen: ${e.message}`);
+    }
+    
+    throw new Error("No se pudo analizar la imagen. Por favor, intenta nuevamente con una foto clara de un rostro.");
   }
 };
