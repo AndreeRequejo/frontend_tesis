@@ -71,6 +71,10 @@ class PacienteController extends Controller
             $validated['telefono'] = null;
         }
 
+        // Convertir nombres y apellidos a mayúsculas
+        $validated['nombres'] = strtoupper($validated['nombres']);
+        $validated['apellidos'] = strtoupper($validated['apellidos']);
+
         Paciente::create($validated);
 
         return redirect()->back()->with('success', 'Paciente creado exitosamente.');
@@ -111,6 +115,10 @@ class PacienteController extends Controller
         if (empty($validated['telefono'])) {
             $validated['telefono'] = null;
         }
+
+        // Convertir nombres y apellidos a mayúsculas
+        $validated['nombres'] = strtoupper($validated['nombres']);
+        $validated['apellidos'] = strtoupper($validated['apellidos']);
 
         $paciente->update($validated);
 

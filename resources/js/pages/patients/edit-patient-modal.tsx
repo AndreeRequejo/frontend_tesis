@@ -58,8 +58,8 @@ export function EditPatientModal({ isOpen, onClose, onSubmit, patient }: EditPat
         e.preventDefault();
         onSubmit({
             dni: formData.dni,
-            nombres: formData.nombres,
-            apellidos: formData.apellidos,
+            nombres: formData.nombres.toUpperCase(),
+            apellidos: formData.apellidos.toUpperCase(),
             edad: parseInt(formData.edad),
             genero: formData.genero as 'Masculino' | 'Femenino',
             telefono: formData.telefono.trim() || null
@@ -102,7 +102,7 @@ export function EditPatientModal({ isOpen, onClose, onSubmit, patient }: EditPat
                                 <Label htmlFor="edit-nombres">Nombres</Label>
                                 <Input
                                     id="edit-nombres"
-                                    value={formData.nombres}
+                                    value={formData.nombres.toUpperCase()}
                                     onChange={(e) => {
                                         const value = e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
                                         setFormData({...formData, nombres: value});
@@ -118,7 +118,7 @@ export function EditPatientModal({ isOpen, onClose, onSubmit, patient }: EditPat
                             <Label htmlFor="edit-apellidos">Apellidos</Label>
                             <Input
                                 id="edit-apellidos"
-                                value={formData.apellidos}
+                                value={formData.apellidos.toUpperCase()}
                                 onChange={(e) => {
                                     const value = e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
                                     setFormData({...formData, apellidos: value});
