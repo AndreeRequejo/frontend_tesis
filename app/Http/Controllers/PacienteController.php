@@ -58,6 +58,7 @@ class PacienteController extends Controller
         ], [
             'dni.min' => 'El DNI debe tener al menos 8 caracteres.',
             'dni.unique' => 'El DNI ingresado ya se encuentra registrado.',
+            'edad.required' => 'La edad es obligatoria.',
             'edad.min' => 'La edad mínima es 11 años.',
             'edad.max' => 'La edad máxima es 30 años.',
             'telefono.unique' => 'El teléfono ingresado ya se encuentra registrado.',
@@ -100,6 +101,7 @@ class PacienteController extends Controller
         ], [
             'dni.unique' => 'El DNI ingresado ya se encuentra registrado.',
             'telefono.unique' => 'El teléfono ingresado ya se encuentra registrado.',
+            'edad.required' => 'La edad es obligatoria.',
             'edad.min' => 'La edad mínima es 11 años.',
             'edad.max' => 'La edad máxima es 30 años.',
             'genero.required' => 'Seleccione el género del paciente.'

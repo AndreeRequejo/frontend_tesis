@@ -75,7 +75,7 @@ export function CreatePatientModal({ isOpen, onClose, onSubmit }: CreatePatientM
                         {/* Primera fila - DNI y Nombres */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="grid gap-2">
-                                <Label htmlFor="dni">Doc. Ident.</Label>
+                                <Label htmlFor="dni">DNI.</Label>
                                 <Input
                                     id="dni"
                                     type='text'
@@ -94,7 +94,10 @@ export function CreatePatientModal({ isOpen, onClose, onSubmit }: CreatePatientM
                                 <Input
                                     id="nombres"
                                     value={formData.nombres}
-                                    onChange={(e) => setFormData({...formData, nombres: e.target.value})}
+                                    onChange={(e) => {
+                                        const value = e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
+                                        setFormData({...formData, nombres: value});
+                                    }}
                                     placeholder="Juan Carlos"
                                     required
                                 />
@@ -107,7 +110,10 @@ export function CreatePatientModal({ isOpen, onClose, onSubmit }: CreatePatientM
                             <Input
                                 id="apellidos"
                                 value={formData.apellidos}
-                                onChange={(e) => setFormData({...formData, apellidos: e.target.value})}
+                                onChange={(e) => {
+                                    const value = e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
+                                    setFormData({...formData, apellidos: value});
+                                }}
                                 placeholder="Pérez García"
                                 required
                             />
@@ -119,7 +125,7 @@ export function CreatePatientModal({ isOpen, onClose, onSubmit }: CreatePatientM
                                 <Label htmlFor="edad">Edad</Label>
                                 <Input
                                     id="edad"
-                                    type="tel"
+                                    type="number"
                                     value={formData.edad}
                                     onChange={(e) => setFormData({...formData, edad: e.target.value})}
                                     placeholder="25"

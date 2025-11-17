@@ -84,7 +84,7 @@ export function EditPatientModal({ isOpen, onClose, onSubmit, patient }: EditPat
                         {/* Primera fila - DNI y Nombres */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="grid gap-2">
-                                <Label htmlFor="edit-dni">Doc. Identif.</Label>
+                                <Label htmlFor="edit-dni">DNI.</Label>
                                 <Input
                                     id="edit-dni"
                                     value={formData.dni.replace(/\D/g, '')}
@@ -103,7 +103,10 @@ export function EditPatientModal({ isOpen, onClose, onSubmit, patient }: EditPat
                                 <Input
                                     id="edit-nombres"
                                     value={formData.nombres}
-                                    onChange={(e) => setFormData({...formData, nombres: e.target.value})}
+                                    onChange={(e) => {
+                                        const value = e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
+                                        setFormData({...formData, nombres: value});
+                                    }}
                                     placeholder="Juan Carlos"
                                     required
                                 />
@@ -116,7 +119,10 @@ export function EditPatientModal({ isOpen, onClose, onSubmit, patient }: EditPat
                             <Input
                                 id="edit-apellidos"
                                 value={formData.apellidos}
-                                onChange={(e) => setFormData({...formData, apellidos: e.target.value})}
+                                onChange={(e) => {
+                                    const value = e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
+                                    setFormData({...formData, apellidos: value});
+                                }}
                                 placeholder="Pérez García"
                                 required
                             />
@@ -128,7 +134,7 @@ export function EditPatientModal({ isOpen, onClose, onSubmit, patient }: EditPat
                                 <Label htmlFor="edit-edad">Edad</Label>
                                 <Input
                                     id="edit-edad"
-                                    type="tel"
+                                    type="number"
                                     value={formData.edad}
                                     onChange={(e) => setFormData({...formData, edad: e.target.value})}
                                     placeholder="25"
