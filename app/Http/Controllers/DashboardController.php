@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Paciente;
 use App\Models\Evaluacion;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -14,6 +15,43 @@ class DashboardController extends Controller
      */
     public function index(Request $request)
     {
+        $user = $request->user();
+        
+        // Si el usuario es administrador, mostrar estadísticas de usuarios
+        if ($user->hasRole('administrador')) {
+            $totalUsuarios = User::count();
+            $usuariosPorRol = User::with('roles')
+                ->get()
+                ->groupBy(function($usuario) {
+                    return $usuario->roles->first()->name ?? 'sin_rol';
+                })
+                ->map(function($usuarios) {
+                    return $usuarios->count();
+                });
+            
+            $usuariosRecientes = User::with('roles')
+                ->latest('created_at')
+                ->limit(5)
+                ->get()
+                ->map(function($usuario) {
+                    return [
+                        'id' => $usuario->getKey(),
+                        'name' => $usuario->name,
+                        'email' => $usuario->email,
+                        'rol' => $usuario->roles->first()->name ?? 'sin_rol',
+                        'created_at' => $usuario->created_at->format('d/m/Y'),
+                    ];
+                });
+            
+            return Inertia::render('dashboard', [
+                'isAdmin' => true,
+                'totalUsuarios' => $totalUsuarios,
+                'usuariosPorRol' => $usuariosPorRol,
+                'usuariosRecientes' => $usuariosRecientes,
+            ]);
+        }
+        
+        // Para médicos y secretarios, mostrar datos de pacientes
         // Número de elementos recientes a mostrar (configurable)
         $limit = $request->get('limit', 2);
 
@@ -57,6 +95,7 @@ class DashboardController extends Controller
             });
 
         return Inertia::render('dashboard', [
+            'isAdmin' => false,
             'pacientesRecientes' => $pacientesRecientes,
             'evaluacionesRecientes' => $evaluacionesRecientes,
             'limit' => $limit,
