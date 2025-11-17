@@ -24,7 +24,7 @@ class DatabaseSeeder extends Seeder
             'email' => 'andree09requejo@gmail.com',
             'password' => bcrypt('159357An@'),
         ]);
-        $andree->assignRole('medico'); // Asignar rol de médico
+        $andree->assignRole('administrador'); // Asignar rol de administrador
 
         $elizabeth = User::factory()->create([
             'name' => 'Elizabeth Guevara',
