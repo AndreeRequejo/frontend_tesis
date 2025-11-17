@@ -236,7 +236,7 @@ export default function HistoryIndex({ evaluaciones, filters }: Props) {
                     <div className="relative w-full sm:flex-1">
                         <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
                         <Input
-                            placeholder="Buscar por paciente..."
+                            placeholder="Buscar por nombres, apellidos o DNI..."
                             className="w-full border-gray-200 pl-10 focus:border-blue-400 focus:ring-blue-400"
                             value={searchTerm}
                             onChange={(e) => handleSearch(e.target.value)}

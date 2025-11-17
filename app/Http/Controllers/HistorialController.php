@@ -20,7 +20,8 @@ class HistorialController extends Controller
             $search = $request->get('search');
             $query->whereHas('paciente', function ($q) use ($search) {
                 $q->where('nombres', 'like', "%{$search}%")
-                  ->orWhere('apellidos', 'like', "%{$search}%");
+                  ->orWhere('apellidos', 'like', "%{$search}%")
+                  ->orWhere('dni', 'like', "%{$search}%");
             });
         }
 
