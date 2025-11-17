@@ -112,13 +112,24 @@ export const analyzeAcneSeverity = async (imageFile: File): Promise<AnalysisResu
     // Proporcionar mensajes de error más específicos
     if (e instanceof Error) {
       // Si el error ya tiene un mensaje específico (como el de validación de rostro), mantenerlo
-      if (e.message.includes('rostro humano real')) {
-        throw e;
+      if (e.message.includes('rostro humano real') || e.message.includes('human face')) {
+        throw e; // Error de validación - debe detener el flujo
       }
-      // Para otros errores, proporcionar contexto adicional
-      throw new Error(`Error al analizar la imagen: ${e.message}`);
+      
+      // Errores de API (créditos, configuración, etc.) - no deben detener el flujo
+      if (e.message.includes('API key') || 
+          e.message.includes('quota') || 
+          e.message.includes('limit') ||
+          e.message.includes('authentication') ||
+          e.message.includes('permission')) {
+        throw new Error(`API_ERROR: ${e.message}`);
+      }
+      
+      // Para otros errores técnicos, marcarlos como errores de servicio
+      throw new Error(`SERVICE_ERROR: ${e.message}`);
     }
     
-    throw new Error("No se pudo analizar la imagen. Por favor, intenta nuevamente con una foto clara de un rostro.");
+    // Error genérico - tratarlo como error de servicio
+    throw new Error("SERVICE_ERROR: No se pudo conectar con el servicio de análisis.");
   }
 };

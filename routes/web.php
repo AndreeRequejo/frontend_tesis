@@ -41,6 +41,7 @@ Route::middleware(['auth'])->group(function () {
         Route::put('evaluaciones/{id}', [EvaluacionController::class, 'update'])->name('evaluaciones.update');
         Route::delete('evaluaciones/{id}', [EvaluacionController::class, 'destroy'])->name('evaluaciones.destroy');
         Route::post('evaluacion/predecir', [EvaluacionController::class, 'predecir'])->name('evaluacion.predecir');
+        Route::get('evaluacion/resultado', [EvaluacionController::class, 'mostrarResultado'])->name('evaluacion.resultado');
         Route::get('evaluacion/{id}', [HistorialController::class, 'show'])->name('evaluacion.detalle');
     });
 

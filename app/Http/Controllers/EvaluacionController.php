@@ -178,24 +178,11 @@ class EvaluacionController extends Controller
             }
 
             if (!$resultado['success']) {
-                // Extraer el mensaje de detail del JSON de error si existe
-                $errorMessage = $resultado['message'];
-                try {
-                    // Si el mensaje contiene JSON, intentar extraer el detail
-                    if (strpos($errorMessage, 'Error en la API de predicción:') === 0) {
-                        $jsonPart = str_replace('Error en la API de predicción: ', '', $errorMessage);
-                        $errorData = json_decode($jsonPart, true);
-                        if (isset($errorData['detail'])) {
-                            $errorMessage = $errorData['detail'];
-                        }
-                    }
-                } catch (\Exception $e) {
-                    // Si no se puede parsear, usar el mensaje original
-                }
-
-                return redirect()->back()->withErrors([
-                    'prediccion' => $errorMessage
-                ]);
+                // Retornar error como JSON para que el frontend lo maneje
+                return response()->json([
+                    'success' => false,
+                    'detail' => $resultado['message']
+                ], 400);
             }
 
             // Preparar datos para la vista de resultados
@@ -213,14 +200,42 @@ class EvaluacionController extends Controller
                 'fecha_evaluacion' => now()->toDateTimeString()
             ];
 
-            return Inertia::render('evaluation/prediction', $resultadoConPaciente);
+            // Guardar en sesión para la página de predicción
+            session(['prediction_result' => $resultadoConPaciente]);
+
+            // Retornar respuesta JSON en lugar de renderizar directamente
+            return response()->json([
+                'success' => true,
+                'redirect' => route('evaluacion.resultado')
+            ]);
 
         } catch (\Exception $e) {
             Log::error('Error en predicción: ' . $e->getMessage());
-            return redirect()->back()->withErrors([
-                'prediccion' => 'Error interno del servidor: ' . $e->getMessage()
+            return response()->json([
+                'success' => false,
+                'detail' => 'Error interno del servidor: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Mostrar página de resultados de predicción
+     */
+    public function mostrarResultado()
+    {
+        // Obtener datos de la sesión
+        $resultadoConPaciente = session('prediction_result');
+        
+        if (!$resultadoConPaciente) {
+            return redirect()->route('evaluacion')->withErrors([
+                'prediccion' => 'No hay resultados de predicción disponibles'
             ]);
         }
+        
+        // Limpiar la sesión después de obtener los datos
+        session()->forget('prediction_result');
+        
+        return Inertia::render('evaluation/prediction', $resultadoConPaciente);
     }
 
     /**
@@ -315,9 +330,14 @@ class EvaluacionController extends Controller
                 ];
             } else {
                 Log::error('Error en API de predicción: ' . $response->body());
+                
+                // Intentar parsear el JSON de error para extraer el detail
+                $errorData = $response->json();
+                $errorMessage = $errorData['detail'] ?? 'Error en la API de predicción';
+                
                 return [
                     'success' => false,
-                    'message' => 'Error en la API de predicción: ' . $response->body()
+                    'message' => $errorMessage
                 ];
             }
         } catch (\Exception $e) {
