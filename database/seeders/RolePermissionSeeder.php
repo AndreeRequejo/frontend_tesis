@@ -35,6 +35,12 @@ class RolePermissionSeeder extends Seeder
             
             // Gestión de evaluaciones
             'evaluacion',
+            
+            // Gestión de usuarios
+            'usuarios',
+            'crear_usuarios',
+            'editar_usuarios',
+            'eliminar_usuarios',
         ];
 
         foreach ($permissions as $permission) {
@@ -44,10 +50,19 @@ class RolePermissionSeeder extends Seeder
         // Crear roles
         $medicoRole = Role::create(['name' => 'medico']);
         $secretarioRole = Role::create(['name' => 'secretario']);
-        $adminRole = Role::create(['name' => 'adminastrador']);
+        $adminRole = Role::create(['name' => 'administrador']);
 
         // Asignar permisos al rol médico (acceso completo)
-        $medicoRole->givePermissionTo($permissions);
+        $medicoRole->givePermissionTo([
+            'pacientes',
+            'crear_pacientes',
+            'editar_pacientes',
+            'ver_pacientes',
+            'eliminar_pacientes',
+            'historial',
+            'reporte',
+            'evaluacion',
+        ]);
 
         // Asignar permisos limitados al secretario
         $secretarioRole->givePermissionTo([
@@ -56,7 +71,7 @@ class RolePermissionSeeder extends Seeder
             'editar_pacientes',
         ]);
 
-        // Asignar todos los permisos al rol administrador
+        // Asignar permisos al rol administrador
         $adminRole->givePermissionTo([
             'usuarios',
             'crear_usuarios',
