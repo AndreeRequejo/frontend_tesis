@@ -7,6 +7,7 @@ use App\Http\Controllers\PacienteController;
 use App\Http\Controllers\HistorialController;
 use App\Http\Controllers\EvaluacionController;
 use App\Http\Controllers\PruebaController;
+use App\Http\Controllers\UserController;
 
 Route::middleware(['auth'])->group(function () {
     // Dashboard accesible para ambos roles
@@ -41,6 +42,15 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('evaluaciones/{id}', [EvaluacionController::class, 'destroy'])->name('evaluaciones.destroy');
         Route::post('evaluacion/predecir', [EvaluacionController::class, 'predecir'])->name('evaluacion.predecir');
         Route::get('evaluacion/{id}', [HistorialController::class, 'show'])->name('evaluacion.detalle');
+    });
+
+    // RUTAS SOLO PARA ADMINISTRADORES
+    Route::middleware(['role:administrador'])->group(function () {
+        // Gestión de usuarios (solo administradores)
+        Route::get('usuarios', [UserController::class, 'index'])->name('usuarios.index');
+        Route::post('usuarios', [UserController::class, 'store'])->name('usuarios.store');
+        Route::put('usuarios/{usuario}', [UserController::class, 'update'])->name('usuarios.update');
+        Route::delete('usuarios/{usuario}', [UserController::class, 'destroy'])->name('usuarios.destroy');
     });
 });
 
