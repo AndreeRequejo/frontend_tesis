@@ -1,7 +1,7 @@
 import { usePage } from '@inertiajs/react';
 import { User, RoleHelper } from '@/lib/roleHelper';
 import { type NavItem } from '@/types';
-import { LayoutGrid, UsersRound, FileUser, ScanFace, FlaskConical } from 'lucide-react';
+import { LayoutGrid, UsersRound, FileUser, ScanFace, Shield } from 'lucide-react';
 
 interface AuthProps extends Record<string, unknown> {
   auth: {
@@ -31,6 +31,11 @@ export const mainNavItems: NavItem[] = [
     href: '/historial',
     icon: FileUser,
   },
+  {
+    title: 'Usuarios',
+    href: '/usuarios',
+    icon: Shield,
+  },
   // {
   //   title: 'Prueba',
   //   href: '/prueba',
@@ -47,10 +52,11 @@ export const useNavigation = () => {
     return items.filter(item => {
       // Definir qué rutas puede ver cada rol
       const routePermissions: Record<string, string[]> = {
-        '/dashboard': ['medico', 'secretario'],
+        '/dashboard': ['medico', 'secretario', 'administrador'],
         '/evaluacion': ['medico'],
         '/pacientes': ['medico', 'secretario'],
         '/historial': ['medico'],
+        '/usuarios': ['administrador'],
         // '/prueba': ['medico', 'secretario']
       };
 
@@ -70,5 +76,6 @@ export const useNavigation = () => {
     filterNavItemsByRole,
     isMedico: auth.user ? RoleHelper.isMedico(auth.user) : false,
     isSecretario: auth.user ? RoleHelper.isSecretario(auth.user) : false,
+    isAdministrador: auth.user ? RoleHelper.isAdministrador(auth.user) : false,
   };
 };

@@ -1,4 +1,4 @@
-import { LayoutGrid, UsersRound, FileUser, ScanFace, CircleUserRound } from 'lucide-react';
+import { LayoutGrid, UsersRound, FileUser, ScanFace, CircleUserRound, Shield } from 'lucide-react';
 import { type NavItem } from '@/types';
 import { User, RoleHelper } from '@/lib/roleHelper';
 import { usePage } from '@inertiajs/react';
@@ -31,6 +31,11 @@ export const mainNavItems: NavItem[] = [
     icon: FileUser,
   },
   {
+    title: 'Usuarios',
+    href: '/usuarios',
+    icon: Shield,
+  },
+  {
     title: 'Perfil',
     href: '/settings/profile',
     icon: CircleUserRound,
@@ -42,11 +47,12 @@ export const getNavItemsForRole = (user: User | null): NavItem[] => {
 
   // Definir qué elementos puede ver cada rol
   const rolePermissions: Record<string, string[]> = {
-    '/dashboard': ['medico', 'secretario'],
+    '/dashboard': ['medico', 'secretario', 'administrador'],
     '/pacientes': ['medico', 'secretario'],
     '/evaluacion': ['medico'],
     '/historial': ['medico'],
-    '/settings/profile': ['medico', 'secretario'],
+    '/usuarios': ['administrador'],
+    '/settings/profile': ['medico', 'secretario', 'administrador'],
   };
 
   return mainNavItems.filter(item => {

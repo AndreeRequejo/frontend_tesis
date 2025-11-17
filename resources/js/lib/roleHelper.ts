@@ -53,4 +53,11 @@ export class RoleHelper {
   static isSecretario(user: User): boolean {
     return this.hasRole(user, 'secretario');
   }
+
+  /**
+   * Verificar si el usuario es administrador
+   */
+  static isAdministrador(user: User): boolean {
+    return this.hasRole(user, 'administrador');
+  }
 }
