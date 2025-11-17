@@ -102,12 +102,12 @@ export function EditPatientModal({ isOpen, onClose, onSubmit, patient }: EditPat
                                 <Label htmlFor="edit-nombres">Nombres</Label>
                                 <Input
                                     id="edit-nombres"
-                                    value={formData.nombres.toUpperCase()}
+                                    value={formData.nombres}
                                     onChange={(e) => {
-                                        const value = e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
+                                        const value = e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '').toUpperCase();
                                         setFormData({...formData, nombres: value});
                                     }}
-                                    placeholder="Juan Carlos"
+                                    placeholder="JUAN CARLOS"
                                     required
                                 />
                             </div>
@@ -118,12 +118,12 @@ export function EditPatientModal({ isOpen, onClose, onSubmit, patient }: EditPat
                             <Label htmlFor="edit-apellidos">Apellidos</Label>
                             <Input
                                 id="edit-apellidos"
-                                value={formData.apellidos.toUpperCase()}
+                                value={formData.apellidos}
                                 onChange={(e) => {
-                                    const value = e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
+                                    const value = e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '').toUpperCase();
                                     setFormData({...formData, apellidos: value});
                                 }}
-                                placeholder="Pérez García"
+                                placeholder="PÉREZ GARCÍA"
                                 required
                             />
                         </div>
