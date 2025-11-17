@@ -70,7 +70,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 const getClassificationColor = (label: string) => {
     switch (label.toLowerCase()) {
         case 'ausente':
-            return 'bg-green-100 text-green-800 border-green-200';
+            return 'bg-gray-100 text-gray-800 border-gray-200';
         case 'leve':
             return 'bg-green-100 text-green-800 border-green-200';
         case 'moderado':
