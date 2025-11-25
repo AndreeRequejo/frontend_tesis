@@ -157,11 +157,17 @@ class EvaluacionController extends Controller
      */
     public function predecir(Request $request)
     {
-        $request->validate([
-            'paciente_id' => 'required|exists:paciente,id',
-            'imagenes' => 'required|array|min:1|max:3',
-            'imagenes.*' => 'required|string' // Base64 strings
-        ]);
+        try {
+            $request->validate([
+                'paciente_id' => 'required|exists:paciente,id',
+                'imagenes' => 'required|array|min:1|max:3',
+                'imagenes.*' => 'required|string' // Base64 strings
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()->withErrors([
+                'detail' => 'Error de validación: ' . implode(', ', array_map(fn($errors) => implode(', ', $errors), $e->errors()))
+            ]);
+        }
 
         try {
             $paciente = Paciente::findOrFail($request->paciente_id);
@@ -178,11 +184,10 @@ class EvaluacionController extends Controller
             }
 
             if (!$resultado['success']) {
-                // Retornar error como JSON para que el frontend lo maneje
-                return response()->json([
-                    'success' => false,
+                // Retornar error en formato compatible con Inertia
+                return back()->withErrors([
                     'detail' => $resultado['message']
-                ], 400);
+                ]);
             }
 
             // Preparar datos para la vista de resultados
@@ -203,18 +208,23 @@ class EvaluacionController extends Controller
             // Guardar en sesión para la página de predicción
             session(['prediction_result' => $resultadoConPaciente]);
 
-            // Retornar respuesta JSON en lugar de renderizar directamente
-            return response()->json([
-                'success' => true,
-                'redirect' => route('evaluacion.resultado')
-            ]);
+            // Determinar si es petición Inertia o AJAX normal
+            if (request()->header('X-Inertia')) {
+                // Petición Inertia - retornar success flag
+                return back()->with('prediction_success', true);
+            } else {
+                // Petición AJAX normal - retornar JSON
+                return response()->json([
+                    'success' => true,
+                    'redirect' => route('evaluacion.resultado')
+                ]);
+            }
 
         } catch (\Exception $e) {
             Log::error('Error en predicción: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
+            return back()->withErrors([
                 'detail' => 'Error interno del servidor: ' . $e->getMessage()
-            ], 500);
+            ]);
         }
     }
 
