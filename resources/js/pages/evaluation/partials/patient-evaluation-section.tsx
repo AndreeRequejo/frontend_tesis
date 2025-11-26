@@ -6,7 +6,7 @@ import { AlertTriangle, ArrowLeft, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { ImageCaptureSection } from './image-capture-section';
 import { ImageRecommendations } from './image-recommendations';
-import { analyzeAcneSeverity, ENABLE_MODEL_ANALYSIS } from '@/services/model';
+import { analyzeAcneSeverity, ENABLE_MODEL_ANALYSIS, MODEL_FIRST } from '@/services/model';
 
 interface PatientEvaluationSectionProps {
     selectedPatient: Paciente;
@@ -53,7 +53,62 @@ export function PatientEvaluationSection({ selectedPatient, onBackToSelection }:
         setErrorMessage(null);
         setIsEvaluating(true);
 
-        // Usar Inertia para la petición (maneja CSRF automáticamente)
+        // FLUJO 1: Modelo externo PRIMERO (si MODEL_FIRST = true)
+        if (ENABLE_MODEL_ANALYSIS && MODEL_FIRST) {
+            try {
+                // Convertir base64 a objeto File para verificación con modelo externo
+                const firstImageBase64 = capturedImages[0];
+                const blobResponse = await fetch(firstImageBase64);
+                const blob = await blobResponse.blob();
+                const imageFile = new File([blob], "evaluation_image.jpg", { type: blob.type });
+
+                // PRIMERO: Llamar al modelo externo para validación exhaustiva
+                const analysisResult = await analyzeAcneSeverity(imageFile);
+
+                // Almacenar resultado en sessionStorage
+                sessionStorage.setItem('model_analysis', JSON.stringify(analysisResult));
+
+                // LUEGO: Llamar al backend para predicción
+                callBackendPrediction();
+
+            } catch (modelError) {
+                const errorMsg = modelError instanceof Error ? modelError.message : '';
+                
+                console.warn('Error en modelo externo:', errorMsg);
+                
+                // Errores de VALIDACIÓN - DETENER el flujo
+                if (errorMsg.includes('detectó') || 
+                    errorMsg.includes('animal') ||
+                    errorMsg.includes('animado') ||
+                    errorMsg.includes('dibujo') ||
+                    errorMsg.includes('parte del rostro') ||
+                    errorMsg.includes('parte del cuerpo')) {
+                    setErrorMessage(errorMsg);
+                    setIsEvaluating(false);
+                    sessionStorage.removeItem('model_analysis');
+                    return;
+                }
+                
+                // Errores de SERVICIO/API - CONTINUAR con backend
+                if (errorMsg.includes('API_ERROR') || errorMsg.includes('SERVICE_ERROR')) {
+                    console.log('⚠️ Modelo externo no disponible. Continuando con predicción del backend...');
+                    sessionStorage.removeItem('model_analysis');
+                    callBackendPrediction();
+                } else {
+                    console.log('⚠️ Error desconocido en modelo externo. Continuando con backend...');
+                    sessionStorage.removeItem('model_analysis');
+                    callBackendPrediction();
+                }
+            }
+            return;
+        }
+
+        // FLUJO 2: Backend PRIMERO (si MODEL_FIRST = false o modelo deshabilitado)
+        callBackendPrediction();
+    };
+
+    // Función auxiliar para llamar al backend
+    const callBackendPrediction = () => {
         router.post(
             '/evaluacion/predecir',
             {
@@ -63,53 +118,47 @@ export function PatientEvaluationSection({ selectedPatient, onBackToSelection }:
             {
                 preserveState: true,
                 preserveScroll: true,
-                only: [], // No actualizar ningún prop automáticamente
+                only: [],
                 onSuccess: async () => {
-                    // Si el backend responde exitosamente, ENTONCES llamar al modelo externo
-                    if (ENABLE_MODEL_ANALYSIS) {
+                    // Si el backend responde exitosamente Y el modelo NO se ejecutó primero
+                    if (ENABLE_MODEL_ANALYSIS && !MODEL_FIRST) {
                         try {
-                            // Convertir base64 a objeto File para verificación con modelo externo
                             const firstImageBase64 = capturedImages[0];
                             const blobResponse = await fetch(firstImageBase64);
                             const blob = await blobResponse.blob();
                             const imageFile = new File([blob], "evaluation_image.jpg", { type: blob.type });
 
-                            // Llamar al modelo para verificar si el rostro está limpio o validar la predicción
                             const analysisResult = await analyzeAcneSeverity(imageFile);
-
-                            // Almacenar resultado en sessionStorage para usarlo en la página de predicción
                             sessionStorage.setItem('model_analysis', JSON.stringify(analysisResult));
                         } catch (modelError) {
                             const errorMsg = modelError instanceof Error ? modelError.message : '';
                             
                             console.warn('Error en modelo externo:', errorMsg);
                             
-                            // Errores de VALIDACIÓN (no es un rostro humano) - DETENER el flujo
-                            if (errorMsg.includes('rostro humano real') || errorMsg.includes('human face')) {
+                            // Errores de VALIDACIÓN - DETENER
+                            if (errorMsg.includes('detectó') || 
+                                errorMsg.includes('animal') ||
+                                errorMsg.includes('animado') ||
+                                errorMsg.includes('dibujo') ||
+                                errorMsg.includes('parte del rostro') ||
+                                errorMsg.includes('parte del cuerpo')) {
                                 setErrorMessage(errorMsg);
                                 setIsEvaluating(false);
                                 sessionStorage.removeItem('model_analysis');
-                                return; // Detener ejecución
+                                return;
                             }
                             
-                            // Errores de SERVICIO/API (créditos, configuración, etc.) - CONTINUAR con backend
-                            if (errorMsg.includes('API_ERROR') || errorMsg.includes('SERVICE_ERROR')) {
-                                console.log('⚠️ Modelo externo no disponible. Continuando solo con predicción del backend...');
-                                sessionStorage.removeItem('model_analysis');
-                            } else {
-                                // Cualquier otro error - continuar con backend por seguridad
-                                console.log('⚠️ Error desconocido en modelo externo. Continuando con backend...');
-                                sessionStorage.removeItem('model_analysis');
-                            }
+                            // Errores de SERVICIO/API - CONTINUAR
+                            console.log('⚠️ Modelo externo no disponible. Continuando con predicción del backend...');
+                            sessionStorage.removeItem('model_analysis');
                         }
                     }
 
-                    // Navegar a la página de resultados
+                    // Navegar a resultados
                     router.visit('/evaluacion/resultado');
                     setIsEvaluating(false);
                 },
                 onError: () => {
-                    // Los errores se manejan automáticamente por el useEffect que detecta errors.detail
                     setIsEvaluating(false);
                 },
             }
