@@ -81,6 +81,12 @@ export function PatientEvaluationSection({ selectedPatient, onBackToSelection }:
                     errorMsg.includes('animal') ||
                     errorMsg.includes('animado') ||
                     errorMsg.includes('dibujo') ||
+                    errorMsg.includes('artificial') ||
+                    errorMsg.includes('generado') ||
+                    errorMsg.includes('render') ||
+                    errorMsg.includes('robot') ||
+                    errorMsg.includes('máscara') ||
+                    errorMsg.includes('maniquí') ||
                     errorMsg.includes('parte del rostro') ||
                     errorMsg.includes('parte del cuerpo')) {
                     setErrorMessage(errorMsg);
@@ -140,6 +146,12 @@ export function PatientEvaluationSection({ selectedPatient, onBackToSelection }:
                                 errorMsg.includes('animal') ||
                                 errorMsg.includes('animado') ||
                                 errorMsg.includes('dibujo') ||
+                                errorMsg.includes('artificial') ||
+                                errorMsg.includes('generado') ||
+                                errorMsg.includes('render') ||
+                                errorMsg.includes('robot') ||
+                                errorMsg.includes('máscara') ||
+                                errorMsg.includes('maniquí') ||
                                 errorMsg.includes('parte del rostro') ||
                                 errorMsg.includes('parte del cuerpo')) {
                                 setErrorMessage(errorMsg);
