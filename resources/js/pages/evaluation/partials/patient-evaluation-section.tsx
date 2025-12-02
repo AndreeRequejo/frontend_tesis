@@ -36,7 +36,7 @@ export function PatientEvaluationSection({ selectedPatient, onBackToSelection }:
         if (errorMessage) {
             const timer = setTimeout(() => {
                 setErrorMessage(null);
-            }, 4000); // 4 segundos
+            }, 6000); // 6 segundos
 
             // Limpiar el timeout si el componente se desmonta o si el errorMessage cambia
             return () => clearTimeout(timer);
