@@ -12,7 +12,6 @@ use App\Http\Controllers\UserController;
 Route::middleware(['auth'])->group(function () {
     // Dashboard accesible para ambos roles
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('prueba', [PruebaController::class, 'index']);
 
     // RUTAS COMPARTIDAS (ambos roles pueden acceder)
     Route::middleware(['role:medico|secretario'])->group(function () {
