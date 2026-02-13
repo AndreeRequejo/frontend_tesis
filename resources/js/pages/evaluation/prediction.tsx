@@ -141,6 +141,9 @@ export default function Prediction() {
     const isSimplePrediction = 'prediccion_class' in finalPrediccion;
     const isBatchPrediction = 'total_images' in finalPrediccion;
 
+    // Verificar si hay errores en predicción batch
+    const hasErrors = isBatchPrediction && (finalPrediccion as PrediccionBatch).predicciones.some(p => !p.success);
+
     // Función para obtener el layout de las imágenes según la cantidad
     const getImageLayout = (count: number) => {
         switch (count) {
@@ -533,12 +536,29 @@ export default function Prediction() {
             )}
         </CardContent>
     </Card>
-                </div>                {/* Botones de acción */}
+                </div>
+
+                {/* Mensaje de advertencia si hay errores */}
+                {hasErrors && (
+                    <div className="flex items-center gap-3 rounded-lg border border-red-200 bg-red-50 p-4">
+                        <AlertCircle className="h-5 w-5 text-red-600" />
+                        <div className="flex-1">
+                            <p className="text-sm font-semibold text-red-800">
+                                No se puede guardar la evaluación
+                            </p>
+                            <p className="text-sm text-red-600">
+                                Algunas imágenes no pudieron ser procesadas correctamente. Por favor, intente nuevamente con otras imágenes.
+                            </p>
+                        </div>
+                    </div>
+                )}
+
+                {/* Botones de acción */}
                 <div className="flex justify-end gap-4">
                     <Button variant="outline" onClick={handleBack}>
                         Nueva evaluación
                     </Button>
-                    <Button onClick={handleSave} disabled={isSaving}>
+                    <Button onClick={handleSave} disabled={isSaving || hasErrors}>
                         <Save className="mr-2 h-4 w-4" />
                         {isSaving ? 'Guardando...' : 'Guardar Evaluación'}
                     </Button>
