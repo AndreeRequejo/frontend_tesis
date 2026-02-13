@@ -1,12 +1,12 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Paciente } from '@/pages/patients/types';
+import { analyzeAcneSeverity, ENABLE_MODEL_ANALYSIS, MODEL_FIRST } from '@/services/model';
 import { router, usePage } from '@inertiajs/react';
 import { AlertTriangle, ArrowLeft, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { ImageCaptureSection } from './image-capture-section';
 import { ImageRecommendations } from './image-recommendations';
-import { analyzeAcneSeverity, ENABLE_MODEL_ANALYSIS, MODEL_FIRST } from '@/services/model';
 
 interface PatientEvaluationSectionProps {
     selectedPatient: Paciente;
@@ -56,28 +56,31 @@ export function PatientEvaluationSection({ selectedPatient, onBackToSelection }:
         // FLUJO 1: Modelo externo PRIMERO (si MODEL_FIRST = true)
         if (ENABLE_MODEL_ANALYSIS && MODEL_FIRST) {
             try {
-                // Convertir base64 a objeto File para verificación con modelo externo
-                const firstImageBase64 = capturedImages[0];
-                const blobResponse = await fetch(firstImageBase64);
-                const blob = await blobResponse.blob();
-                const imageFile = new File([blob], "evaluation_image.jpg", { type: blob.type });
+                // Convertir TODAS las imágenes (base64) a objetos File
+                const imageFilesPromises = capturedImages.map(async (base64, index) => {
+                    const blobResponse = await fetch(base64);
+                    const blob = await blobResponse.blob();
+                    return new File([blob], `evaluation_image_${index}.jpg`, { type: blob.type });
+                });
 
-                // PRIMERO: Llamar al modelo externo para validación exhaustiva
-                const analysisResult = await analyzeAcneSeverity(imageFile);
+                const imageFiles = await Promise.all(imageFilesPromises);
+
+                // PRIMERO: Llamar al modelo externo para validación exhaustiva con TODAS las imágenes
+                const analysisResult = await analyzeAcneSeverity(imageFiles);
 
                 // Almacenar resultado en sessionStorage
                 sessionStorage.setItem('model_analysis', JSON.stringify(analysisResult));
 
                 // LUEGO: Llamar al backend para predicción
                 callBackendPrediction();
-
             } catch (modelError) {
                 const errorMsg = modelError instanceof Error ? modelError.message : '';
-                
+
                 console.warn('Error en modelo externo:', errorMsg);
-                
+
                 // Errores de VALIDACIÓN - DETENER el flujo
-                if (errorMsg.includes('detectó') || 
+                if (
+                    errorMsg.includes('detectó') ||
                     errorMsg.includes('animal') ||
                     errorMsg.includes('animado') ||
                     errorMsg.includes('dibujo') ||
@@ -88,13 +91,14 @@ export function PatientEvaluationSection({ selectedPatient, onBackToSelection }:
                     errorMsg.includes('máscara') ||
                     errorMsg.includes('maniquí') ||
                     errorMsg.includes('parte del rostro') ||
-                    errorMsg.includes('parte del cuerpo')) {
+                    errorMsg.includes('parte del cuerpo')
+                ) {
                     setErrorMessage(errorMsg);
                     setIsEvaluating(false);
                     sessionStorage.removeItem('model_analysis');
                     return;
                 }
-                
+
                 // Errores de SERVICIO/API - CONTINUAR con backend
                 if (errorMsg.includes('API_ERROR') || errorMsg.includes('SERVICE_ERROR')) {
                     console.log('⚠️ Modelo externo no disponible. Continuando con predicción del backend...');
@@ -129,20 +133,24 @@ export function PatientEvaluationSection({ selectedPatient, onBackToSelection }:
                     // Si el backend responde exitosamente Y el modelo NO se ejecutó primero
                     if (ENABLE_MODEL_ANALYSIS && !MODEL_FIRST) {
                         try {
-                            const firstImageBase64 = capturedImages[0];
-                            const blobResponse = await fetch(firstImageBase64);
-                            const blob = await blobResponse.blob();
-                            const imageFile = new File([blob], "evaluation_image.jpg", { type: blob.type });
+                            const imageFilesPromises = capturedImages.map(async (base64, index) => {
+                                const blobResponse = await fetch(base64);
+                                const blob = await blobResponse.blob();
+                                return new File([blob], `evaluation_image_${index}.jpg`, { type: blob.type });
+                            });
 
-                            const analysisResult = await analyzeAcneSeverity(imageFile);
+                            const imageFiles = await Promise.all(imageFilesPromises);
+
+                            const analysisResult = await analyzeAcneSeverity(imageFiles);
                             sessionStorage.setItem('model_analysis', JSON.stringify(analysisResult));
                         } catch (modelError) {
                             const errorMsg = modelError instanceof Error ? modelError.message : '';
-                            
+
                             console.warn('Error en modelo externo:', errorMsg);
-                            
+
                             // Errores de VALIDACIÓN - DETENER
-                            if (errorMsg.includes('detectó') || 
+                            if (
+                                errorMsg.includes('detectó') ||
                                 errorMsg.includes('animal') ||
                                 errorMsg.includes('animado') ||
                                 errorMsg.includes('dibujo') ||
@@ -153,13 +161,14 @@ export function PatientEvaluationSection({ selectedPatient, onBackToSelection }:
                                 errorMsg.includes('máscara') ||
                                 errorMsg.includes('maniquí') ||
                                 errorMsg.includes('parte del rostro') ||
-                                errorMsg.includes('parte del cuerpo')) {
+                                errorMsg.includes('parte del cuerpo')
+                            ) {
                                 setErrorMessage(errorMsg);
                                 setIsEvaluating(false);
                                 sessionStorage.removeItem('model_analysis');
                                 return;
                             }
-                            
+
                             // Errores de SERVICIO/API - CONTINUAR
                             console.log('⚠️ Modelo externo no disponible. Continuando con predicción del backend...');
                             sessionStorage.removeItem('model_analysis');
@@ -173,7 +182,7 @@ export function PatientEvaluationSection({ selectedPatient, onBackToSelection }:
                 onError: () => {
                     setIsEvaluating(false);
                 },
-            }
+            },
         );
     };
 
@@ -196,9 +205,9 @@ export function PatientEvaluationSection({ selectedPatient, onBackToSelection }:
                 {/* Columna izquierda: Información del paciente y captura de imagen */}
                 <div className="space-y-6 lg:col-span-2">
                     {/* Información del paciente seleccionado */}
-                    <Card className='border-l-4 border-l-blue-500 shadow-xs'>
+                    <Card className="border-l-4 border-l-blue-500 shadow-xs">
                         <CardHeader>
-                            <CardTitle className='text-blue-600'>Paciente Seleccionado</CardTitle>
+                            <CardTitle className="text-blue-600">Paciente Seleccionado</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <div className="flex items-center justify-between">

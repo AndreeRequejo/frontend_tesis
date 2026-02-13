@@ -17,7 +17,7 @@ export function ImageCaptureSection({ capturedImages, setCapturedImages }: Image
     const cameraInputRef = useRef<HTMLInputElement>(null);
 
     // Configuración para número máximo de imágenes
-    const MAX_IMAGES = 1;
+    const MAX_IMAGES = 3;
 
     // Función para seleccionar imagen de la galería (móvil) o dispositivo (desktop)
     const handleSelectFromGallery = () => {
