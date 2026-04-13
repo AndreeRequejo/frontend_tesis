@@ -1,6 +1,8 @@
 import { EvaluacionCard } from '@/components/evaluacion-card';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import AppLayout from '@/layouts/app-layout';
 import { DetalleEvaluacionModal } from '@/pages/history/detalle-evaluacion-modal';
 import { type BreadcrumbItem } from '@/types';
@@ -22,6 +24,10 @@ interface Evaluacion {
         id: number;
         contenido_base64: string;
     };
+    imagenes?: Array<{
+        id: number;
+        contenido_base64: string;
+    }>;
 }
 
 interface DetalleProps {
@@ -45,6 +51,8 @@ export default function DetallePaciente({ paciente }: DetalleProps) {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedEvaluacionId, setSelectedEvaluacionId] = useState<number | null>(null);
+    const [isComparativeModalOpen, setIsComparativeModalOpen] = useState(false);
+    const [selectedImagesByEvaluation, setSelectedImagesByEvaluation] = useState<Record<number, number[]>>({});
 
     const handleGoBack = () => {
         router.visit('/pacientes');
@@ -123,6 +131,141 @@ export default function DetallePaciente({ paciente }: DetalleProps) {
             success: <b>¡Reporte descargado!</b>,
             error: <b>Error al generar el reporte.</b>,
         });
+    };
+
+    const getImageSrc = (contenidoBase64: string) => {
+        if (!contenidoBase64 || contenidoBase64.trim() === '') {
+            return '';
+        }
+
+        if (contenidoBase64.startsWith('data:')) {
+            return contenidoBase64;
+        }
+
+        return `data:image/jpeg;base64,${contenidoBase64}`;
+    };
+
+    const latestTwoEvaluations = [...(paciente.evaluaciones || [])]
+        .sort((a, b) => {
+            const dateA = new Date(`${a.fecha} ${a.hora || '00:00:00'}`).getTime();
+            const dateB = new Date(`${b.fecha} ${b.hora || '00:00:00'}`).getTime();
+            return dateB - dateA;
+        })
+        .slice(0, 2);
+
+    const handleOpenComparativeReportModal = () => {
+        if (!paciente.evaluaciones || paciente.evaluaciones.length < 2) {
+            toast.error('Se necesitan al menos 2 evaluaciones para generar el reporte comparativo.', {
+                duration: 1800,
+                position: 'top-center',
+            });
+            return;
+        }
+
+        const initialSelection: Record<number, number[]> = {};
+
+        latestTwoEvaluations.forEach((evaluation) => {
+            const imageIds = (evaluation.imagenes || []).slice(0, 3).map((img) => img.id);
+            initialSelection[evaluation.id] = imageIds;
+        });
+
+        setSelectedImagesByEvaluation(initialSelection);
+        setIsComparativeModalOpen(true);
+    };
+
+    const toggleEvaluationImage = (evaluationId: number, imageId: number) => {
+        setSelectedImagesByEvaluation((prev) => {
+            const current = prev[evaluationId] || [];
+            const isChecked = current.includes(imageId);
+
+            if (isChecked) {
+                if (current.length <= 1) {
+                    toast.error('Debes mantener al menos 1 imagen seleccionada por evaluación.');
+                    return prev;
+                }
+                return {
+                    ...prev,
+                    [evaluationId]: current.filter((id) => id !== imageId),
+                };
+            }
+
+            if (current.length >= 3) {
+                toast.error('Solo puedes seleccionar hasta 3 imágenes por evaluación.');
+                return prev;
+            }
+
+            return {
+                ...prev,
+                [evaluationId]: [...current, imageId],
+            };
+        });
+    };
+
+    const handleGenerateComparativeReport = async () => {
+        if (latestTwoEvaluations.length < 2) {
+            toast.error('Se necesitan al menos 2 evaluaciones para generar el reporte comparativo.');
+            return;
+        }
+
+        const hasInvalidSelection = latestTwoEvaluations.some((evaluation) => {
+            const selectedCount = (selectedImagesByEvaluation[evaluation.id] || []).length;
+            return selectedCount < 1 || selectedCount > 3;
+        });
+
+        if (hasInvalidSelection) {
+            toast.error('Selecciona entre 1 y 3 imágenes por cada evaluación.');
+            return;
+        }
+
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+
+        const downloadComparativeReport = async () => {
+            const response = await fetch(`/reporte-paciente/${paciente.id}/comparativo`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    Accept: 'application/json',
+                },
+                body: JSON.stringify({
+                    evaluacion_ids: latestTwoEvaluations.map((evaluation) => evaluation.id),
+                    imagenes_por_evaluacion: selectedImagesByEvaluation,
+                }),
+            });
+
+            if (!response.ok) {
+                let errorMessage = 'Error al generar el reporte comparativo.';
+                try {
+                    const errorData = await response.json();
+                    if (errorData?.message) {
+                        errorMessage = errorData.message;
+                    }
+                } catch {
+                    // No-op: si no viene JSON, usamos el mensaje por defecto.
+                }
+                throw new Error(errorMessage);
+            }
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `Reporte-Comparativo-${paciente.nombres} ${paciente.apellidos}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+
+            return 'Reporte comparativo descargado';
+        };
+
+        await toast.promise(downloadComparativeReport(), {
+            loading: 'Generando reporte comparativo...',
+            success: <b>¡Reporte comparativo descargado!</b>,
+            error: (err) => <b>{err instanceof Error ? err.message : 'Error al generar el reporte comparativo.'}</b>,
+        });
+
+        setIsComparativeModalOpen(false);
     };
 
     const formatDate = (dateString: string) => {
@@ -211,6 +354,14 @@ export default function DetallePaciente({ paciente }: DetalleProps) {
                             </div>
                             <div className="flex items-center gap-2">
                                 <Button
+                                    variant="outline"
+                                    onClick={handleOpenComparativeReportModal}
+                                    className="flex items-center gap-2"
+                                >
+                                    <Download className="h-4 w-4" />
+                                    Reporte comparativo
+                                </Button>
+                                <Button
                                     variant="default"
                                     onClick={handleGenerateReport}
                                     className="flex items-center gap-2 bg-blue-600 shadow-lg hover:bg-blue-700 hover:shadow-blue-200"
@@ -263,6 +414,71 @@ export default function DetallePaciente({ paciente }: DetalleProps) {
                     showPatientInfo={false} // No mostrar info del paciente porque ya estamos en su detalle
                     showActions={true}
                 />
+
+                <Dialog open={isComparativeModalOpen} onOpenChange={setIsComparativeModalOpen}>
+                    <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
+                        <DialogHeader>
+                            <DialogTitle>Reporte comparativo</DialogTitle>
+                            <DialogDescription>
+                                Selecciona imágenes de las 2 últimas evaluaciones (mínimo 1 y máximo 3 por evaluación).
+                            </DialogDescription>
+                        </DialogHeader>
+
+                        <div className="space-y-5">
+                            {latestTwoEvaluations.map((evaluation, index) => {
+                                const images = evaluation.imagenes || [];
+                                return (
+                                    <div key={evaluation.id} className="rounded-lg border p-4">
+                                        <div className="mb-3">
+                                            <p className="font-semibold text-slate-800">
+                                                {index === 0 ? 'Evaluación más reciente' : 'Evaluación anterior'}
+                                            </p>
+                                            <p className="text-sm text-slate-500">
+                                                {formatDate(evaluation.fecha)} {evaluation.hora} - {evaluation.clasificacion}
+                                            </p>
+                                        </div>
+
+                                        {images.length > 0 ? (
+                                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
+                                                {images.slice(0, 3).map((image, imageIndex) => {
+                                                    const checked = (selectedImagesByEvaluation[evaluation.id] || []).includes(image.id);
+                                                    return (
+                                                        <label
+                                                            key={image.id}
+                                                            className="flex cursor-pointer flex-col gap-2 rounded-md border p-2 hover:bg-slate-50"
+                                                        >
+                                                            <div className="flex items-center gap-2">
+                                                                <Checkbox
+                                                                    checked={checked}
+                                                                    onCheckedChange={() => toggleEvaluationImage(evaluation.id, image.id)}
+                                                                />
+                                                                <span className="text-xs text-slate-600">Imagen {imageIndex + 1}</span>
+                                                            </div>
+                                                            <img
+                                                                src={getImageSrc(image.contenido_base64)}
+                                                                alt={`Evaluación ${evaluation.id} - Imagen ${imageIndex + 1}`}
+                                                                className="h-28 w-full rounded-md object-cover"
+                                                            />
+                                                        </label>
+                                                    );
+                                                })}
+                                            </div>
+                                        ) : (
+                                            <p className="text-sm text-slate-500">Esta evaluación no tiene imágenes registradas.</p>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        <DialogFooter>
+                            <Button variant="outline" onClick={() => setIsComparativeModalOpen(false)}>
+                                Cancelar
+                            </Button>
+                            <Button onClick={handleGenerateComparativeReport}>Generar reporte comparativo</Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </div>
             <Toaster position="top-right" />
         </AppLayout>

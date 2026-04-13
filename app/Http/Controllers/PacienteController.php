@@ -86,7 +86,13 @@ class PacienteController extends Controller
     public function show(Paciente $paciente)
     {
         return Inertia::render('patients/detalle-patient', [
-            'paciente' => $paciente->load(['evaluaciones.imagenPrincipal'])
+            'paciente' => $paciente->load([
+                'evaluaciones' => function ($q) {
+                    $q->orderByDesc('fecha')->orderByDesc('hora');
+                },
+                'evaluaciones.imagenPrincipal',
+                'evaluaciones.imagenes',
+            ])
         ]);
     }
 
@@ -194,7 +200,7 @@ class PacienteController extends Controller
         $pdf = Pdf::loadView('reports.reporte-paciente', $datos);
         
         // Configuraciones del PDF
-        $pdf->setPaper('A4', 'portrait');
+        $pdf->setPaper('A4', 'landscape');
         $pdf->setOptions([
             'defaultFont' => 'Arial',
             'isHtml5ParserEnabled' => true,
@@ -205,6 +211,129 @@ class PacienteController extends Controller
         $nombreArchivo = 'REPORTE_PACIENTE_' . strtoupper($paciente->nombres) . '_' . strtoupper($paciente->apellidos) . '.pdf';
 
         // Descargar el PDF
+        return $pdf->download($nombreArchivo);
+    }
+
+    /**
+     * Generar reporte comparativo entre las 2 últimas evaluaciones del paciente.
+     */
+    public function reporteComparativo(Request $request, $id)
+    {
+        $paciente = Paciente::findOrFail($id);
+
+        $ultimasEvaluaciones = $paciente->evaluaciones()
+            ->with('imagenes')
+            ->orderByDesc('fecha')
+            ->orderByDesc('hora')
+            ->take(2)
+            ->get();
+
+        if ($ultimasEvaluaciones->count() < 2) {
+            return response()->json([
+                'message' => 'Se requieren al menos 2 evaluaciones para generar el reporte comparativo.',
+            ], 422);
+        }
+
+        $validated = $request->validate([
+            'evaluacion_ids' => 'required|array|size:2',
+            'evaluacion_ids.*' => 'required|integer|distinct',
+            'imagenes_por_evaluacion' => 'required|array',
+        ]);
+
+        $latestEvaluationIds = $ultimasEvaluaciones->pluck('id')->map(fn ($value) => (int) $value)->toArray();
+        sort($latestEvaluationIds);
+
+        $requestedEvaluationIds = collect($validated['evaluacion_ids'])->map(fn ($value) => (int) $value)->toArray();
+        sort($requestedEvaluationIds);
+
+        if ($latestEvaluationIds !== $requestedEvaluationIds) {
+            return response()->json([
+                'message' => 'Solo se permite comparar las 2 últimas evaluaciones registradas.',
+            ], 422);
+        }
+
+        foreach ($ultimasEvaluaciones as $evaluacion) {
+            $selectedImageIds = $validated['imagenes_por_evaluacion'][(string) $evaluacion->id] ?? [];
+
+            if (!is_array($selectedImageIds)) {
+                return response()->json([
+                    'message' => 'Formato inválido en la selección de imágenes.',
+                ], 422);
+            }
+
+            $selectedImageIds = collect($selectedImageIds)->map(fn ($value) => (int) $value)->unique()->values();
+
+            if ($selectedImageIds->count() < 1 || $selectedImageIds->count() > 3) {
+                return response()->json([
+                    'message' => 'Debes seleccionar entre 1 y 3 imágenes por evaluación.',
+                ], 422);
+            }
+
+            $availableImageIds = $evaluacion->imagenes->pluck('id')->map(fn ($value) => (int) $value);
+            $invalidImageIds = $selectedImageIds->diff($availableImageIds);
+
+            if ($invalidImageIds->isNotEmpty()) {
+                return response()->json([
+                    'message' => 'La selección contiene imágenes que no pertenecen a las evaluaciones comparadas.',
+                ], 422);
+            }
+        }
+
+        $evaluaciones = $ultimasEvaluaciones->map(function ($ev) use ($validated) {
+            $selectedImageIds = collect($validated['imagenes_por_evaluacion'][(string) $ev->id] ?? [])
+                ->map(fn ($value) => (int) $value)
+                ->values();
+
+            $imagenesSeleccionadas = $ev->imagenes
+                ->whereIn('id', $selectedImageIds)
+                ->sortBy(function ($img) use ($selectedImageIds) {
+                    return $selectedImageIds->search((int) $img->id);
+                })
+                ->map(function ($img) {
+                    $mimeType = $this->detectMimeType($img->contenido_base64);
+                    return [
+                        'id' => $img->id,
+                        'src' => "data:{$mimeType};base64," . $img->contenido_base64,
+                    ];
+                })
+                ->values()
+                ->toArray();
+
+            return [
+                'id' => $ev->id,
+                'fecha' => $ev->fecha ? $ev->fecha->format('d/m/Y') : '',
+                'hora' => $ev->hora ? date('H:i', strtotime($ev->hora)) : '',
+                'resultado' => $ev->clasificacion,
+                'comentario' => $ev->comentario,
+                'imagenes' => $imagenesSeleccionadas,
+            ];
+        })->values()->toArray();
+
+        $datos = [
+            'paciente' => [
+                'id' => $paciente->id,
+                'nombre' => $paciente->nombres,
+                'apellido' => $paciente->apellidos,
+                'edad' => $paciente->edad,
+                'genero' => $paciente->genero,
+                'telefono' => $paciente->telefono,
+                'dni' => $paciente->dni,
+            ],
+            'evaluacion_actual' => $evaluaciones[0],
+            'evaluacion_anterior' => $evaluaciones[1],
+        ];
+
+        $pdf = Pdf::loadView('reports.reporte-comparativo-paciente', $datos);
+
+        $pdf->setPaper('A4', 'landscape');
+        $pdf->setOptions([
+            'defaultFont' => 'Arial',
+            'isHtml5ParserEnabled' => true,
+            'isPhpEnabled' => true,
+        ]);
+
+        $nombreArchivo = 'REPORTE_COMPARATIVO_' . strtoupper($paciente->nombres) . '_' . strtoupper($paciente->apellidos) . '.pdf';
+
         return $pdf->download($nombreArchivo);
     }
 

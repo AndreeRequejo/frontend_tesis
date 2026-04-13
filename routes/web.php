@@ -28,6 +28,7 @@ Route::middleware(['auth'])->group(function () {
 
         // Reportes (solo médicos)
         Route::get('reporte-paciente/{id}', [PacienteController::class, 'reporte'])->name('paciente.reporte');
+        Route::post('reporte-paciente/{id}/comparativo', [PacienteController::class, 'reporteComparativo'])->name('paciente.reporte.comparativo');
 
         // Historial médico (solo médicos)
         Route::get('historial', [HistorialController::class, 'index'])->name('historial');
