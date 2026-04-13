@@ -1,4 +1,3 @@
-import { GoogleGenAI } from '@google/genai';
 import type { AnalysisResult } from '../types/analysis';
 
 // Variable de configuración: habilitar/deshabilitar análisis con modelo externo
@@ -30,6 +29,7 @@ const fileToGenerativePart = async (file: File) => {
  * Optimizado: Todo en UN SOLO PROMPT.
  */
 export const analyzeAcneSeverity = async (imageFiles: File[]): Promise<AnalysisResult> => {
+    const { GoogleGenAI } = await import('@google/genai');
     const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_MODEL_API_KEY as string });
 
     // Convertir TODAS las imágenes a formato generativo

@@ -3,6 +3,27 @@
         Options -MultiViews -Indexes
     </IfModule>
 
+    <IfModule mod_expires.c>
+        ExpiresActive On
+        ExpiresByType text/css "access plus 1 month"
+        ExpiresByType application/javascript "access plus 1 month"
+        ExpiresByType text/javascript "access plus 1 month"
+        ExpiresByType image/svg+xml "access plus 1 month"
+        ExpiresByType image/x-icon "access plus 1 month"
+        ExpiresByType image/webp "access plus 1 month"
+        ExpiresByType image/avif "access plus 1 month"
+        ExpiresByType image/png "access plus 1 month"
+        ExpiresByType image/jpeg "access plus 1 month"
+        ExpiresByType font/woff2 "access plus 1 month"
+        ExpiresByType application/font-woff2 "access plus 1 month"
+    </IfModule>
+
+    <IfModule mod_headers.c>
+        <FilesMatch "\.(css|js|mjs|map|jpg|jpeg|png|gif|svg|ico|webp|avif|woff|woff2)$">
+            Header set Cache-Control "public, max-age=2592000, immutable"
+        </FilesMatch>
+    </IfModule>
+
     RewriteEngine On
 
     # Handle Authorization Header
