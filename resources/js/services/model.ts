@@ -66,8 +66,20 @@ export const analyzeAcneSeverity = async (imageFiles: File[]): Promise<AnalysisR
             Return ONLY a JSON object with this exact structure:
             {
               "category": "REAL_FULL_FACE" | "PARTIAL_FACE" | "ANIMAL" | "CARTOON" | "DRAWING" | "ARTIFICIAL_FACE" | "BODY_PART" | "OTHER",
-              "acneStatus": "CLEAN" | "ACNE" | "N/A"
+                            "acneStatus": "CLEAN" | "ACNE" | "N/A",
+                            "description": "string"
             }
+
+                        **Rules for "description":**
+                        - Mandatory for valid human face categories.
+                        - Write in Spanish.
+                        - Brief: 1 sentence (max 20 words).
+                        - Purely descriptive of visible skin findings.
+                        - Mention only visible acne lesions if present (e.g., comedones, pápulas, pústulas, enrojecimiento local).
+                        - If no lesions are visible, explicitly state that no visible acne lesions are observed.
+                        - Do NOT mention severity level.
+                        - Do NOT mention treatments or recommendations.
+                        - Do NOT mention confidence, diagnosis certainty, or next steps.
 
             **Logic for "category":**
             - If ANY image is ANIMAL -> "ANIMAL"
@@ -105,6 +117,7 @@ export const analyzeAcneSeverity = async (imageFiles: File[]): Promise<AnalysisR
 
         const category = result.category?.toUpperCase();
         const acneStatus = result.acneStatus?.toUpperCase();
+        const description = typeof result.description === 'string' ? result.description.trim() : '';
 
         console.log('Categoría:', category, '| Acné:', acneStatus);
 
@@ -134,19 +147,21 @@ export const analyzeAcneSeverity = async (imageFiles: File[]): Promise<AnalysisR
                 if (acneStatus === 'CLEAN') {
                     return {
                         severity: 'Limpio',
-                        explanation: 'No se detectó acné visible en las imágenes proporcionadas.',
+                        explanation: description || 'No se observan lesiones acneicas visibles en las imágenes proporcionadas.',
+                        description: description || 'No se observan lesiones acneicas visibles en las imágenes proporcionadas.',
                     };
                 } else if (acneStatus === 'ACNE') {
                     return {
                         severity: 'Presencia',
-                        explanation:
-                            'Se detectaron signos visibles de acné en al menos una de las imágenes. Se utilizará la predicción del modelo de clasificación.',
+                        explanation: description || 'Se observan lesiones acneicas visibles en al menos una de las imágenes.',
+                        description: description || 'Se observan lesiones acneicas visibles en al menos una de las imágenes.',
                     };
                 } else {
                     // Fallback
                     return {
                         severity: 'Presencia',
-                        explanation: 'Se utilizará la predicción del modelo de clasificación.',
+                        explanation: description || 'No fue posible describir hallazgos cutáneos con claridad en las imágenes.',
+                        description: description || 'No fue posible describir hallazgos cutáneos con claridad en las imágenes.',
                     };
                 }
 

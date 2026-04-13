@@ -104,38 +104,49 @@ const ProbabilityBars = ({ probabilidades }: { probabilidades: Record<string, nu
 export default function Prediction() {
     const { success, paciente, imagenes, prediccion, fecha_evaluacion } = usePage<PredictionPageProps>().props;
     const [isSaving, setIsSaving] = useState(false);
-    const [comentario, setComentario] = useState('');
-    
-    // Verificar si el modelo externo detectó "Limpio" (rostro limpio)
-    const [modelOverride, setModelOverride] = useState<AnalysisResult | null>(null);
-    const [finalPrediccion, setFinalPrediccion] = useState(prediccion);
-
-    // Al montar, verificar si hay análisis del modelo externo en sessionStorage
-    useEffect(() => {
-        const modelData = sessionStorage.getItem('model_analysis');
-        if (modelData) {
-            try {
-                const analysis: AnalysisResult = JSON.parse(modelData);
-                if (analysis.severity === 'Limpio') {
-                    // Sobrescribir predicción para mostrar Ausente
-                    setModelOverride(analysis);
-                    setFinalPrediccion({
-                        success: true,
-                        prediccion_class: 0,
-                        prediccion_label: 'Ausente',
-                        confianza: 1.0,
-                        confianza_porcentaje: '100.0%',
-                        probabilidades: {},
-                        tiempo_procesamiento: 0,
-                    } as PrediccionSimple);
-                }
-                // Limpiar de sessionStorage
-                sessionStorage.removeItem('model_analysis');
-            } catch (e) {
-                console.error('Error parsing model analysis:', e);
-            }
+    const [modelAnalysis] = useState<AnalysisResult | null>(() => {
+        if (typeof window === 'undefined') {
+            return null;
         }
-    }, []);
+
+        const modelData = sessionStorage.getItem('model_analysis');
+        if (!modelData) {
+            return null;
+        }
+
+        try {
+            const analysis: AnalysisResult = JSON.parse(modelData);
+            sessionStorage.removeItem('model_analysis');
+            return analysis;
+        } catch (e) {
+            console.error('Error parsing model analysis:', e);
+            sessionStorage.removeItem('model_analysis');
+            return null;
+        }
+    });
+
+    // Verificar si el modelo externo detectó "Limpio" (rostro limpio)
+    const [modelOverride] = useState<AnalysisResult | null>(() => {
+        return modelAnalysis?.severity === 'Limpio' ? modelAnalysis : null;
+    });
+
+    const [finalPrediccion] = useState<PrediccionSimple | PrediccionBatch>(() => {
+        if (modelAnalysis?.severity === 'Limpio') {
+            return {
+                success: true,
+                prediccion_class: 0,
+                prediccion_label: 'Ausente',
+                confianza: 1.0,
+                confianza_porcentaje: '100.0%',
+                probabilidades: {},
+                tiempo_procesamiento: 0,
+            } as PrediccionSimple;
+        }
+
+        return prediccion;
+    });
+
+    const [comentario, setComentario] = useState(() => modelAnalysis?.description || modelAnalysis?.explanation || '');
 
     // Determinar si es predicción simple o batch
     const isSimplePrediction = 'prediccion_class' in finalPrediccion;
@@ -190,7 +201,10 @@ export default function Prediction() {
             return '';
         };
 
-        if (modelOverride) {
+        if (modelAnalysis?.description || modelAnalysis?.explanation) {
+            // Si hay descripción del modelo externo, priorizarla como comentario inicial.
+            setComentario(modelAnalysis.description || modelAnalysis.explanation);
+        } else if (modelOverride) {
             // Si hay sobrescritura del modelo externo, usar su explicación
             setComentario(modelOverride.explanation);
         } else if (isSimplePrediction) {
@@ -212,7 +226,7 @@ export default function Prediction() {
             const clasificacionSevera = getMostSevereClassification();
             setComentario(`Evaluación automática (${pred.successful}/${pred.total_images} imágenes procesadas) - Clasificación más severa detectada: ${clasificacionSevera}`);
         }
-    }, [modelOverride, finalPrediccion, isSimplePrediction, isBatchPrediction]);
+    }, [modelAnalysis, modelOverride, finalPrediccion, isSimplePrediction, isBatchPrediction]);
 
     const handleSave = () => {
         setIsSaving(true);
